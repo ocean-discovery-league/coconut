@@ -106,11 +106,34 @@ function showSignal(json) {
 }
 
 
+let hashParams = {};
+function parseHash() {
+    let hash = window.location.hash.substr(1);
+    hashParams = hash.split('&').reduce(function (result, item) {
+	let parts = item.split('=');
+	if (typeof parts[1] === 'undefined') {
+	    parts[1] = true;
+	}
+	result[parts[0]] = parts[1];
+	return result;
+    }, {});
+}
+
+
 async function init() {
     //document.body.classList.add('horizontal-mode');
     
     let form = document.getElementById('connect');
     form.addEventListener('submit', connect);
+
+    parseHash();
+    if (hashParams.page) {
+	let n = Number(hashParams.page);
+	let sections = document.querySelectorAll('section');
+	if (sections[n-1]) {
+	    sections[n-1].scrollIntoView(true);
+	}
+    }
 
     monitorStatus();
     monitorScan();

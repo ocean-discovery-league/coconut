@@ -3,6 +3,8 @@
     var MINLENGTH = 200;  // this controls the minimum length of any swimlane
     var MINBREADTH = 20;  // this controls the minimum breadth of any non-collapsed swimlane
 
+    let currentSelection;
+
     // some shared functions
 
     // this may be called to force the lanes to be laid out again
@@ -162,7 +164,67 @@
     // end PoolLayout class
 
 
+    function selectionChangedHandler(part) {
+	//console.log('selection', part);
+	console.log('part.elt', part.elt);
+	let shape = part.elt(0);
+	console.log('shape', shape);
+	console.log('data', part.data);
+        let label_el = document.querySelectorAll('#label')[0];
+	if (part) {
+	    console.log(label_el.value)
+	    console.log(part.data.key);
+	    label_el.value=part.data.key;
+	    console.log(label_el.value)
+	}
+	currentSelection = part;
+    }
+
+
+    function onChangeHandler() {
+	console.log('onchange', currentSelection);
+        let label_el = document.querySelectorAll('#label')[0];
+	if (currentSelection) {
+	    missionOneDiagram.model.set(currentSelection.data, 'key', label_el.value);
+	}
+    }
+
+
+    function deleteNode() {
+	console.log('deleteNode');
+	missionOneDiagram.commit(function(m) {
+	    if (currentSelection) {
+		missionOneDiagram.remove(currentSelection);
+	    }
+	});
+    }
+
+    n=0;
+    function addNode(after) {
+	console.log('addNode');
+	var $ = go.GraphObject.make;
+	if (currentSelection) {
+	    missionOneDiagram.model.commit(function(m) {
+		console.log('m', m);
+		m.addNodeData({
+		    key: `add${++n}`,
+		    group: currentSelection.data.group,
+		});
+		// missionOneDiagram.add(
+		//     $(go.Node, "Auto",
+		//       $(go.Shape, "RoundedRectangle", { fill: "lightblue" }),
+		//       $(go.TextBlock, "Hello!", { margin: 5 })
+		//      ));
+	    });
+	}
+    }
+	
+
 window.mission1 = {};
+window.mission1.onChangeHandler = onChangeHandler;
+window.mission1.deleteNode = deleteNode;
+window.mission1.addNode = addNode;
+
 window.mission1.init = 
     function() {
       var $ = go.GraphObject.make;
@@ -185,6 +247,8 @@ window.mission1.init =
                 e.diagram.currentTool.doCancel();
               }
             },
+	      autoScale: go.Diagram.Uniform,
+	      allowHorizontalScroll: false,
             // a clipboard copied node is pasted into the original node's group (i.e. lane).
             "commandHandler.copiesGroupKey": true,
             // automatically re-layout the swim lanes after dragging the selection
@@ -225,7 +289,10 @@ window.mission1.init =
             { fill: "white", portId: "", cursor: "pointer", fromLinkable: true, toLinkable: true }),
           $(go.TextBlock, { margin: 5 },
             new go.Binding("text", "key")),
-          { dragComputation: stayInGroup } // limit dragging of Nodes to stay within the containing Group, defined above
+          {
+	      dragComputation: stayInGroup, // limit dragging of Nodes to stay within the containing Group, defined above
+	      selectionChanged: selectionChangedHandler,
+	  }
         );
 
       function groupStyle() {  // common settings for both Lane and Pool Groups
@@ -304,14 +371,14 @@ window.mission1.init =
             },
             $(go.Panel, "Horizontal",  // this is hidden when the swimlane is collapsed
               new go.Binding("visible", "isSubGraphExpanded").ofObject(),
-              $(go.Shape, "Diamond",
-                { width: 8, height: 8, fill: "white" },
-                new go.Binding("fill", "color")),
+              //$(go.Shape, "Diamond",
+              //  { width: 8, height: 8, fill: "white" },
+              //  new go.Binding("fill", "color")),
               $(go.TextBlock,  // the lane label
                 { font: "bold 13pt sans-serif", editable: true, margin: new go.Margin(2, 0, 0, 0) },
                 new go.Binding("text", "text").makeTwoWay())
             ),
-            $("SubGraphExpanderButton", { margin: 5 })  // but this remains always visible!
+            //$("SubGraphExpanderButton", { margin: 5 })  // but this remains always visible!
           ),  // end Horizontal Panel
           $(go.Panel, "Auto",  // the lane consisting of a background Shape and a Placeholder representing the subgraph
             $(go.Shape, "Rectangle",  // this is the resized object

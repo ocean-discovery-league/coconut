@@ -81,16 +81,15 @@
 
   <h2 style="font-size:64px">📹
     <span style="font-size:58px">Video Setup</span></h2>
-  <br \>
-    <br \>
-      <label for="fps">Frames per second</lable>
+  <br />
+    <br />
+      <label for="fps">Frames per second</label>
         <select name="fps">
           <option>12</option>
           <option selected="true">24</option>
           <option>30</option>
         </select>
           
-	<input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" style="font-size:24px" required></input>
 </section>
 
 <section>
@@ -98,18 +97,12 @@
 
   <h2 style="font-size:64px">📷
     <span style="font-size:58px">Photo Setup</span></h2>
+
+  <br />
+  <br />
+  <input type="checkbox" id="scales" name="scales" checked \>
+    <label for="scales">Scales</label>
 </section>
-  <br \>
-    <br \>
-<input type="checkbox" id="scales" name="scales"
-         checked>
-  <label for="scales">Scales</label>
-  <label for="fps">Timelapse</lable>
-        <select name="fps">
-          <option>12</option>
-          <option selected="true">24</option>
-          <option>30</option>
-        </select>
 
 <section>
   <br />
@@ -118,7 +111,12 @@
     <span style="font-size:58px">Mission 1️⃣</span></h2>
 
   <br />
-  
+  <div>
+    <button value="delete" onclick="window.mission1.deleteNode()">🚮</button>
+    <button value="add_before" onclick="window.mission1.addNode(false)">↪️</button>
+    <button value="add_after" onclick="window.mission1.addNode(true)">↩️</button>
+    <input id="label" onchange="window.mission1.onChangeHandler()"></input>
+  </div>
   <center>
     <div id="mission-one-diagram" style="border: solid 1px black; width:75%; height:900px;"></div>
   </center>
@@ -141,7 +139,8 @@
 </div>
 
   <script src="client.js"></script>
-  <script src="go.js"></script>
+  <!-- <script src="go.js"></script> -->
+  <script src="go-debug.js"></script>
   <script src="mission1.js"></script>
   <script src="mission2.js"></script>
   <script>

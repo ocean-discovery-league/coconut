@@ -300,10 +300,10 @@ fresh@0.5.2:
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
   integrity sha1-PYyt2Q2XZWn6g1qx+OSyOhBWBac=
 
-gojs@^2.1.29:
-  version "2.1.29"
-  resolved "https://registry.yarnpkg.com/gojs/-/gojs-2.1.29.tgz#0a6a27b016d3a1aadc28e2a46c601c9322de9551"
-  integrity sha512-/m6VZAhBomjkN9jlMzPnp3UPWWsnGBP7vpGrEQunBp7mQcIzmKapsHH++SCw45rkt/bdxjuA92hiDIXct+6TaA==
+gojs@^2.1.31:
+  version "2.1.31"
+  resolved "https://registry.yarnpkg.com/gojs/-/gojs-2.1.31.tgz#c90afcc68f93e6c04eb16fff064ded8ccef623aa"
+  integrity sha512-bRtdcmZxZaWPHoHcmx4PebQcckwatRpGMCXVsUKD4GNWd3HcMTkIft1OsH0jbzHeM0MAsqwPWR2i6I5ujE40XQ==
 
 http-errors@1.7.2:
   version "1.7.2"
