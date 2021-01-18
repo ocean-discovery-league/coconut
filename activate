@@ -1,24 +1,7 @@
 VIRTUALENV_ROOT=`pwd`
 export VIRTUAL_ENV="`basename $VIRTUALENV_ROOT`"
-export PATH=$VIRTUALENV_ROOT/bin:$VIRTUALENV_ROOT/node/bin:$VIRTUALENV_ROOT/macports/bin:$PATH
+export PATH=$VIRTUALENV_ROOT/bin:$VIRTUALENV_ROOT/node/bin:$PATH
 export N_PREFIX=$VIRTUALENV_ROOT/node
-export JetstreamSim_hubHost=stg-hub.jibo.media.mit.edu  JetstreamSim_hubPort=443
-export CXXFLAGS="-mmacosx-version-min=10.9" LDFLAGS="-mmacosx-version-min=10.9"
 VIRTUALENV_ROOT_DISPLAY="`echo $VIRTUALENV_ROOT | sed \"s%^$HOME/%%" | sed 's/\//·/g'`"
 PS1="%{$fg_bold[blue]%}[$VIRTUALENV_ROOT_DISPLAY]%{$reset_color%}$PS1"
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/jon/mit/miniconda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/jon/mit/miniconda/etc/profile.d/conda.sh" ]; then
-        . "/Users/jon/mit/miniconda/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/jon/mit/miniconda/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
 

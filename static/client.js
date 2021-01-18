@@ -11,6 +11,8 @@ const STATUS_INTERVAL = 1 * 1000;  // 1 second
 const SCAN_INTERVAL = 5 * 1000;  // 5 seconds
 const SIGNAL_INTERVAL = 1 * 1000;  // 1 second
 
+let current_rssid;
+
 async function monitorStatus() {
     try {
         let response = await fetch(status_request);
@@ -29,9 +31,14 @@ function showStatus(json) {
     let connectiondiv = document.querySelector('#connection');
     let state = json.wpa_state;
     let status = '• • •';
+    //console.log(json);
     if (state) {
 	if (state === 'COMPLETED') {
-	    status = 'connected to <i>' + (json.ssid || 'unknown') + '</i>';
+	    status = '<div style="position:relative"><font color="black">connected to </font>' + (json.ssid || 'unknown') + '&nbsp;&nbsp;';
+	    if (current_rssid) {
+		status += '<span style="position:absolute;color:#AAAAAA">' + current_rssid + '</span>';
+	    }
+	    status += '</div>';
 	} else {
 	    console.log('state =', state);
 	}
@@ -47,6 +54,7 @@ async function monitorScan() {
     try {
         let response = await fetch(scan_request);
         let json = await response.json();
+	console.log(json);
 	if (json && !json.retry && Object.keys(json).length !== 0) {
 	    showScan(json);
 	}
@@ -75,14 +83,19 @@ function showScan(json) {
 		continue;
 	    }
 	    seen.push(ssid);
-	    html += '<li onclick="window.client.click_network(event)">' + ssid + '</li>\n';
+	    html += '<li onclick="window.client.click_network(event)">'
+		+ '<div style="position:relative">'
+		+ '<div style="position:absolute;color:#AAAAAA;left:-38px">' + network.signal + '</div>'
+		+ '<div style="position:absolute;color:#AAAAAA;left:-62px;font-size:14px;opacity:0.6">' + (network.security ? '🔒' : '') + '</div>'
+		+ ssid + '</li>\n';
+	    current_rssid = network.signal;
 	}
     } catch(err) {
 	console.error(err);
     }
     networks_ul.innerHTML = html;
-    let scandiv = document.querySelector('#scandiv');
-    scandiv.innerHTML = JSON.stringify(json);
+    //let scandiv = document.querySelector('#scandiv');
+    //scandiv.innerHTML = JSON.stringify(json);
 }
 
 
