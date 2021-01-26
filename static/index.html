@@ -1,7 +1,7 @@
 <!doctype html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=0.7" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.7, maximum-scale=0.7, user-scalable=0" />
   <title>🥥 Maka Nui</title>
   <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
@@ -14,10 +14,11 @@
 </section>
 
 <section>
-  <br>
-
-  <h2 style="font-size:64px">🥥
-    <span style="font-size:58px">WiFi Setup</span></h2>
+  <div class="header">
+    <h2 style="font-size:64px">🥥
+      <span style="font-size:58px">WiFi Setup</span>
+    </h2>
+  </div>
 
   <br>
   <br>
@@ -63,7 +64,7 @@
     <div style="display:grid;place-items:center">
       <div style="width:220px;text-align:left">
 	Visible networks
-	<ul width=300 id="networks" style="list-style:none;font-size:20px;font-weight:900;margin-left:2px;margin-top:4px">
+	<ul width=300 id="networks" style="list-style:none;font-size:20px;font-weight:900;margin-left:2px;margin-top:4px;white-space:nowrap">
 	  <li><i>looking for networks...</i></li>
 	</ul>
       </div>
@@ -111,15 +112,18 @@
     <span style="font-size:58px">Mission 1️⃣</span></h2>
 
   <br>
-  <div>
-    <button value="delete" onclick="window.mission1.deleteNode()">🚮</button>
-    <button value="add_before" onclick="window.mission1.addNode(false)">↪️</button>
-    <button value="add_after" onclick="window.mission1.addNode(true)">↩️</button>
-    <input id="label" onchange="window.mission1.onChangeHandler()"></input>
-  </div>
   <center>
-    <div id="mission-one-diagram" style="border: solid 1px black; width:75%; height:900px;"></div>
+    <div style="position:relative">
+      <div id="mission-1-diagram" style="border: solid 1px black; width:75%; height:900px;"></div>
+      <div id="toolbox-1" style="position:fixed;left:0px;bottom:-150px;height:150px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s">
+	<button value="delete" onclick="window.mission1.deleteNode()">🚮</button>
+	<button value="add_before" onclick="window.mission1.addNode(false)">↪️</button>
+	<button value="add_after" onclick="window.mission1.addNode(true)">↩️</button>
+	<input id="label-1" onchange="window.mission1.onChangeHandler()"></input>
+      </div>
+    </div>
   </center>
+
 
 </section>
 
@@ -131,7 +135,15 @@
   <br>
   
   <center>
-    <div id="mission-two-diagram" style="border: solid 1px black; width:75%; height:900px;"></div>
+    <div style="position:relative">
+      <div id="mission-2-diagram" style="border: solid 1px black; width:75%; height:900px;"></div>
+      <div id="toolbox-2" style="position:fixed;left:0px;bottom:-150px;height:150px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s">
+	<button value="delete" onclick="window.mission2.deleteNode()">🚮</button>
+	<button value="add_before" onclick="window.mission2.addNode(false)">↪️</button>
+	<button value="add_after" onclick="window.mission2.addNode(true)">↩️</button>
+	<input id="label-2" onchange="window.mission2.onChangeHandler()"></input>
+      </div>
+    </div>
   </center>
 
 </section>

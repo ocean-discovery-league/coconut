@@ -40,12 +40,12 @@ section {
   height: 150vh;
   //border-right: 1px solid white;
   //padding: 1rem;
+  padding-top: 80px;
   scroll-snap-align: start;
   //scroll-snap-stop: always;
   text-align: center;
   position: relative;
 }
-
 
 section:nth-child(even) {
     background-color: #CFF1FF;
@@ -53,6 +53,15 @@ section:nth-child(even) {
 }
 section:nth-child(odd) {
     background-color: #BBEBFF;
+}
+
+.header {
+    position:sticky;
+    top:0;
+    left:0;
+    height:80px;
+    z-index:900;
+    width:100%;
 }
 
 h1, h2, h3, h4 {

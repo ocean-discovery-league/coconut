@@ -33,8 +33,9 @@ function showStatus(json) {
     let status = '• • •';
     //console.log(json);
     if (state) {
+	let ssid = json.ssid.replace(/\n$/, '');  // remove newline at end of string
 	if (state === 'COMPLETED') {
-	    status = '<div style="position:relative"><font color="black">connected to </font>' + (json.ssid || 'unknown') + '&nbsp;&nbsp;';
+	    status = '<div style="position:relative" data-ssid="' + (ssid || '') + '"><font color="black">connected to </font>' + (ssid || 'unknown') + '&nbsp;&nbsp;';
 	    if (current_rssid) {
 		status += '<span style="position:absolute;color:#AAAAAA">' + current_rssid + '</span>';
 	    }
