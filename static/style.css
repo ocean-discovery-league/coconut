@@ -16,10 +16,10 @@ body {
     color: #373737;
     background: #F9F9F9;
     
-    -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
     margin: 0 auto;
     padding: 0;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
 }
 
 form {
@@ -48,11 +48,11 @@ section {
 }
 
 section:nth-child(even) {
-    background-color: #CFF1FF;
-    // https://www.colorhexa.com/006994
+    background-color: #13343D;
+    // https://www.colorhexa.com/006994  // old
 }
 section:nth-child(odd) {
-    background-color: #BBEBFF;
+    background-color: #1B3C45;
 }
 
 .header {
@@ -65,7 +65,8 @@ section:nth-child(odd) {
 }
 
 h1, h2, h3, h4 {
-    color: #2ab27b;
+    //color: #2ab27b;
+    color: #FFFFFF;
     margin-bottom: 12px;
     line-height: 26px;
 }

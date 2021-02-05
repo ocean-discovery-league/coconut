@@ -30,7 +30,7 @@
     <br>
 
       <form width="70%" id="connect" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px">
-	<table width="400" style="display:grid;place-items:center;background-color:#BBEBFF">
+	<table width="400" style="display:grid;place-items:center;background-color:#1B3C45">
 	  <tr><td>
 	      <br>
 	      <br>
@@ -109,12 +109,12 @@
   <br>
 
   <h2 style="font-size:64px">
-    <span style="font-size:58px">Mission 1️⃣</span></h2>
+    <span style="font-size:58px">Mission 1</span></h2>
 
   <br>
   <center>
     <div style="position:relative">
-      <div id="mission-1-diagram" style="border: solid 1px black; width:75%; height:900px;"></div>
+      <div id="mission-1-diagram" style="width:75%; height:790px;"></div>
       <div id="toolbox-1" style="position:fixed;left:0px;bottom:-150px;height:150px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s">
 	<button value="delete" onclick="window.mission1.deleteNode()">🚮</button>
 	<button value="add_before" onclick="window.mission1.addNode(false)">↪️</button>
@@ -131,12 +131,12 @@
   <br>
       
   <h2 style="font-size:64px">
-    <span style="font-size:58px">Mission 2️⃣</span></h2>
+    <span style="font-size:58px">Mission 2</span></h2>
   <br>
   
   <center>
     <div style="position:relative">
-      <div id="mission-2-diagram" style="border: solid 1px black; width:75%; height:900px;"></div>
+      <div id="mission-2-diagram" style="width:75%; height:700px;"></div>
       <div id="toolbox-2" style="position:fixed;left:0px;bottom:-150px;height:150px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s">
 	<button value="delete" onclick="window.mission2.deleteNode()">🚮</button>
 	<button value="add_before" onclick="window.mission2.addNode(false)">↪️</button>
@@ -153,12 +153,14 @@
   <script src="client.js"></script>
   <!-- <script src="go.js"></script> -->
   <script src="go-debug.js"></script>
-  <script src="mission1.js"></script>
-  <script src="mission2.js"></script>
+  <script src="mission.js"></script>
+  <script src="mission-programs.js"></script>
   <script>
     window.client.init();
-    window.mission1.init();
-    window.mission2.init();
+    let mission1 = new window.Mission();
+    mission1.init(window.missionPrograms.mission1a, "mission-1-diagram", '#label-1', '#toolbox-1');
+    let mission2 = new window.Mission();
+    mission2.init(window.missionPrograms.mission2a, "mission-2-diagram", '#label-2', '#toolbox-2');
   </script>
 </body>
 </html>
