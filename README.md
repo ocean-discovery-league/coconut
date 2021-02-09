@@ -2,7 +2,7 @@
 
 ## Installation
 
-Get coconut onto the pi in /usr/local:
+Get coconut onto the Raspberry Pi in /usr/local:
 
 ```
 $ cd /usr/local
@@ -13,7 +13,9 @@ $ git clone https://github.com/mitmedialab/coconut.git
 # or enable one-time-codes (recommended) and use that as the pw
 ```
 
-Or if that's too troublesome, download the repo as a zip file and unpack it into `/user/local`.
+Or if that's too troublesome, download the repo as a zip file and unpack it into `/user/local`, but make sure everything is still owned by the `pi` user in the end (`sudo chown -R pi:pi /usr/local/coconut`).
+
+Install the local copy of `node`:
 
 ```
 $ ln -s /usr/local/coconut ~  # just a convenience
