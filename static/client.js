@@ -13,17 +13,44 @@ const SIGNAL_INTERVAL = 1 * 1000;  // 1 second
 
 let current_rssid;
 
+let wifi_section;
+function isVisible() {
+    if (!wifi_section) {
+	wifi_section = document.querySelector('#wifi_section');
+    }
+
+    let rect = wifi_section.getBoundingClientRect();
+    let elemLeft = rect.left;
+    let elemRight = rect.right;
+
+    console.log(elemLeft, elemRight, window.innerWidth);
+
+    let partiallyVisible = (elemRight > 0) && (elemLeft < window.innerWidth);
+    console.log('icu?', partiallyVisible);
+    return partiallyVisible;
+}
+
+
+// setTimeout but then wait for the first full frame after that
+// (so we can check isVisible without triggering any reflows)
+function setTimeoutAnimationFrame(callback, interval) {
+    setTimeout(() => window.requestAnimationFrame(callback), interval);
+}
+
+
 async function monitorStatus() {
     try {
-        let response = await fetch(status_request);
-        let json = await response.json();
-	if (json && !json.retry && Object.keys(json).length !== 0) {
-	    showStatus(json);
+	if (isVisible()) {
+            let response = await fetch(status_request);
+            let json = await response.json();
+	    if (json && !json.retry && Object.keys(json).length !== 0) {
+		showStatus(json);
+	    }
 	}
     } catch(err) {
         console.error(err);
     }
-    setTimeout(monitorStatus, STATUS_INTERVAL);
+    setTimeoutAnimationFrame(monitorStatus, STATUS_INTERVAL);
 }
 
 
@@ -53,16 +80,18 @@ function showStatus(json) {
 
 async function monitorScan() {
     try {
-        let response = await fetch(scan_request);
-        let json = await response.json();
-	console.log(json);
-	if (json && !json.retry && Object.keys(json).length !== 0) {
-	    showScan(json);
+	if (isVisible()) {
+            let response = await fetch(scan_request);
+            let json = await response.json();
+	    console.log(json);
+	    if (json && !json.retry && Object.keys(json).length !== 0) {
+		showScan(json);
+	    }
 	}
     } catch(err) {
         console.error(err);
     }
-    setTimeout(monitorScan, SCAN_INTERVAL);
+    setTimeoutAnimationFrame(monitorScan, SCAN_INTERVAL);
 }
 
 
@@ -102,15 +131,17 @@ function showScan(json) {
 
 async function monitorSignal() {
     try {
-        let response = await fetch(signal_request);
-        let json = await response.json();
-	if (json && !json.retry && Object.keys(json).length !== 0) {
-	    showSignal(json);
+	if (isVisible()) {
+            let response = await fetch(signal_request);
+            let json = await response.json();
+	    if (json && !json.retry && Object.keys(json).length !== 0) {
+		showSignal(json);
+	    }
 	}
     } catch(err) {
         console.error(err);
     }
-    setTimeout(monitorSignal, SIGNAL_INTERVAL);
+    setTimeoutAnimationFrame(monitorSignal, SIGNAL_INTERVAL);
 }
 
 
