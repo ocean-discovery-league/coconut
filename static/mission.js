@@ -2,12 +2,12 @@
 
 const MINLENGTH = 350;  // this controls the minimum length of any swimlane
 const MINBREADTH = 70;  // this controls the minimum breadth of any non-collapsed swimlane
-let n=0;  // used in addNode to create unique labels FIXME
+let n=0;  // used in addNode to create unique keys FIXME
 
 
 class Mission {
     constructor() {
-	this.currentSelect = undefined;
+	this.currentSelection = undefined;
     }
 
 
@@ -110,8 +110,6 @@ class Mission {
         document.getElementById("mySavedModel").value = this.diagram.model.toJson();
         this.diagram.isModified = false;
     }
-
-
     load() {
         this.diagram.model = go.Model.fromJson(document.getElementById("mySavedModel").value);
         this.diagram.delayInitialization(this.relayoutDiagram.bind(this));
@@ -450,7 +448,7 @@ class LaneResizingTool extends go.ResizingTool {
         } else {  // changing the breadth of a single lane
             super.resize(newr);
         }
-        this.relayoutDiagram();  // now that the lane has changed size, layout the pool again
+        this.relayoutDiagram();  // now that the lane has changed size, layout the pool again  // is this ok now that i've split into classes? FIXME
     };
 }
 
