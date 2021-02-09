@@ -20,7 +20,7 @@ Install the local copy of `node`:
 ```
 $ ln -s /usr/local/coconut ~  # just a convenience
 $ cd /usr/local/coconut
-$ source ./install-node.README
+$ source ./install-node.README   # must be on the internet for this step and the next one
 $ yarn install
 #$ yarn build  # not needed yet, but someday
 ```
