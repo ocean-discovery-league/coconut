@@ -9,8 +9,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
 const socketio = require('socket.io');
-const WiFi = require ('./wifi');
-//const fetch = require('node-fetch');
+const WiFi = require('./wifi');
+const MissionEngine = require('./mission-engine');
 
 const PORT = 6252;
 //const BIND = '127.0.0.1';
@@ -47,6 +47,10 @@ async function init() {
     });
 
     //let io = new socketio(server);
+
+    let engine = new MissionEngine();
+    await engine.init();
+    await engine.loadProgram('mission1a');
 }
 
 
