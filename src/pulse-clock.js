@@ -22,7 +22,7 @@ class PulseClock extends EventEmitter {
 	this.start_hrtime = process.hrtime();
 	this.last_pulse = this.start_hrtime;
 	this.pulse_cycle = 0;
-	this.heartbeat_cycle = Math.floor(1000 / this.interval) || 1;  // approx 1 a second
+	this.heartbeat_cycle = Math.floor(1000 * 30 / this.interval) || 1;  // approx every 30 seconds
 	this.running = true;
 
 	console.log('pulse clock started');

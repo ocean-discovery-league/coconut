@@ -110,6 +110,11 @@ body-parser@1.19.0, body-parser@^1.19.0:
     raw-body "2.4.0"
     type-is "~1.6.17"
 
+byline@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/byline/-/byline-5.0.0.tgz#741c5216468eadc457b03410118ad77de8c1ddb1"
+  integrity sha1-dBxSFkaOrcRXsDQQEYrXfejB3bE=
+
 bytes@3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.0.tgz#f6cf7933a360e0588fa9fde85651cdc7f805d1f6"
@@ -555,6 +560,11 @@ socket.io@^3.0.3:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha1-Fhx9rBd2Wf2YEfQ3cfqZOBR4Yow=
+
+tail@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/tail/-/tail-2.2.0.tgz#ef9a7f170c5a33bc0b3ca92a5d5fcd4748a77f46"
+  integrity sha512-QqUMtWlnzArTvGyjVnAE5fAiXEm2Psvk/BlE7vWx2/dIEWMsAhcNPz7iW6WTiSM8h1fjtCkRMsaWBS1j6rpGBg==
 
 toidentifier@1.0.0:
   version "1.0.0"
