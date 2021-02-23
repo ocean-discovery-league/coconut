@@ -1,43 +1,85 @@
 'use strict';
 
 const fs = require('fs');
+const fsP = require('fs').promises;
 const tail = require('tail');
 const byline = require('byline');
 
+const MEDIA_DIR = '/var/www/html/media';
+const RING_STATUS_FILENAME = '/home/pi/git/maka-niu/code/log/status.txt';
+
 
 class SensorInput {
-    init(filename, options) {
+    async init(filename, options) {
 	this.filename = filename;
+	this.notail = options && options.notail;
+
 	this.sensors = {};
 	this.count = 0;
-	this.notail = options && options.notail;
+	this.last_status = false;
+	fs.watch(RING_STATUS_FILENAME, { persistent: false, encoding: 'utf8'}, (t, f) => this.onStatusChange(t, f));
+	this.getStatus(true);
     }
 
 
     start() {
+	if (!this.filename) {
+	    if (this.last_status) {
+		let [, modenum, filename] = this.last_status.split(/([^ ]+) (.*)/);
+		if ([4, 5].includes(Number(modenum))) {
+		    this.filename = MEDIA_DIR + '/' + filename;
+		} else {
+		    throw new Error('ring not on mission 1 or mission 2');
+		}
+	    }
+	}
 	if (this.notail) {
 	    let stream = fs.createReadStream(this.filename, 'utf8');
 	    this.byline = byline.createStream(stream);
 	    this.byline.on('data', (data) => this.line(data));
 	    this.byline.on('error', (err) => console.error(`byline error on file ${this.filename}`, err));
 	} else {
-	    this.tail = new tail.Tail(this.filename, {fromBeginning: true, follow: false, flushAtEOF: true, logger: console});
+	    let options = {
+		fromBeginning: true,
+		//logger: console,
+	    };
+	    this.tail = new tail.Tail(this.filename, options);
 	    this.tail.on('line', (data) => this.line(data));
 	    this.tail.on('error', (err) => console.error(`tail error on file ${this.filename}`, err));
 	}
     }
 
 
+    async onStatusChange(eventType, filename) {
+	console.log('ring status file changed', eventType, filename);
+	let status = await this.getStatus();
+    }
+
+
+    async getStatus(sync) {
+	console.log('reading ring status...');
+	let status;
+	if (!sync) {
+	    status = await fsP.readFile(RING_STATUS_FILENAME, 'utf8');
+	} else {
+	    status = fs.readFileSync(RING_STATUS_FILENAME, 'utf8');
+	}
+	console.log('ring status:', status);
+	this.last_status = status;
+	return status;
+    }
+
+
     line(data) {
 	this.count++;
-	if (this.count % 1000 === 0) { console.log('.') };
+	//if (this.count % 1000 === 0) { console.log('.') };
 	let [, id, info] = data.split(/([^:]+):(.*)/);
 	let [monoclock, date, time, ...values] = info.split('\t');
 	if (!id || !monoclock || !date || !time) {
 	    console.error(`could not parse sensor data line: ${data}`);
 	    return;
 	}
-	//console.log(id, values);
+	console.log(id, values);
 	let reading = new Reading(monoclock, date, time, values);
 	this.monoclock = monoclock;
 	this.update(id, reading);
@@ -238,8 +280,9 @@ async function tests() {
     //sensorInput.init('../test/sampledata_bad.txt');
     //sensorInput.init('../test/sampledata_huge.txt', { notail: true });
     //sensorInput.init('../test/MKN0001_M1_2021_02_18_21_03_01.725.txt', { notail: true });
-    sensorInput.init('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt', { notail: true });
-    sensorInput.start();
+    //sensorInput.init('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt', { notail: true });
+    await sensorInput.init();
+    await sensorInput.start();
 }
 
 
