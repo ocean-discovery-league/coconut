@@ -10,6 +10,13 @@ async function promiseTimeout(msecs) {
     return new Promise((resolve) => { setTimeout(resolve, msecs) });
 }
 
+const shunt = () => {};
+let log = {
+    debug: shunt,
+    log: shunt,
+    warn: shunt,
+    error: console.error
+};
 
 
 class RaspiMJPEG {
@@ -22,39 +29,40 @@ class RaspiMJPEG {
 
 
     async onStatusChange(eventType, filename) {
-	console.log('raspimjpeg status file changed', eventType, filename);
+	log.log('raspimjpeg status file changed', eventType, filename);
 	let status = await this.getStatus();
+	log.log('raspimjpeg status:', status);
     }
 
 
     async getStatus(sync) {
-	console.log('reading raspimjpeg status...');
+	log.log('reading raspimjpeg status...');
 	let status;
 	if (!sync) {
 	    status = await fsP.readFile(STATUS_FILENAME, 'utf8');
 	} else {
 	    status = fs.readFileSync(STATUS_FILENAME, 'utf8');
 	}
-	console.log('raspimjpeg status:', status);
 	this.last_status = status;
 	return status;
     }
 
 
     async sendCommand(command) {
-	console.log('writing raspimjpeg command:', command);
+	log.log('writing raspimjpeg command:', command);
 	let fifo = await fsP.writeFile(FIFO_FILENAME, command, 'utf8');
-	console.log('raspimjpeg command written');
+	log.log('raspimjpeg command written');
     }
 }
 
 
 async function tests() {
+    log = console;
     let raspiMJPEG = new RaspiMJPEG();
     raspiMJPEG.start();
     await promiseTimeout(1000);
     await raspiMJPEG.sendCommand('im');
-    console.log(await raspiMJPEG.getStatus());
+    log.log(await raspiMJPEG.getStatus());
     await promiseTimeout(1000);
 }
 

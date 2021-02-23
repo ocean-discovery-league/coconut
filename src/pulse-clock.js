@@ -97,6 +97,22 @@ class PulseClock extends EventEmitter {
 	}
 	// TODO we should calculate how much time has passed and trigger the next pulse if it's overdue
     }
+
+
+    waitUntil(monoclock) {
+	console.log(monoclock);
+	return new Promise((resolve) => {
+	    let waitForIt = (cycle, elapsed_ms) => {
+		console.log(elapsed_ms);
+		if (elapsed_ms >= monoclock) {
+		    resolve();
+		} else {
+		    this.once('pulse', waitForIt);
+		}
+	    }
+	    this.once('pulse', waitForIt);
+	});
+    }
 }
 
 

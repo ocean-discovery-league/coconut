@@ -4,15 +4,25 @@ const fs = require('fs');
 const fsP = require('fs').promises;
 const tail = require('tail');
 const byline = require('byline');
+const PulseClock = require('./pulse-clock.js');
 
 const MEDIA_DIR = '/var/www/html/media';
 const RING_STATUS_FILENAME = '/home/pi/git/maka-niu/code/log/status.txt';
+
+const shunt = () => {};
+let log = {
+    debug: shunt,
+    log: shunt,
+    warn: shunt,
+    error: console.error
+};
 
 
 class SensorInput {
     async init(filename, options) {
 	this.filename = filename;
 	this.notail = options && options.notail;
+	this.clock = options && options.clock;
 
 	this.sensors = {};
 	this.count = 0;
@@ -22,22 +32,45 @@ class SensorInput {
     }
 
 
-    start() {
-	if (!this.filename) {
+    async start() {
+	if (this.filename) {
+	    this.notail = true;
+	    console.log('using pre-recorded sensor data');
+	    this.clock = new PulseClock(100);
+	    this.speed_factor = 1000;
+	    if (!this.filename.includes('/')) {
+		this.filename = MEDIA_DIR + '/' + this.filename;
+	    }
+	    let stream = fs.createReadStream(this.filename, 'utf8');
+	    let a_byline = byline.createStream(stream);
+	    let firstline = await new Promise((resolve) => {
+		a_byline.once('data', (data) => resolve(data));
+	    });
+	    stream.destroy();
+	    this.first_monoclock = this.getMonoclock(firstline);
+	    console.log('first monoclock in sensor data is', this.first_monoclock);
+	} else {
 	    if (this.last_status) {
 		let [, modenum, filename] = this.last_status.split(/([^ ]+) (.*)/);
 		if ([4, 5].includes(Number(modenum))) {
-		    this.filename = MEDIA_DIR + '/' + filename;
+		    this.filename = filename;
 		} else {
 		    throw new Error('ring not on mission 1 or mission 2');
 		}
 	    }
 	}
+	if (!this.filename.includes('/')) {
+	    this.filename = MEDIA_DIR + '/' + this.filename;
+	}
 	if (this.notail) {
 	    let stream = fs.createReadStream(this.filename, 'utf8');
 	    this.byline = byline.createStream(stream);
-	    this.byline.on('data', (data) => this.line(data));
-	    this.byline.on('error', (err) => console.error(`byline error on file ${this.filename}`, err));
+	    if (!this.clock) {
+		this.byline.on('data', (data) => this.line(data));
+	    } else {
+		this.byline.on('data', (data) => this.lineByClock(data));
+	    }
+	    this.byline.on('error', (err) => log.error(`byline error on file ${this.filename}`, err));
 	} else {
 	    let options = {
 		fromBeginning: true,
@@ -45,50 +78,69 @@ class SensorInput {
 	    };
 	    this.tail = new tail.Tail(this.filename, options);
 	    this.tail.on('line', (data) => this.line(data));
-	    this.tail.on('error', (err) => console.error(`tail error on file ${this.filename}`, err));
+	    this.tail.on('error', (err) => log.error(`tail error on file ${this.filename}`, err));
 	}
     }
 
 
     async onStatusChange(eventType, filename) {
-	console.log('ring status file changed', eventType, filename);
+	log.log('ring status file changed', eventType, filename);
 	let status = await this.getStatus();
     }
 
 
     async getStatus(sync) {
-	console.log('reading ring status...');
+	log.log('reading ring status...');
 	let status;
 	if (!sync) {
 	    status = await fsP.readFile(RING_STATUS_FILENAME, 'utf8');
 	} else {
 	    status = fs.readFileSync(RING_STATUS_FILENAME, 'utf8');
 	}
-	console.log('ring status:', status);
+	log.log('ring status:', status);
 	this.last_status = status;
 	return status;
     }
 
 
+    getMonoclock(data) {
+	let [, id, info] = data.split(/([^:]+):(.*)/);
+	let [monoclock, date, time, ...values] = info.split('\t');
+	if (!monoclock) {
+	    log.error(`could not parse sensor data line: ${data}`);
+	}
+	return monoclock;
+    }
+
+
+    async lineByClock(data) {
+	let monoclock = this.getMonoclock(data);
+	this.byline.pause();
+	await this.clock.waitUntil((monoclock - this.first_monoclock) / this.speed_factor);
+	this.byline.resume();
+	this.line(data);
+    }
+
+
     line(data) {
 	this.count++;
-	//if (this.count % 1000 === 0) { console.log('.') };
+	//if (this.count % 1000 === 0) { log.log('.') };
 	let [, id, info] = data.split(/([^:]+):(.*)/);
 	let [monoclock, date, time, ...values] = info.split('\t');
 	if (!id || !monoclock || !date || !time) {
-	    console.error(`could not parse sensor data line: ${data}`);
+	    log.error(`could not parse sensor data line: ${data}`);
 	    return;
 	}
-	console.log(id, values);
+	log.log(id, values);
 	let reading = new Reading(monoclock, date, time, values);
 	this.monoclock = monoclock;
 	this.update(id, reading);
 
 	// if (!this.lastupdate || (this.monoclock - this.lastupdate > (1e9 * 10))) {
 	//     this.lastupdate = this.monoclock;
-	//     console.log();
+	//     log.log();
 	//     // for (let id of Object.keys(this.sensors).sort()) {
-	//     // 	console.log(`${id}  ${this.sensors[id].reading.values}`);
+	//     // 	log.log(`${id}  ${this.sensors[id].reading.values}`);
 	//     // }
 	// }
 
@@ -98,9 +150,9 @@ class SensorInput {
 	    }
 	    let elapsed_secs = this.elapsed_secs(this.lastupdate);
 	    if (elapsed_secs > 1.5) {
-		console.log(elapsed_secs.toFixed(2), 'missed');
+		log.log(elapsed_secs.toFixed(2), 'missed');
 	    } else {
-		console.log(elapsed_secs.toFixed(2));
+		log.log(elapsed_secs.toFixed(2));
 	    }
 	    this.lastupdate = this.monoclock;
 	}
@@ -166,11 +218,11 @@ class SensorKELL extends Sensor {
 
     update(reading) {
 	if (!reading.values || reading.values.length !== 3) {
-	    console.error('KELL readings error, wrong number of numbers');
+	    log.error('KELL readings error, wrong number of numbers');
 	    return;
 	}
 	super.update(reading);
-	//console.log('update KELL');
+	//log.log('update KELL');
     }
 }
 	
@@ -185,11 +237,11 @@ class SensorGNSS extends Sensor {
 
     update(reading) {
 	if (!reading.values || reading.values.length !== 2) {
-	    console.error('GNSS readings error, wrong number of numbers');
+	    log.error('GNSS readings error, wrong number of numbers');
 	    return;
 	}
 	super.update(reading);
-	//console.log('update GNSS');
+	//log.log('update GNSS');
     }
 
 
@@ -240,11 +292,11 @@ class SensorBATT extends Sensor {
 
     update(reading) {
 	if (!reading.values || reading.values.length !== 1) {
-	    console.error('BATT readings error, wrong number of numbers');
+	    log.error('BATT readings error, wrong number of numbers');
 	    return;
 	}
 	super.update(reading);
-	//console.log('update BATT');
+	//log.log('update BATT');
     }
 }
 
@@ -257,11 +309,11 @@ class SensorIMUN extends Sensor {
 
     update(reading) {
 	if (!reading.values || reading.values.length !== 10) {
-	    console.error('IMUN readings error, wrong number of numbers');
+	    log.error('IMUN readings error, wrong number of numbers');
 	    return;
 	}
 	super.update(reading);
-	//console.log('update IMUN');
+	//log.log('update IMUN');
     }
 }
 	
@@ -275,6 +327,7 @@ let sensorSubClasses = {
 
 
 async function tests() {
+    let log = console;
     let sensorInput = new SensorInput();
     //sensorInput.init('../test/sampledata_fake.txt');
     //sensorInput.init('../test/sampledata_bad.txt');
@@ -282,6 +335,7 @@ async function tests() {
     //sensorInput.init('../test/MKN0001_M1_2021_02_18_21_03_01.725.txt', { notail: true });
     //sensorInput.init('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt', { notail: true });
     await sensorInput.init();
+    //sensorInput.init('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt');
     await sensorInput.start();
 }
 
