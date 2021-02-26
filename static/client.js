@@ -171,6 +171,9 @@ async function init() {
     let form = document.getElementById('connect');
     form.addEventListener('submit', connect);
 
+    let mediamanager = document.getElementById('mediamanager');
+    mediamanager.src = window.location.protocol + '//' + window.location.hostname + '/html/preview.php';
+
     parseHash();
     if (hashParams.page) {
 	let n = Number(hashParams.page);
