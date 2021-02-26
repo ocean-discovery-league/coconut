@@ -109,6 +109,7 @@ class MissionEngine {
 	    this.state = new_state;
 	    switch (new_state) {
 	    case 'RECORD_VIDEO':
+		await this.raspiMJPEG.sendCommand('ru 1');
 		await this.raspiMJPEG.sendCommand('ca 1');
 		break;
 
