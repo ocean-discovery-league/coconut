@@ -11,6 +11,8 @@ $ sudo chown pi:pi coconut
 $ git clone https://github.com/mitmedialab/coconut.git
 # you will need to type your github username & password,
 # or enable one-time-codes (recommended) and use that as the pw
+# New better option! Use your laptop's ssh key with agent forwarding:
+# https://docs.github.com/en/developers/overview/using-ssh-agent-forwarding
 ```
 
 Or if that's too troublesome, download the repo as a zip file and unpack it into `/user/local`, but make sure everything is still owned by the `pi` user in the end (`sudo chown -R pi:pi /usr/local/coconut`).
@@ -20,7 +22,7 @@ Install the local copy of `node`:
 ```
 $ ln -s /usr/local/coconut ~  # just a convenience
 $ cd /usr/local/coconut
-$ source ./install-node.README   # must be on the internet for this step and the next one
+$ ./install-node.sh   # must be on the internet for this step and the next one
 $ yarn install
 #$ yarn build  # not needed yet, but someday
 ```
