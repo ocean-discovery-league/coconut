@@ -61,7 +61,8 @@ async function tests() {
     let raspiMJPEG = new RaspiMJPEG();
     raspiMJPEG.start();
     await promiseTimeout(1000);
-    await raspiMJPEG.sendCommand('im');
+    //await raspiMJPEG.sendCommand('im');
+    await raspiMJPEG.sendCommand('ru 1');
     log.log(await raspiMJPEG.getStatus());
     await promiseTimeout(1000);
 }
