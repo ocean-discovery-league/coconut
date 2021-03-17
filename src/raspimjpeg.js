@@ -6,7 +6,7 @@ const { EventEmitter } = require('events');
 
 const FIFO_FILENAME = '/var/www/html/FIFO';
 const STATUS_FILENAME = '/var/www/html/status_mjpeg.txt';
-const DEFAULT_STATUS_CHANGE_WAIT_TIMEOUT = 6000;  // 6sec
+const DEFAULT_STATUS_CHANGE_WAIT_TIMEOUT = 1000;  // 1sec
 const COMMAND_MINIMUM_SETTLING_TIME = 200;  // 200ms
 
 async function timeoutP(msecs) {
