@@ -14,6 +14,7 @@ class PulseClock extends EventEmitter {
     constructor(interval) {
 	super();
 	this.interval = interval;
+	this.setMaxListeners(50);
     }
 
 
@@ -100,17 +101,24 @@ class PulseClock extends EventEmitter {
 
 
     waitUntil(monoclock) {
-	console.log(monoclock);
+	console.log('`', monoclock);
 	return new Promise((resolve) => {
-	    let waitForIt = (cycle, elapsed_ms) => {
-		console.log(elapsed_ms);
-		if (elapsed_ms >= monoclock) {
-		    resolve();
-		} else {
-		    this.once('pulse', waitForIt);
+	    if (elapsed_ms >= monoclock) {
+		console.log('late, late, late');
+		nextTick(resolve);
+	    } else {
+		let waitForIt = (cycle, elapsed_ms) => {
+		    console.log(elapsed_ms);
+		    if (elapsed_ms >= monoclock) {
+			console.log('caught up!');
+			resolve();
+		    } else {
+			console.log('checks wristwatch');
+			this.once('pulse', waitForIt);
+		    }
 		}
+		this.once('pulse', waitForIt);
 	    }
-	    this.once('pulse', waitForIt);
 	});
     }
 }

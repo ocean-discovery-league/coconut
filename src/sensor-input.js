@@ -41,12 +41,7 @@ class SensorInput {
 	    if (!this.filename.includes('/')) {
 		this.filename = MEDIA_DIR + '/' + this.filename;
 	    }
-	    let stream = fs.createReadStream(this.filename, 'utf8');
-	    let a_byline = byline.createStream(stream);
-	    let firstline = await new Promise((resolve) => {
-		a_byline.once('data', (data) => resolve(data));
-	    });
-	    stream.destroy();
+	    let firstline = await this.readFirstLine();
 	    this.first_monoclock = this.getMonoclock(firstline);
 	    console.log('first monoclock in sensor data is', this.first_monoclock);
 	} else {
@@ -68,7 +63,7 @@ class SensorInput {
 	    if (!this.clock) {
 		this.byline.on('data', (data) => this.line(data));
 	    } else {
-		this.byline.on('data', (data) => this.lineByClock(data));
+		this.byline.on('data', (data) => { console.log('>'); this.lineByClock(data); console.log('<')});
 	    }
 	    this.byline.on('error', (err) => log.error(`byline error on file ${this.filename}`, err));
 	} else {
@@ -114,10 +109,15 @@ class SensorInput {
 
 
     async lineByClock(data) {
+	console.log('.');
 	let monoclock = this.getMonoclock(data);
-	this.byline.pause();
-	await this.clock.waitUntil((monoclock - this.first_monoclock) / this.speed_factor);
-	this.byline.resume();
+	//this.byline.pause();
+	console.log('monoclock', monoclock);
+	let until = (monoclock - this.first_monoclock) / this.speed_factor;
+	console.log('waiting until', until);
+	await this.clock.waitUntil(until);
+	console.log('the time has come!');
+	//this.byline.resume();
 	this.line(data);
     }
 
@@ -160,6 +160,17 @@ class SensorInput {
     }
 
 
+    async readFirstLine(filename=this.filename) {
+	let stream = fs.createReadStream(this.filename, 'utf8');
+	let a_byline = byline.createStream(stream);
+	let firstline = await new Promise((resolve) => {
+	    a_byline.once('data', (data) => resolve(data));
+	});
+	stream.destroy();
+	return firstline;
+    }
+
+    
     update(id, reading) {
 	let sensor = this.sensors[id];
 	if (!sensor) {
@@ -334,8 +345,8 @@ async function tests() {
     //sensorInput.init('../test/sampledata_huge.txt', { notail: true });
     //sensorInput.init('../test/MKN0001_M1_2021_02_18_21_03_01.725.txt', { notail: true });
     //sensorInput.init('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt', { notail: true });
-    await sensorInput.init();
-    //sensorInput.init('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt');
+    //await sensorInput.init();
+    sensorInput.init('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt');
     await sensorInput.start();
 }
 
