@@ -68,9 +68,9 @@ class SensorLog {
 
     async readFirstLine(filename) {
 	let readstream = fs.createReadStream(filename, 'utf8');
-	let a_byline = byline.createStream(readstream);
+	let readbyline = byline.createStream(readstream);
 	let firstline = await new Promise((resolve) => {
-	    a_byline.once('data', (line) => resolve(line));
+	    readbyline.once('data', (line) => resolve(line));
 	});
 	readstream.destroy();
 	return firstline;
@@ -82,7 +82,6 @@ async function tests() {
     log = console;
     log.stringify = safe_stringify;
     const fs = require('fs');
-    const byline = require('byline');
 
     let sensorLog = new SensorLog();
 
@@ -96,7 +95,7 @@ async function tests() {
     readbyline.on('data', (line) => {
 	try {
 	    lines++;
-	    let [id, reading] = sensorLog.parse(line);
+	    let [id, reading] = sensorLog.parseLine(line);
 	} catch(err) {
 	    errors++;
 	    log.error(err);

@@ -7,10 +7,6 @@ const byline = require('byline');
 const byclock = require('./byclock');
 const sensors = require('./sensors');
 const sensorLog = require('./sensor-log');
-const PulseClock = require('./pulse-clock.js');
-
-const MEDIA_DIR = '/var/www/html/media';
-const RING_STATUS_FILENAME = '/home/pi/git/maka-niu/code/log/status.txt';
 
 const shunt = () => {};
 let log = {
@@ -22,71 +18,42 @@ let log = {
 
 
 class SensorInput {
-    async init(options) {
-	this.notail = options && options.notail;
-	this.clock = options && options.clock;
-
+    async init() {
 	this.sensors = {};
 	this.sensorLog = new sensorLog();
 	this.count = 0;
-	this.last_status = false;
-	//fs.watch(RING_STATUS_FILENAME, { persistent: false, encoding: 'utf8'}, (t, f) => this.onStatusChange(t, f));
-	//this.getStatus(true);
     }
 
 
-    async start(filename, speedFactor) {
-	if (filename) {
+    async start(filename, simulated, speedFactor) {
+	if (!filename) {
+	    throw new Error('filename required');
+	}
+
+	if (!simulated) {
+	    let options = {
+		fromBeginning: true,
+		//logger: console,
+	    };
+	    this.readstream = new tail.Tail(filename, options);
+	    this.readstream.on('line', (line) => this.processLine(line));
+	    this.readstream.on('error', (err) => log.error(`tail error on file ${filename}`, err));
+	} else {
 	    this.notail = true;
-	    log.log('using pre-recorded sensor data from', filename);
+	    log.log('simulating using pre-recorded sensor data from', filename);
 	    let first_monoclock = await this.sensorLog.extractFirstMonoclock(filename);
 	    log.log('first monoclock in sensor data is', first_monoclock);
+	    if (speedFactor && speedFactor !== 1.0) {
+		log.log('speed factor is', speedFactor);
+	    }
 	    let filestream = fs.createReadStream(filename, 'utf8');
 	    let lineStream = byline.createStream(filestream);
 	    let clockStream = new byclock.ClockStream(first_monoclock, speedFactor);
 
-	    let readstream = lineStream.pipe(clockStream);
-	    readstream.on('data', (line) => this.processLine(line));
-	    readstream.on('error', (err) => log.error(`stream error on file ${filename}`, err));
-	} else {
-	    if (this.last_status) {
-		let [, modenum, filename] = this.last_status.split(/([^ ]+) (.*)/);
-		if ([4, 5].includes(Number(modenum))) {
-		    if (!filename.includes('/')) {
-			filename = MEDIA_DIR + '/' + filename;
-		    }
-		} else {
-		    throw new Error('ring not on mission 1 or mission 2');
-		}
-		let options = {
-		    fromBeginning: true,
-		    //logger: console,
-		};
-		let readstream = new tail.Tail(filename, options);
-		readstream.on('line', (line) => this.processLine(line));
-		readstream.on('error', (err) => log.error(`tail error on file ${filename}`, err));
-	    }
+	    this.readstream = lineStream.pipe(clockStream);
+	    this.readstream.on('data', (line) => this.processLine(line));
+	    this.readstream.on('error', (err) => log.error(`stream error on file ${filename}`, err));
 	}
-    }
-
-
-    async onStatusChange(eventType, filename) {
-	log.log('ring status file changed', eventType, filename);
-	let status = await this.getStatus();
-    }
-
-
-    async getStatus(sync) {
-	log.log('reading ring status...');
-	let status;
-	if (!sync) {
-	    status = await fsP.readFile(RING_STATUS_FILENAME, 'utf8');
-	} else {
-	    status = fs.readFileSync(RING_STATUS_FILENAME, 'utf8');
-	}
-	log.log('ring status:', status);
-	this.last_status = status;
-	return status;
     }
 
 
@@ -141,14 +108,12 @@ class SensorInput {
 async function tests() {
     log = console;
     let sensorInput = new SensorInput();
-    sensorInput.init();
-    //sensorInput.start('../test/sampledata_fake.txt');
-    //sensorInput.start('../test/sampledata_bad.txt');
-    //sensorInput.start('../test/sampledata_huge.txt', { notail: true });
-    //sensorInput.start('../test/MKN0001_M1_2021_02_18_21_03_01.725.txt', { notail: true });
-    //sensorInput.start('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt', { notail: true });
-    //await sensorInput.init();
-    await sensorInput.start('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt', 1);
+    await sensorInput.init();
+
+    //await sensorInput.start('../test/sampledata_fake.txt', true);
+    //await sensorInput.start('../test/sampledata_bad.txt', true);
+    //await sensorInput.start('../test/MKN0001_M1_2021_02_18_21_03_01.725.txt', true, 100.0);
+    await sensorInput.start('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt', true, 100.0);
 }
 
 
