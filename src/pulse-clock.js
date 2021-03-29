@@ -103,12 +103,13 @@ class PulseClock extends EventEmitter {
     waitUntil(monoclock) {
 	console.log('`', monoclock);
 	return new Promise((resolve) => {
+	    let elapsed_ms = in_ms(process.hrtime(this.start_hrtime));
 	    if (elapsed_ms >= monoclock) {
 		console.log('late, late, late');
 		nextTick(resolve);
 	    } else {
 		let waitForIt = (cycle, elapsed_ms) => {
-		    console.log(elapsed_ms);
+		    console.log('w', elapsed_ms);
 		    if (elapsed_ms >= monoclock) {
 			console.log('caught up!');
 			resolve();
