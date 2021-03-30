@@ -9,6 +9,11 @@ let log = {
 };
 
 
+function elapsed_secs(start, end) {
+    return (end - start) / 1e9;
+}
+
+
 class Reading {
     constructor(monoclock, date, time, values) {
 	this.monoclock = monoclock;
@@ -56,6 +61,15 @@ class SensorKELL extends Sensor {
 	super.update(reading);
 	//log.log('update KELL');
     }
+
+
+    getDepthInMeters() {
+	if (this.reading && this.reading.values) {
+	    return this.reading.values[1];
+	} else {
+	    return undefined;
+	}
+    }
 }
 	
 
@@ -77,7 +91,7 @@ class SensorGNSS extends Sensor {
     }
 
 
-    islocked(currentclock) {
+    getIsLocked(currentclock) {
 	// Check the history and decide if we think we have a lock or
 	// not. When there is no successful GPS read the GNSS line is
 	// skipped in the sensor log file.
@@ -90,7 +104,7 @@ class SensorGNSS extends Sensor {
 	// count how many GPS reads have succeeded in the last 30 seconds
 	let reads = 0;
 	for (let reading of this.history) {
-	    if (this.elapsed_secs(currentclock, reading.monoclock) > 30) {
+	    if (elapsed_secs(currentclock, reading.monoclock) > 30) {
 		break;
 	    }
 	    reads++;

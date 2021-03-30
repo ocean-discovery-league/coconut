@@ -19,13 +19,13 @@ let log = {
 class RingInput extends EventEmitter {
     async init() {
 	fs.watch(RING_STATUS_FILENAME, { persistent: false, encoding: 'utf8'}, (t, f) => this.onStatusChange(t, f));
-	this.last_status = await this.getStatus(true);
+	this.last_status = await this.readStatus(true);
     }
 
 
     async onStatusChange(eventType, filename) {
 	log.debug('ring status file change event', eventType, filename);
-	let status = await this.getStatus();
+	let status = await this.readStatus();
 	if (status !== this.last_status) {
 	    this.last_status = status;
 	    this.emit('change', this);
@@ -33,7 +33,7 @@ class RingInput extends EventEmitter {
     }
 
 
-    async getStatus() {
+    async readStatus() {
 	log.debug('reading ring status...');
 	let status;
 	status = await fsP.readFile(RING_STATUS_FILENAME, 'utf8');
@@ -94,7 +94,7 @@ async function tests() {
 	report(ring, 'ring changed');
     });
     log.log('to test: spin that ring! you have 20 seconds');
-    setTimeout(() => console.log('exiting'), 20 * 1000);
+    setTimeout(() => log.log('exiting'), 20 * 1000);
 }
 
 

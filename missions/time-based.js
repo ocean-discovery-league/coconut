@@ -1,13 +1,13 @@
 'use strict';
 
 ///
-/// mission1.js
+/// time-based.js
 ///
 
 const MINUTE_MS = 1000 * 60;
 
 
-function mission1(inPhase, cycle_num, elapsed, action_elapsed, sensors) {
+function time_based(inPhase, cycle_num, elapsed, action_elapsed, sensors) {
     let new_state;
     let new_phase;
     let options = {};
@@ -16,7 +16,7 @@ function mission1(inPhase, cycle_num, elapsed, action_elapsed, sensors) {
     /// Phase 1
     ///
     if (inPhase === 1) {
-	if (sensors.KELL && (sensors.KELL.getDepthInMeters() < 2.0)) {
+	if (elapsed < (MINUTE_MS * 5)) {
 	    new_state = 'WAIT';
 	} else {
 	    new_phase = inPhase + 1;
@@ -36,7 +36,7 @@ function mission1(inPhase, cycle_num, elapsed, action_elapsed, sensors) {
 	    new_state = 'ACTION_CLOCK_RESET';
 	}
 
-	if (sensors.KELL && (sensors.KELL.getDepthInMeters() < 2.0)) {
+	if (elapsed > (MINUTE_MS * 50)) {
 	    new_phase = -1;
 	}
     }
@@ -45,4 +45,4 @@ function mission1(inPhase, cycle_num, elapsed, action_elapsed, sensors) {
 }
 
 
-module.exports = mission1;
+module.exports = time_based;

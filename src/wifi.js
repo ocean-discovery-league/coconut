@@ -7,6 +7,9 @@ const {Wireless, Monitor} = require('wirelesser');
 const INTERFACE = process.argv[2] || 'wlan1';  // node index.js <INTERFACE>
 const USE_NM = (os.arch() === 'x64');  // assuming x86 = Ubuntu, otherwise Rasbian
 
+let log = console;
+
+
 class WiFi {
     constructor() {
     }
@@ -18,10 +21,10 @@ class WiFi {
         this.wireless = new Wireless(INTERFACE);
         //this.monitor = new Monitor(INTERFACE);
         //this.monitor.on('data', data => {
-        //    console.log('data', data);
+        //    log.log('data', data);
         //});
         //this.monitor.on('control', (control, args) => {
-        //    console.log('control', control, args);
+        //    log.log('control', control, args);
         //});
 
         // this.app.use(bodyParser.json());
@@ -49,7 +52,7 @@ class WiFi {
                 let data = await this.wireless.status()
                 json = JSON.stringify(data);
             } catch(err) {
-                console.error(err);
+                log.error(err);
             }
             res.setHeader('Content-Type', 'application/json');
             res.end(json);
@@ -61,7 +64,7 @@ class WiFi {
                 let data = await this.wireless.scan()
                 json = JSON.stringify(data);
             } catch(err) {
-                console.error(err);
+                log.error(err);
             }
             res.setHeader('Content-Type', 'application/json');
             res.end(json);
@@ -73,7 +76,7 @@ class WiFi {
                 let data = await this.wireless.exec('signal_poll');
                 json = JSON.stringify(data);
             } catch(err) {
-                console.error(err);
+                log.error(err);
             }
             res.setHeader('Content-Type', 'application/json');
             res.end(json);
@@ -82,12 +85,12 @@ class WiFi {
         router.post('/connect', async (req, res) => {
             let json = '{}';
             try {
-                console.log('connect', req.body);
+                log.log('connect', req.body);
                 let data = await this.connectToWiFi(req.body.ssid, req.body.password);
                 json = JSON.stringify(data);
-                console.log('result', data);
+                log.log('result', data);
             } catch(err) {
-                console.error(err);
+                log.error(err);
             }
             res.setHeader('Content-Type', 'application/json');
             res.end(json);
@@ -98,7 +101,7 @@ class WiFi {
     async connectToWiFi(ssid, password) {
 	if (USE_NM) {
 	    let result = await nmcli.connect(ssid, password);
-	    console.log('result', result);
+	    log.log('result', result);
 	} else {
 	    this.wireless.connect(ssid, password);  // TODO this isn't right
 	}

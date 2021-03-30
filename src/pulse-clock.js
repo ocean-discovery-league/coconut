@@ -9,6 +9,8 @@ function in_ms(hrtime) {
     return Math.floor((s * NS_PER_SEC + ns) / NS_PER_MS);
 }
 
+let log = console;
+
 
 class PulseClock extends EventEmitter {
     constructor(interval) {
@@ -26,7 +28,7 @@ class PulseClock extends EventEmitter {
 	this.heartbeat_cycle = Math.floor(1000 * 30 / this.interval) || 1;  // approx every 30 seconds
 	this.running = true;
 
-	console.log('pulse clock started');
+	log.log('pulse clock started');
 	this.emit('start');
 	this._pulse(true);
     }
@@ -43,19 +45,15 @@ class PulseClock extends EventEmitter {
 	    elapsed_ms = in_ms(process.hrtime(this.start_hrtime));
 	}
 
-	let calltime = process.hrtime();
 	this.emit('pulse', this.pulse_cycle, elapsed_ms);
-	let eventtime_ms = in_ms(process.hrtime(calltime));  // FIXME this appears misguided (events seem to be dispatched async)
 
 	if (this.running) {
-	    this.next_pulse =
-		setTimeout(() => this._pulse(), this.interval);
+	    this.next_pulse = setTimeout(() => this._pulse(), this.interval);
 	    // TODO we should calculate how many ms to the next pulse boundry and not just use the full interval
 	}
 	
 	if (this.pulse_cycle % this.heartbeat_cycle === 0 && this.pulse_cycle > 0) {
-	    //console.log(`heartbeat (${this.pulse_cycle} pulse event proccessing time ${eventtime_ms})`);
-	    console.log(`heartbeat (cycle ${this.pulse_cycle})`);
+	    log.log(`heartbeat (cycle ${this.pulse_cycle})`);
 	}
     }
 
@@ -63,10 +61,10 @@ class PulseClock extends EventEmitter {
     _stop_pulsing() {
 	this.running = false;
 	if (this.next_pulse) {
-	    cancelTimeout(this.next_pulse);
+	    clearTimeout(this.next_pulse);
 	    this.next_pulse = undefined;
+	    log.log('pulse clock stopped');
 	}
-	console.log('pulse clock stopped');
     }
 
 
@@ -75,6 +73,7 @@ class PulseClock extends EventEmitter {
 	if (this.ended) throw new Error('already ended');
 	this.emit('stop');
 	this.emit('end');
+	this.ended = true;
     }
 
 
@@ -91,7 +90,7 @@ class PulseClock extends EventEmitter {
 	if (this.ended) throw new Error('already ended');
 	if (!this.running) {
 	    this.running = true;
-	    console.log('pulse clock running again');
+	    log.log('pulse clock running again');
 	    this.emit('continue');
 	    this.next_pulse =
 		setTimeout(() => this._pulse(), this.interval);
@@ -101,20 +100,20 @@ class PulseClock extends EventEmitter {
 
 
     waitUntil(monoclock) {
-	console.log('`', monoclock);
+	log.log('`', monoclock);
 	return new Promise((resolve) => {
 	    let elapsed_ms = in_ms(process.hrtime(this.start_hrtime));
 	    if (elapsed_ms >= monoclock) {
-		console.log('late, late, late');
+		log.log('late, late, late');
 		nextTick(resolve);
 	    } else {
 		let waitForIt = (cycle, elapsed_ms) => {
-		    console.log('w', elapsed_ms);
+		    log.log('w', elapsed_ms);
 		    if (elapsed_ms >= monoclock) {
-			console.log('caught up!');
+			log.log('caught up!');
 			resolve();
 		    } else {
-			console.log('checks wristwatch');
+			log.log('checks wristwatch');
 			this.once('pulse', waitForIt);
 		    }
 		}
@@ -126,15 +125,16 @@ class PulseClock extends EventEmitter {
 
 
 function tests() {
+    log = console;
     let pulseClock = new PulseClock(100);
     let cycles = 30;
     pulseClock.on('pulse', () => {
 	cycles--;
 	if (cycles % 10 === 0) {
-	    console.log('ten!');
+	    log.log('ten!');
 	}
 	if (cycles === 13) {
-	    console.log('let us pause for a bit...');
+	    log.log('let us pause for a bit...');
 	    pulseClock.pause();
 	    setTimeout(() => pulseClock.continue(), 3000);
 	}

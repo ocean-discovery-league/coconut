@@ -46,13 +46,35 @@ class SensorInput {
 	    if (speedFactor && speedFactor !== 1.0) {
 		log.log('speed factor is', speedFactor);
 	    }
-	    let filestream = fs.createReadStream(filename, 'utf8');
-	    let lineStream = byline.createStream(filestream);
-	    let clockStream = new byclock.ClockStream(first_monoclock, speedFactor);
+	    this.filestream = fs.createReadStream(filename, 'utf8');
+	    this.lineStream = byline.createStream(this.filestream);
+	    this.clockStream = new byclock.ClockStream(first_monoclock, speedFactor);
 
-	    this.readstream = lineStream.pipe(clockStream);
+	    this.readstream = this.lineStream.pipe(this.clockStream);
 	    this.readstream.on('data', (line) => this.processLine(line));
 	    this.readstream.on('error', (err) => log.error(`stream error on file ${filename}`, err));
+	}
+    }
+
+
+    stop() {
+	if (this.readstream) {
+	    try {
+		this.readstream.destroy();
+	    } catch {}
+	    delete this.readstream;
+	}
+	if (this.clockStream) {
+	    try {
+		this.clockStream.destroy();
+	    } catch {}
+	    delete this.clockStream;
+	}
+	if (this.lineStream) {
+	    try {
+		this.lineStream.destroy();
+	    } catch {}
+	    delete this.lineStream;
 	}
     }
 
@@ -99,7 +121,6 @@ class SensorInput {
 
 
     elapsed_secs(start, end=this.monoclock) {
-	end = end || this.monoclock;
 	return (end - start) / 1e9;
     }
 }

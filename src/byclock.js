@@ -53,7 +53,7 @@ async function tests() {
     let clockStream = new ClockStream(first_monoclock, 10.0);
 
     let readstream = lineStream.pipe(clockStream);
-    readstream.on('data', (line) => console.log(line.toString()));
+    readstream.on('data', (line) => log.log(line.toString()));
     readstream.on('error', (err) => log.error(`stream error on file ${filename}`, err));
 }
 
