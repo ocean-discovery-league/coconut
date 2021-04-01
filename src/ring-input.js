@@ -14,6 +14,7 @@ let log = {
     warn: shunt,
     error: console.error
 };
+log = console;  // FIXME
 
 
 class RingInput extends EventEmitter {
@@ -37,7 +38,7 @@ class RingInput extends EventEmitter {
 	log.debug('reading ring status...');
 	let status;
 	status = await fsP.readFile(RING_STATUS_FILENAME, 'utf8');
-	log.debug('ring status:', status);
+	log.debug('ring position:', status);
 	return status;
     }
 

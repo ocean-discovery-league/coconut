@@ -8,48 +8,41 @@ const TIME_LAPSE_CYCLE = 50;  // in 1/10s,  50 = 5 secs
 const SECOND_MS = 1000;
 
 
-function mission2(inPhase, cycle_num, elapsed, action_elapsed, sensors) {
-    let new_state;
+function mission2(current_phase, cycle_num, elapsed, action_elapsed, monoclock, sensors) {
+    let new_action;
     let new_phase;
     let options = {};
     
     ///
-    /// Phase 1 - warm up the GPS history
+    /// Phase 1 - wait until the GPS loses lock (goes underwater)
     ///
-    if (inPhase === 1) {
-	if (elapsed < (SECOND_MS * 30)) {
-	    new_state = 'WAIT';
+    if (current_phase === 1) {
+	let gps_state;
+	if (sensors.GNSS) {
+	    gps_state = sensors.GNSS.getIsLocked(monoclock);
+	}
+	if (gps_state === true || gps_state === undefined) {
+	    new_action = 'WAIT';
 	} else {
-	    new_phase = inPhase + 1;
+	    new_phase = current_phase + 1;
 	}
     }
 
     ///
-    /// Phase 2 - wait until the GLS loses lock (goes underwater)
+    /// Phase 2 - underwater, do time lapse photos
     ///
-    if (inPhase === 2) {
-	if (sensors.GNSS && sensors.GNSS.getIsLocked()) {
-	    new_state = 'WAIT';
-	} else {
-	    new_phase = inPhase + 1;
-	}
-    }
-
-    ///
-    /// Phase 3 - underwater, do time lapse photos
-    ///
-    if (inPhase === 3) {
-	new_state = 'TIMELAPSE';
+    if (current_phase === 2) {
+	new_action = 'TIME_LAPSE';
 	options = {
 	    cycle: TIME_LAPSE_CYCLE
 	};
 
-	if (sensors.GNSS && sensors.GNSS.getIsLocked()) {
+	if (sensors.GNSS && sensors.GNSS.getIsLocked(monoclock)) {
 	    new_phase = -1;
 	}
     }
 
-    return [new_state, new_phase, options];
+    return [new_action, new_phase, options];
 }
 
 

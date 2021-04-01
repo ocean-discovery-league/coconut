@@ -79,8 +79,14 @@ class SensorLog {
 
 
 async function tests() {
-    log = console;
-    log.stringify = safe_stringify;
+    log = {
+	debug: console.debug,
+	log: console.log,
+	warn: console.log,
+	error: console.error,
+	stringify: safe_stringify,
+    };
+
     const fs = require('fs');
 
     let sensorLog = new SensorLog();

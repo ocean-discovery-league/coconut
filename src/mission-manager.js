@@ -102,7 +102,7 @@ async function tests() {
 	//let program = missions[name];
 	let missionManager = new MissionManager();
 	await missionManager.init();
-	await missionManager.start(name, filename, 10.0);
+	await missionManager.start(name, filename, 30.0);
     } else {
 	log.error(`unknown mission name ${name}`);
 	log.error(`available missions: ${Object.keys(preprogrammedMissions).sort().join(' ')}`);

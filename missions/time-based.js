@@ -7,33 +7,33 @@
 const MINUTE_MS = 1000 * 60;
 
 
-function time_based(inPhase, cycle_num, elapsed, action_elapsed, sensors) {
-    let new_state;
+function time_based(current_phase, cycle_num, elapsed, action_elapsed, monoclock, sensors) {
+    let new_action;
     let new_phase;
     let options = {};
     
     ///
     /// Phase 1
     ///
-    if (inPhase === 1) {
+    if (current_phase === 1) {
 	if (elapsed < (MINUTE_MS * 5)) {
-	    new_state = 'WAIT';
+	    new_action = 'WAIT';
 	} else {
-	    new_phase = inPhase + 1;
+	    new_phase = current_phase + 1;
 	}
     }
 
     ///
     /// Phase 2
     ///
-    if (inPhase === 2) {
+    if (current_phase === 2) {
 
 	if (action_elapsed < (MINUTE_MS * 5)) {
-	    new_state = 'RECORD_VIDEO';
+	    new_action = 'RECORD_VIDEO';
 	} else if (action_elapsed < (MINUTE_MS * 20)) {
-	    new_state = 'PAUSE_VIDEO';
+	    new_action = 'PAUSE_VIDEO';
 	} else {
-	    new_state = 'ACTION_CLOCK_RESET';
+	    new_action = 'ACTION_CLOCK_RESET';
 	}
 
 	if (elapsed > (MINUTE_MS * 50)) {
@@ -41,7 +41,7 @@ function time_based(inPhase, cycle_num, elapsed, action_elapsed, sensors) {
 	}
     }
 
-    return [new_state, new_phase, options];
+    return [new_action, new_phase, options];
 }
 
 

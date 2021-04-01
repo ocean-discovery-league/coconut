@@ -4,9 +4,8 @@ const { EventEmitter } = require('events');
 
 const NS_PER_SEC = 1e9;
 const NS_PER_MS = 1000000;
-function in_ms(hrtime) {
-    let [s, ns] = hrtime;
-    return Math.floor((s * NS_PER_SEC + ns) / NS_PER_MS);
+function in_ms(ns) {
+    return Number(ns / BigInt(NS_PER_MS));
 }
 
 let log = console;
@@ -21,9 +20,8 @@ class PulseClock extends EventEmitter {
 
 
     start() {
-	if (this.start_hrtime) throw new Error('already started');
-	this.start_hrtime = process.hrtime();
-	this.last_pulse = this.start_hrtime;
+	if (this.start_monoclock) throw new Error('already started');
+	this.start_monoclock = process.hrtime.bigint();
 	this.pulse_cycle = 0;
 	this.heartbeat_cycle = Math.floor(1000 * 30 / this.interval) || 1;  // approx every 30 seconds
 	this.running = true;
@@ -36,16 +34,19 @@ class PulseClock extends EventEmitter {
 
     _pulse(first) {
 	let elapsed_ms;
+	let monoclock;
 	this.next_pulse = undefined;
 	if (first) {
 	    this.pulse_cycle = 0;
+	    monoclock = BigInt(0);
 	    elapsed_ms = 0;
 	} else {
 	    this.pulse_cycle++;
-	    elapsed_ms = in_ms(process.hrtime(this.start_hrtime));
+	    monoclock = process.hrtime.bigint();
+	    elapsed_ms = in_ms(monoclock - this.start_monoclock);
 	}
 
-	this.emit('pulse', this.pulse_cycle, elapsed_ms);
+	this.emit('pulse', this.pulse_cycle, elapsed_ms, monoclock);
 
 	if (this.running) {
 	    this.next_pulse = setTimeout(() => this._pulse(), this.interval);
@@ -96,30 +97,6 @@ class PulseClock extends EventEmitter {
 		setTimeout(() => this._pulse(), this.interval);
 	}
 	// TODO we should calculate how much time has passed and trigger the next pulse if it's overdue
-    }
-
-
-    waitUntil(monoclock) {
-	log.log('`', monoclock);
-	return new Promise((resolve) => {
-	    let elapsed_ms = in_ms(process.hrtime(this.start_hrtime));
-	    if (elapsed_ms >= monoclock) {
-		log.log('late, late, late');
-		nextTick(resolve);
-	    } else {
-		let waitForIt = (cycle, elapsed_ms) => {
-		    log.log('w', elapsed_ms);
-		    if (elapsed_ms >= monoclock) {
-			log.log('caught up!');
-			resolve();
-		    } else {
-			log.log('checks wristwatch');
-			this.once('pulse', waitForIt);
-		    }
-		}
-		this.once('pulse', waitForIt);
-	    }
-	});
     }
 }
 

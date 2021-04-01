@@ -8,6 +8,10 @@ const byclock = require('./byclock');
 const sensors = require('./sensors');
 const sensorLog = require('./sensor-log');
 
+const NS_PER_SEC = 1e9;
+const NS_PER_MS = 1000000;
+const MS_PER_SEC = 1000;
+
 const shunt = () => {};
 let log = {
     debug: shunt,
@@ -15,6 +19,12 @@ let log = {
     warn: shunt,
     error: console.error
 };
+log = console;  // FIXME
+
+
+function elapsed_ms(start, end) {
+    return Number((end - start) / BigInt(NS_PER_MS));
+}
 
 
 class SensorInput {
@@ -85,28 +95,6 @@ class SensorInput {
 	let [id, reading] = this.sensorLog.parseLine(line);
 	this.monoclock = reading.monoclock;
 	this.update(id, reading);
-
-	// if (!this.lastupdate || (this.monoclock - this.lastupdate > (1e9 * 10))) {
-	//     this.lastupdate = this.monoclock;
-	//     log.log();
-	//     // for (let id of Object.keys(this.sensors).sort()) {
-	//     // 	log.log(`${id}  ${this.sensors[id].reading.values}`);
-	//     // }
-	// }
-
-	if (id === 'GNSS') {
-	    if (!this.lastupdate) {
-		this.lastupdate = this.monoclock;
-	    }
-	    let elapsed_secs = this.elapsed_secs(this.lastupdate);
-	    if (elapsed_secs > 1.5) {
-		log.log(elapsed_secs.toFixed(2), 'missed');
-	    } else {
-		log.log(elapsed_secs.toFixed(2));
-	    }
-	    this.lastupdate = this.monoclock;
-	}
-	    
     }
 
 
@@ -117,11 +105,6 @@ class SensorInput {
 	    this.sensors[id] = sensor;
 	}
 	sensor.update(reading);
-    }
-
-
-    elapsed_secs(start, end=this.monoclock) {
-	return (end - start) / 1e9;
     }
 }
 
