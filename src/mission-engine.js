@@ -145,6 +145,11 @@ class MissionEngine extends EventEmitter {
 		    await this.raspiMJPEG.sendCommand('ca 0');
 		    break;
 
+		case 'PAUSE_AND_BOX_VIDEO':
+		    await this.raspiMJPEG.sendCommand('ca 0');
+		    await this.raspiMJPEG.sendCommand('sy boxh264.sh box');
+		    break;
+
 		case 'TIME_LAPSE':
 		    await this.raspiMJPEG.sendCommand('ca 0');
 		    await this.raspiMJPEG.sendCommand('md 0');
