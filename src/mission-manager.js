@@ -15,15 +15,15 @@ class MissionManager {
     }
 
 
-    async start(programName, filename, speedFactor) {
-	if (!programName) {
+    async start(missionName, filename, speedFactor) {
+	if (!missionName) {
 	    this.ringInput.on('change', () => this.ringChangeHandler());
 	    filename = this.ringInput.getSensorLogFilename();
 	    if (filename) {  // we should already be running
 		this.beginMission();
 	    }
 	} else {
-	    this.beginMission(programName, filename, speedFactor);
+	    this.beginMission(missionName, filename, speedFactor);
 	}
     }
 
@@ -38,8 +38,8 @@ class MissionManager {
     }
 
 
-    async beginMission(programName, filename, speedFactor) {
-	if (!programName) {
+    async beginMission(missionName, filename, speedFactor) {
+	if (!missionName) {
 	    let modenum = this.ringInput.getModenum();
 	    let filename = this.ringInput.getSensorLogFilename();
 	    if (filename) {
@@ -50,14 +50,14 @@ class MissionManager {
 		await this.sensorInput.start(this.filename);
 
 		let name = `ring${this.modenum}`;
-		let program = missions[name];
-		if (!program) {
+		let mission = missions[name];
+		if (!mission) {
 		    await this.stopMission();
 		    throw new Error('mission ${name} not found!');
 		}
 		this.missionEngine = new MissionEngine();
 		await this.missionEngine.init();
-		await this.missionEngine.start(program, this.sensorInput.sensors);
+		await this.missionEngine.start(mission, this.sensorInput.sensors);
 	    } else {
 		log.error('no sensor filename specified, not beginning mission');
 	    }
@@ -66,14 +66,14 @@ class MissionManager {
 	    this.sensorInput = new SensorInput();
 	    await this.sensorInput.init();
 	    await this.sensorInput.start(this.filename, true, speedFactor);
-	    let program = missions[programName];
-	    if (!program) {
+	    let mission = missions[missionName];
+	    if (!mission) {
 		await this.stopMission();
-		throw new Error('mission ${programName} not found!');
+		throw new Error('mission ${missionName} not found!');
 	    }
 	    this.missionEngine = new MissionEngine();
 	    await this.missionEngine.init();
-	    await this.missionEngine.start(program, this.sensorInput.sensors);
+	    await this.missionEngine.start(mission, this.sensorInput.sensors);
 	}
     }
 
@@ -104,7 +104,7 @@ async function tests() {
 	await missionManager.start(name, filename, 30.0);
     } else {
 	log.error(`unknown mission name ${name}`);
-	log.error(`available missions: ${Object.keys(preprogrammedMissions).sort().join(' ')}`);
+	log.error(`available missions: ${Object.keys(missions).sort().join(' ')}`);
     }
 }
 

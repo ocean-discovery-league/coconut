@@ -7,7 +7,9 @@
 /// this mission waits until GPS lock has been lost, and then takes
 /// pictures every 5 seconds until GPS lock is regained
 
-const TIME_LAPSE_CYCLE = 50;  // in 1/10s,  50 = take picture every 5 secs
+const params = {
+    TIME_LAPSE_CYCLE: 50  // in 1/10s,  50 = take picture every 5 secs
+};
 
 
 function mission2(current_phase, cycle_num, elapsed, action_elapsed, monoclock, sensors) {
@@ -36,7 +38,7 @@ function mission2(current_phase, cycle_num, elapsed, action_elapsed, monoclock, 
     if (current_phase === 2) {
 	new_action = 'TIME_LAPSE';
 	options = {
-	    cycle: TIME_LAPSE_CYCLE
+	    cycle: params.TIME_LAPSE_CYCLE
 	};
 
 	if (sensors.GNSS && sensors.GNSS.getIsLocked(monoclock)) {
@@ -48,6 +50,4 @@ function mission2(current_phase, cycle_num, elapsed, action_elapsed, monoclock, 
 }
 
 
-module.exports = mission2;
-
-
+module.exports = {program: mission2, params: params};

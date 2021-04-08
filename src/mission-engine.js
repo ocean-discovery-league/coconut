@@ -23,12 +23,12 @@ class MissionEngine extends EventEmitter {
     }
 
 
-    start(program, sensors) {
+    start(mission, sensors) {
 	if (this.started) {
 	    throw new Error('mission engine can only be started once');
 	}
 	this.started = true;
-	this.program = program;
+	this.mission = mission;
 	this.sensors = sensors;
 	this.last_gps_state = null;
 	this.pulseClock.on('pulse', (...args) => this.doCycle(...args));
@@ -65,7 +65,7 @@ class MissionEngine extends EventEmitter {
 	/// Phase 0
 	///
 	if (this.current_phase === 0 || !this.current_phase) {
-	    log.log('begin mission program', this.program.name);
+	    log.log('begin mission program', this.mission.program.name);
 	    new_phase = 1;
 	}
 
@@ -74,7 +74,7 @@ class MissionEngine extends EventEmitter {
 	/// Phase -1 (end)
 	///
 	if (this.current_phase < 0) {
-	    log.log('end mission program', this.program.name);
+	    log.log('end mission program', this.mission.program.name);
 	    new_action = '_END_MISSION';
 	}
 
@@ -113,7 +113,7 @@ class MissionEngine extends EventEmitter {
 	///
 	if (!new_phase && !new_action) {
 	    let action_elapsed = elapsed - this.action_start;
-	    [new_action, new_phase, options] = this.program(this.current_phase, cycle_num, elapsed, action_elapsed, monoclock, this.sensors);
+	    [new_action, new_phase, options] = this.mission.program(this.current_phase, cycle_num, elapsed, action_elapsed, monoclock, this.sensors);
 	    options = options || {};
 	}
 	
@@ -162,7 +162,7 @@ class MissionEngine extends EventEmitter {
 		    await this.raspiMJPEG.sendCommand('md 0');
 		    break;
 
-		// programs should not set this action, they should set new_phase to -1 instead
+		// missions should not set this action, they should set new_phase to -1 instead
 		case '_END_MISSION':
 		    this.pulseClock.stop();
 		    await this.raspiMJPEG.sendCommand('ca 0');
@@ -199,11 +199,11 @@ async function tests() {
 	throw new Error(`unknown mission name ${name}`);
     }
 
-    let program = missions[name];
+    let mission = missions[name];
     let missionEngine = new MissionEngine();
     await missionEngine.init();
     log.log(`running mission ${name}`);
-    await missionEngine.start(program, {});
+    await missionEngine.start(mission, {});
 }
 
 
