@@ -28,7 +28,7 @@ class ClockStream extends stream.Transform {
 	let next_monoclock = this.sensorLog.parseMonoclock(line);
 	let delay_ms = 0;
 	if (next_monoclock > this.monoclock) {
-	    delay_ms = (next_monoclock - this.monoclock) / NS_PER_MS / this.speedFactor;
+	    delay_ms = Number(next_monoclock - this.monoclock) / NS_PER_MS / this.speedFactor;
 	}
 	this.push(line);
 	log.debug(`byclock stream waiting ${delay_ms}ms`);

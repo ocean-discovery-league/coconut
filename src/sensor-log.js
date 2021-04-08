@@ -1,15 +1,16 @@
 'use strict';
 
 const fs = require('fs');
+const util = require('util');
 const byline = require('byline');
 const sensors = require('./sensors');
 const MEDIA_DIR = '/var/www/html/media';
 
 const shunt = () => {};
 // safe stringify that won't throw an error
-const safe_stringify = (...args) => {
-    try { return JSON.stringify(...args) }
-    catch { return 'error stringifying' /*+ ' ' + args[0]*/ }};
+const safe_stringify = (o) => {
+    try { return util.inspect(o, {breakLength: Infinity, colors: true}) }
+    catch { return 'error stringifying' /*+ ' ' + o*/ }};
 let log = {
     debug: shunt,
     log: shunt,
@@ -48,7 +49,7 @@ class SensorLog {
 
 	let reading = new sensors.Reading(monoclock, date, time, values);
 	if (log.debug) {
-	    log.debug('reading', log.stringify(reading));
+	    log.debug(log.stringify(reading));
 	}
 	return [id, reading];
     }
@@ -79,14 +80,7 @@ class SensorLog {
 
 
 async function tests() {
-    log = {
-	debug: console.debug,
-	log: console.log,
-	warn: console.log,
-	error: console.error,
-	stringify: safe_stringify,
-    };
-
+    Object.assign(log, console);
     const fs = require('fs');
 
     let sensorLog = new SensorLog();
@@ -104,7 +98,7 @@ async function tests() {
 	    let [id, reading] = sensorLog.parseLine(line);
 	} catch(err) {
 	    errors++;
-	    log.error(err);
+	    log.error('x', err);
 	}
     });
 
