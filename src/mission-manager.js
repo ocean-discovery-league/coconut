@@ -99,7 +99,6 @@ async function tests() {
     let name = process.argv[2] || 'mission1';
     let filename = '../test/MKN0002_M1_2021_02_22_17_03_57.423.txt';
     if (name in missions) {
-	//let program = missions[name];
 	let missionManager = new MissionManager();
 	await missionManager.init();
 	await missionManager.start(name, filename, 30.0);
