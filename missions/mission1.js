@@ -42,7 +42,7 @@ function mission1(current_phase, cycle_num, elapsed, action_elapsed, monoclock, 
 	if (action_elapsed < (params.RECORD_CYCLE_MINS * MS_PER_MINUTE)) {
 	    new_action = 'RECORD_VIDEO';
 	} else if (action_elapsed < ((params.PAUSE_CYCLE_MINS + params.RECORD_CYCLE_MINS) * MS_PER_MINUTE)) {
-	    if (params.PAUSE_CYCLE_MINS > (params.RECORD_CYCLE_MINUTES)) {
+	    if (params.PAUSE_CYCLE_MINS > params.RECORD_CYCLE_MINUTES) {
 		new_action = 'PAUSE_AND_BOX_VIDEO';
 	    } else {
 		new_action = 'PAUSE_VIDEO';
