@@ -4,8 +4,10 @@
 /// mission2.js
 ///
 
-const TIME_LAPSE_CYCLE = 50;  // in 1/10s,  50 = 5 secs
-const SECOND_MS = 1000;
+/// this mission waits until GPS lock has been lost, and then takes
+/// pictures every 5 seconds until GPS lock is regained
+
+const TIME_LAPSE_CYCLE = 50;  // in 1/10s,  50 = take picture every 5 secs
 
 
 function mission2(current_phase, cycle_num, elapsed, action_elapsed, monoclock, sensors) {
@@ -38,7 +40,7 @@ function mission2(current_phase, cycle_num, elapsed, action_elapsed, monoclock, 
 	};
 
 	if (sensors.GNSS && sensors.GNSS.getIsLocked(monoclock)) {
-	    new_phase = -1;
+	    new_phase = -1;  // end mission
 	}
     }
 
