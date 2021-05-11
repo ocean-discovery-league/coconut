@@ -4,7 +4,8 @@ const http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
-//const socketio = require('socket.io');
+const socketio = require('socket.io');
+const UploadAll = require('./upload-all');
 const WiFi = require('./wifi');
 
 const PORT = 6252;
@@ -44,7 +45,10 @@ class WebServer {
 	    log.log(`server started on port ${PORT}`);
 	});
 
-	//let io = new socketio(server);
+	let io = socketio(server);
+
+	let uploadAll = new UploadAll();
+	uploadAll.init(app, io);
     }
 }
 

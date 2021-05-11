@@ -167,7 +167,15 @@ function parseHash() {
 
 async function init() {
     //document.body.classList.add('horizontal-mode');
-    
+
+    let socket = io.connect();
+    socket.on('error', console.error);
+    socket.on('connected', () => console.log('web socket connected'));
+    socket.on('disconnect', () => console.log('web socket disconnected'));
+
+    socket.on('filecounts', (data) => console.log('filecounts', data));
+    socket.on('progress', (data) => console.log('progress', data));
+
     let form = document.getElementById('connect');
     form.addEventListener('submit', connect);
 
@@ -176,11 +184,11 @@ async function init() {
 
     parseHash();
     if (hashParams.page) {
-	let n = Number(hashParams.page);
-	let sections = document.querySelectorAll('section');
-	if (sections[n-1]) {
-	    sections[n-1].scrollIntoView(true);
-	}
+        let n = Number(hashParams.page);
+        let sections = document.querySelectorAll('section');
+        if (sections[n-1]) {
+            sections[n-1].scrollIntoView(true);
+        }
     }
 
     monitorStatus();
@@ -246,6 +254,50 @@ function toggle_password_visibility(event) {
 }
 
 
+let uploading = false;
+
+async function upload_all(event) {
+    console.log('upload all!');
+    let uploadall_button = document.querySelector('#uploadall');
+    let uploadstatus_div = document.querySelector('#uploadstatus');
+    if (!uploading) {
+	try {
+	    uploadall_button.innerText = '  Cancel  ';
+	    uploadstatus_div.innerText = 'Uploading...';
+	    uploading = true;
+	    let response = await fetch('/uploadall', {
+		method: 'POST',
+		//body: JSON.stringify(json),
+		headers: {
+		    'Content-Type': 'application/json'
+		}
+	    });
+	    uploading = false;
+	    uploadall_button.innerText = 'Upload All';
+	    if (response.ok) {
+		uploadstatus_div.innerText = 'Upload done!';
+	    } else {
+		uploadstatus_div.innerText = `Upload error: ${response.statusText}`;
+	    }
+	} catch(err) {
+	    uploading = false;
+	    uploadall_button.innerText = 'Upload All';
+	    uploadstatus_div.innerText = `Upload error: ${err}`;
+	}
+    }
+}
+
+
+async function upload_all_cancel(event) {
+    console.log('upload all cancel!');
+    uploadall_button.innerText = 'Canceling...';
+    let response = await fetch('/uploadall_cancel', {
+	method: 'POST',
+    });
+}
+
+
+
 function click_network(event) {
     let network_li = event.target;
     let ssid = network_li.innerHTML;
@@ -257,3 +309,5 @@ window.client.init = init;
 window.client.connect = connect;
 window.client.toggle_password_visibility = toggle_password_visibility;
 window.client.click_network = click_network;
+window.client.upload_all = upload_all;
+window.client.upload_all_cancel = upload_all_cancel;
