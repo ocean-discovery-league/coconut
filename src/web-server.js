@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
 const socketio = require('socket.io');
 const UploadAll = require('./upload-all');
+const MissionID = require('./mission-id');
 const WiFi = require('./wifi');
 
 const PORT = 6252;
@@ -28,6 +29,13 @@ class WebServer {
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(serveStatic(STATIC_DIR));
 
+	let server = http.createServer(app);
+	let io = socketio(server);
+
+	server.listen(PORT, BIND, () => {
+	    log.log(`server started on port ${PORT}`);
+	});
+
 	let wifi = new WiFi();
 	wifi.init(app,
 		  (err) =>
@@ -39,16 +47,11 @@ class WebServer {
                       }
 		  });
 
-	let server = http.createServer(app);
-
-	server.listen(PORT, BIND, () => {
-	    log.log(`server started on port ${PORT}`);
-	});
-
-	let io = socketio(server);
-
 	let uploadAll = new UploadAll();
 	uploadAll.init(app, io);
+
+	let missionID = new MissionID();
+	missionID.init(app, io);
     }
 }
 

@@ -5,6 +5,7 @@ window.client = window.client || {};
 const status_request = new Request('/status');
 const scan_request = new Request('/scan');
 const signal_request = new Request('/signal');
+const missionid_request = new Request('/missionid');
 
 
 const STATUS_INTERVAL = 1 * 1000;  // 1 second
@@ -23,10 +24,10 @@ function isVisible() {
     let elemLeft = rect.left;
     let elemRight = rect.right;
 
-    console.log(elemLeft, elemRight, window.innerWidth);
+    //console.log(elemLeft, elemRight, window.innerWidth);
 
     let partiallyVisible = (elemRight > 0) && (elemLeft < window.innerWidth);
-    console.log('icu?', partiallyVisible);
+    //console.log('icu wifi?', partiallyVisible);
     return partiallyVisible;
 }
 
@@ -62,7 +63,7 @@ function showStatus(json) {
     if (state) {
 	let ssid = json.ssid.replace(/\n$/, '');  // remove newline at end of string
 	if (state === 'COMPLETED') {
-	    status = '<div style="position:relative" data-ssid="' + (ssid || '') + '"><font color="black">connected to </font>' + (ssid || 'unknown') + '&nbsp;&nbsp;';
+	    status = '<div style="position:relative" data-ssid="' + (ssid || '') + '"><font color="gray">connected to </font>' + (ssid || 'unknown') + '&nbsp;&nbsp;';
 	    if (current_rssid) {
 		status += '<span style="position:absolute;color:#AAAAAA">' + current_rssid + '</span>';
 	    }
@@ -151,6 +152,18 @@ function showSignal(json) {
 }
 
 
+async function fillInMissionID() {
+    let response = await fetch(missionid_request);
+    console.log(response);
+    let json = await response.json();
+    console.log(json);
+    let username_field = document.querySelector('#username');
+    let missionid_field = document.querySelector('#missionid');
+    username_field.value  = json.username  || '';
+    missionid_field.value = json.missionid || '';
+}
+
+
 let hashParams = {};
 function parseHash() {
     let hash = window.location.hash.substr(1);
@@ -165,32 +178,49 @@ function parseHash() {
 }
 
 
+let socket;
 async function init() {
     //document.body.classList.add('horizontal-mode');
 
-    let socket = io.connect();
+    socket = io.connect();
     socket.on('error', console.error);
-    socket.on('connected', () => console.log('web socket connected'));
+    socket.on('connection', () => {
+	console.log('web socket connected');
+    });
     socket.on('disconnect', () => console.log('web socket disconnected'));
 
-    socket.on('filecounts', (data) => console.log('filecounts', data));
-    socket.on('progress', (data) => console.log('progress', data));
+    socket.on('filecounts', (data) => update_file_counts(data));
+    socket.on('uploadprogress', (data) => update_upload_progress(data));
 
-    let form = document.getElementById('connect');
-    form.addEventListener('submit', connect);
+    let wifi_form = document.getElementById('connect_wifi_form');
+    wifi_form.addEventListener('submit', connect_wifi);
+
+    let missionid_form = document.getElementById('missionid_form');
+    missionid_form.addEventListener('submit', save_missionid);
 
     let mediamanager = document.getElementById('mediamanager');
     mediamanager.src = window.location.protocol + '//' + window.location.hostname + '/html/preview.php';
 
-    parseHash();
-    if (hashParams.page) {
-        let n = Number(hashParams.page);
+    if (window.location.hash.substr(1)) {
+	parseHash();
+	if (hashParams.page) {
+            let n = Number(hashParams.page);
+            let sections = document.querySelectorAll('section');
+            if (sections[n-1]) {
+		sections[n-1].scrollIntoView(true);
+		//sections[n-1].focus();
+            }
+	}
+    } else {
+	window.location.hash = "page=2";
+	let n = 2;
         let sections = document.querySelectorAll('section');
         if (sections[n-1]) {
-            sections[n-1].scrollIntoView(true);
+	    sections[n-1].scrollIntoView(true);
+	    //sections[n-1].focus();
         }
     }
-
+    fillInMissionID();
     monitorStatus();
     monitorScan();
     //monitorSignal();
@@ -215,7 +245,7 @@ function reset_scroll(id) {
 }
 
 
-async function connect(event) {
+async function connect_wifi(event) {
     console.log(event);
     console.log(event.target);
     event.preventDefault();
@@ -254,15 +284,51 @@ function toggle_password_visibility(event) {
 }
 
 
+async function save_missionid(event) {
+    event.preventDefault();
+    
+    let savemissionid_button = document.querySelector('#savemissionid');
+    let savemissionidstatus_div = document.querySelector('#savemissionidstatus');
+    savemissionid_button.focus();
+
+    try {
+	let formdata = new FormData(event.target);
+	let username  = formdata.get('username');
+	let missionid = formdata.get('missionid');
+	console.log(formdata);
+	console.log(username);
+	console.log(missionid);
+
+	let json = { username, missionid };
+	savemissionidstatus_div.innerHTML = ' &nbsp; &nbsp; . . .';
+	let response = await fetch(missionid_request, {
+	    method: 'POST',
+	    body: JSON.stringify(json),
+	    headers: {
+		'Content-Type': 'application/json'
+	    }
+	});
+
+	if (response.ok) {
+	    savemissionidstatus_div.innerText = 'Saved!';
+	} else {
+	    savemissionidstatus_div.innerText = `Error: ${response.statusText}`;
+	}
+    } catch(err) {
+	savemissionidstatus_div.innerText = `Error: ${err}`;
+    }
+}
+
+
 let uploading = false;
 
 async function upload_all(event) {
-    console.log('upload all!');
     let uploadall_button = document.querySelector('#uploadall');
     let uploadstatus_div = document.querySelector('#uploadstatus');
     if (!uploading) {
 	try {
-	    uploadall_button.innerText = '  Cancel  ';
+	    console.log('upload all!');
+	    uploadall_button.innerText = '  Cancel Upload ';
 	    uploadstatus_div.innerText = 'Uploading...';
 	    uploading = true;
 	    let response = await fetch('/uploadall', {
@@ -272,12 +338,46 @@ async function upload_all(event) {
 		    'Content-Type': 'application/json'
 		}
 	    });
+	    
+	    uploading = false;
+	    uploadall_button.innerText = 'Upload All Files To Tator.io';
+	    if (response.ok) {
+		let text = await response.text();
+		console.log('text', text);
+		if (!text) {
+		    text = 'Upload done!';
+		}
+		uploadstatus_div.innerText = text;
+	    } else {
+		uploadstatus_div.innerText = `Upload error: ${response.statusText}`;
+	    }
+	} catch(err) {
+	    uploading = false;
+	    uploadall_button.innerText = 'Upload All Files To Tator.io';
+	    uploadstatus_div.innerText = `Upload error: ${err}`;
+	}
+    } else {
+	upload_all_cancel(event);
+    }
+}
+
+
+async function upload_all_cancel(event) {
+    let uploadall_button = document.querySelector('#uploadall');
+    let uploadstatus_div = document.querySelector('#uploadstatus');
+    if (uploading) {
+	try {
+	    console.log('upload all cancel!');
+	    uploadall_button.innerText = 'Canceling...';
+	    //uploadstatus_div.innerText = 'Uploading...';
+	    let response = await fetch('/uploadall_cancel', { method: 'POST' });
+	    
 	    uploading = false;
 	    uploadall_button.innerText = 'Upload All';
 	    if (response.ok) {
-		uploadstatus_div.innerText = 'Upload done!';
+		uploadstatus_div.innerText = 'Upload canceled';
 	    } else {
-		uploadstatus_div.innerText = `Upload error: ${response.statusText}`;
+		uploadstatus_div.innerText = `Upload cancel error: ${response.statusText}`;
 	    }
 	} catch(err) {
 	    uploading = false;
@@ -288,14 +388,37 @@ async function upload_all(event) {
 }
 
 
-async function upload_all_cancel(event) {
-    console.log('upload all cancel!');
-    uploadall_button.innerText = 'Canceling...';
-    let response = await fetch('/uploadall_cancel', {
-	method: 'POST',
-    });
+function update_file_counts(data) {
+    if (!uploading) {
+	let filecounts_div = document.querySelector('#filecounts');
+	let summary = file_counts_summary_text(data);
+	filecounts_div.innerText = summary;
+    }
 }
 
+
+function file_counts_summary_text(filecounts) {
+    let jpg = filecounts.jpg || 0;
+    let mp4 = filecounts.mp4 || 0;
+    let h264 = filecounts.h264 || 0;
+    let text = `${filecounts.txt} txts, ${filecounts.jpg||0} jpgs, ${filecounts.mp4||0} mp4s`;
+    // if (filecounts.h264) {
+    //     text += ` ${filecounts.h264} h264`;
+    // }
+    return text;
+}
+
+
+function update_upload_progress(data) {
+    if (uploading) {
+	let uploadstatus_div = document.querySelector('#uploadstatus');
+	let filecounts_div = document.querySelector('#filecounts');
+	let html = `Uploading ${data.n+1} of ${data.of+1} ${data.ext}s`;
+	uploadstatus_div.innerHTML = html;
+	let summary = file_counts_summary_text(data.filecounts);
+	filecounts_div.innerText = summary;
+    }
+}
 
 
 function click_network(event) {
@@ -306,7 +429,8 @@ function click_network(event) {
 }
 
 window.client.init = init;
-window.client.connect = connect;
+window.client.connect_wifi = connect_wifi;
+window.client.save_misisonid = save_missionid;
 window.client.toggle_password_visibility = toggle_password_visibility;
 window.client.click_network = click_network;
 window.client.upload_all = upload_all;

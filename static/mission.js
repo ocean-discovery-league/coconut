@@ -361,7 +361,7 @@ class Mission {
 	let json = this.diagram.model.toJson();
 	let data = JSON.parse(json);
 	json = JSON.stringify(data, 0, 4);
-	console.log(json);
+	//console.log(json);
 	
         // force all actions' layouts to be performed
         this.relayoutLanes();

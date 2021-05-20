@@ -9,18 +9,69 @@
 <div id="sectionholder">
 
 <section>
-  <button id="uploadall" onclick="window.client.upload_all(event)" style="position: absolute; top:23px; left: 30px; color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 14px; line-height: 18px; border-top: 8px solid; border-bottom: 8px solid; border-right: 12px solid; border-left: 12px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
-    Upload All
-  </button>
-  <div id="uploadstatus" style="position: absolute; top:30px; left: 150px; color: white; font-size: 20px; line-height: 22px"></div>
-  <div id="filecounts" style="position: absolute; top:30px; right: 50px; color: gray; font-size: 20px; line-height: 22px"></div>
+  <div style="height:50px;margin-bottom:25px">
+    <button id="uploadall" onclick="window.client.upload_all(event)" style="position: absolute; top:23px; left: 30px; color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 14px; line-height: 18px; border-top: 8px solid; border-bottom: 8px solid; border-right: 12px solid; border-left: 12px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
+      Upload All Files To Tator.io
+    </button>
+    <div id="uploadstatus" style="color:white;font-size:20px;line-height:22px;text-align:left;margin-left:50px;margin-bottom:5px"></div>
+    <div id="filecounts" style="color:lightgray;font-size:20px;line-height:22px;text-align:left;margin-left:50px"></div>
+  </div>
   <iframe id="mediamanager" width="100%" height="100%">
   </iframe>
 </section>
 
-<section id="wifi_section">
+
+<section id="username_section">
   <div class="header">
     <h2 style="font-size:64px">🥥
+      <span style="font-size:58px">Mission ID</span>
+    </h2>
+  </div>
+
+  <br>
+  <br>
+
+  <center>
+    <br>
+
+      <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px">
+	<table width="400" style="display:grid;place-items:center;background-color:#1B3C45">
+	  <tr><td>
+	      <br>
+	      <br>
+	      <div style="font-size:20px;font-weight:900">
+		<label for="username">User Name</label><br>
+		<input id="username" autocorrect="off" autocapitalize="none" type="text" name="username" size="18" style="font-size:24px;margin-top:5px;" required></input>
+	      </div>
+	  </td></tr><tr><td style="height:25px">
+	  </td></tr><tr><td style="font-size:20px;font-weight:900">
+	      <div style="font-size:20px;font-weight:900">
+		<label for="missionid">Mission ID<div style="font-size:11px;margin-left:2px"></div></label>
+		<input id="missionid" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" name="missionid" size="18" style="font-size:24px;margin-top:5px" required></input>
+	      </div>
+	  </td></tr><tr><td style="height:25px">
+	  </td></tr><tr><td style="text-align:center">
+	    <span style="display: inline-block; border-radius: 4px; background: #1f8b5f; border-bottom: 2px solid #1f8b5f;">
+	      <button id="savemissionid" style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 20px; line-height: 26px; border-top: 14px solid; border-bottom: 14px solid; border-right: 32px solid; border-left: 32px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
+		Save
+	      </button>
+	    </span>
+	    <br>
+	    <br>
+	    <br>
+	    <br>
+	</td></tr>
+      </table>
+      <div id="savemissionidstatus" style="position:relative;top:-50px;left:315px;color:white;font-size:20px;line-height:22px;text-align:left;margin-left:50px;margin-bottom:5px"></div>
+    </form>
+  </center>
+  <br>
+</section>
+
+
+<section id="wifi_section">
+  <div class="header">
+    <h2 style="font-size:64px">📶
       <span style="font-size:58px">WiFi Setup</span>
     </h2>
   </div>
@@ -28,13 +79,13 @@
   <br>
   <br>
   <center>
-    <div style="font-size:22px;font-weight:700;color:blue;margin-bottom:20px"><span id="connection">• • •</span></div>
+    <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="connection">• • •</span></div>
   </center>
 
   <center>
     <br>
 
-      <form width="70%" id="connect" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px">
+      <form width="70%" id="connect_wifi_form" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px">
 	<table width="400" style="display:grid;place-items:center;background-color:#1B3C45">
 	  <tr><td>
 	      <br>
@@ -54,7 +105,7 @@
 	  </td></tr><tr><td style="text-align:center">
 	    <span style="display: inline-block; border-radius: 4px; background: #1f8b5f; border-bottom: 2px solid #1f8b5f;">
 	      <button style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 20px; line-height: 26px; border-top: 14px solid; border-bottom: 14px solid; border-right: 32px solid; border-left: 32px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
-		Connect!
+		Connect WiFi
 	      </button>
 	    </span>
 	    <br>
@@ -68,7 +119,7 @@
   <center>
     <div style="display:grid;place-items:center">
       <div style="width:220px;text-align:left">
-	Visible networks
+	<font color="gray">Visible networks</font>
 	<ul width=300 id="networks" style="list-style:none;font-size:20px;font-weight:900;margin-left:2px;margin-top:4px;white-space:nowrap">
 	  <li><i>looking for networks...</i></li>
 	</ul>
@@ -82,21 +133,25 @@
 
 </section>
 
+
 <section>
   <br>
 
   <h2 style="font-size:64px">📹
     <span style="font-size:58px">Video Setup</span></h2>
   <br>
-    <br>
+  <br>
+  <!--
       <label for="fps">Frames per second</label>
         <select name="fps">
           <option>12</option>
           <option selected="true">24</option>
           <option>30</option>
         </select>
-          
+  -->
+  <h2>All setting are currently automatic</h2>
 </section>
+
 
 <section>
   <br>
@@ -106,20 +161,27 @@
 
   <br>
   <br>
+  <!--
   <input type="checkbox" id="scales" name="scales" checked \>
     <label for="scales">Scales</label>
+  -->
+  <h2>All setting are currently automatic</h2>
+
 </section>
+
 
 <section>
   <br>
 
   <h2 style="font-size:64px">
-    <span style="font-size:58px">Mission 1</span></h2>
-
+    <span style="font-size:58px">Test Mission I</span></h2>
   <br>
+  <br>
+  <h2>All setting are currently automatic</h2>
+
   <center>
     <div style="position:relative">
-      <div id="mission-1-diagram" style="width:75%; height:790px;"></div>
+      <div id="mission-1-diagram" style="width:75%; height:790px;pointer-events:none"></div>
       <div id="toolbox-1" style="position:fixed;left:0px;bottom:-150px;height:150px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s">
 	<button value="delete" onclick="window.mission1.deleteNode()">🚮</button>
 	<button value="add_before" onclick="window.mission1.addNode(false)">↪️</button>
@@ -128,20 +190,21 @@
       </div>
     </div>
   </center>
-
-
 </section>
+
 
 <section>
   <br>
       
   <h2 style="font-size:64px">
-    <span style="font-size:58px">Mission 2</span></h2>
+    <span style="font-size:58px">Test Mission II</span></h2>
   <br>
+  <br>
+  <h2>All setting are currently automatic</h2>
   
   <center>
     <div style="position:relative">
-      <div id="mission-2-diagram" style="width:75%; height:700px;"></div>
+      <div id="mission-2-diagram" style="width:75%; height:700px;pointer-events:none"></div>
       <div id="toolbox-2" style="position:fixed;left:0px;bottom:-150px;height:150px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s">
 	<button value="delete" onclick="window.mission2.deleteNode()">🚮</button>
 	<button value="add_before" onclick="window.mission2.addNode(false)">↪️</button>
@@ -150,8 +213,8 @@
       </div>
     </div>
   </center>
-
 </section>
+
 
 </div>
 
