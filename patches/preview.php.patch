@@ -1,0 +1,18 @@
+--- preview.php~	2020-10-02 02:24:29.965693888 +0100
++++ preview.php	2021-05-19 16:44:35.712636312 +0100
+@@ -452,6 +452,7 @@
+ 
+    </head>
+    <body>
++      <!-- #### hack to keep people in the preview section of the media manager -jon
+       <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+          <div class="container">
+             <div class="navbar-header">
+@@ -459,6 +460,7 @@
+             </div>
+          </div>
+       </div>
++      #### hack to keep people in the preview section of the media manager -jon -->
+     
+       <div class="container-fluid">
+       <form action="preview.php" method="POST">
