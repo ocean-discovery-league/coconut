@@ -90,6 +90,9 @@ class SensorInput {
 
 
     processLine(line) {
+	if (line && line.startsWith('DEID') || line.startsWith('MACA')) {
+	    return;
+	}
 	this.count++;
 	if (this.count % 1000 === 0) { log.log('.') };
 	let [id, reading] = this.sensorLog.parseLine(line);

@@ -84,7 +84,7 @@ class UploadAll extends EventEmitter {
 	this.upload_filelists = await this.getFileLists();
 	// ordered from smallest to largest (txt, jpg, mp4):
 	let file_ext_type_ids = [
-	    //{ ext: 'txt', type_id: 1},  // FIXME what type_id for txt?
+	    { ext: 'txt', type_id: 1, attach: true},  // type_id is ignored for attachments
 	    { ext: 'jpg', type_id: 120 },
 	    { ext: 'mp4', type_id: 28 },
 	];
@@ -97,12 +97,32 @@ class UploadAll extends EventEmitter {
 	}
 	console.log('this.uploads_total_file_count', this.uploads_total_file_count);
 	    
-	for (let { ext, type_id } of file_ext_type_ids) {
+	// quick and dirty hack to just have something stable to attach txt files to
+	let media_id = await this.createMediaId();
+
+	for (let { ext, type_id, attach } of file_ext_type_ids) {
 	    if (ext in this.upload_filelists) {
 		console.log(`uploading ${this.upload_filelists[ext].length} ${ext}s with type_id ${type_id}`);
-		await this.uploadList(this.upload_filelists[ext], type_id);
+		if (attach) {
+		    await this.uploadList(this.upload_filelists[ext], type_id, media_id);
+		} else {
+		    await this.uploadList(this.upload_filelists[ext], type_id);
+		}
 	    }
 	}
+    }
+
+
+    async createMediaId() {
+	this.upload_media_id = false;
+	await this.uploadOneFile('static/coconut.jpg', 120);
+	let media_id;
+	if (this.upload_media_id) {
+	    media_id = this.upload_media_id;
+	    delete this.upload_media_id;
+	    console.log('got the media_id!', media_id);
+	}
+	return media_id;
     }
 
 
@@ -156,14 +176,14 @@ class UploadAll extends EventEmitter {
     }
 
 
-    async uploadList(filelist, type_id='28') {
+    async uploadList(filelist, type_id='28', media_id=false) {
 	let n=0;
 	for (let file of filelist.sort()) {  // FIXME .reverse()??
 	    if (!this.uploading_cancel) {
 		let filename = `${MEDIA_DIR}/${file}`;
 		console.log('uploading', filename);
 		this.reportUploadProgress(n, filelist, this.upload_filelists);
-		await this.uploadOneFile(filename, type_id);
+		await this.uploadOneFile(filename, type_id, media_id);
 		n+=1;
 		this.reportUploadProgress(n, filelist, this.upload_filelists);
 	    } else {
@@ -173,10 +193,14 @@ class UploadAll extends EventEmitter {
     }
 
 
-    async uploadOneFile(filename, type_id) {
+    async uploadOneFile(filename, type_id, media_id=false) {
 	return new Promise( (resolve, reject) => {
-	    this.tatorup = spawn('/home/pi/git/coconut/test/FakeTatorUpload.py');
-	    //this.tatorup = spawn('/home/pi/git/maka-niu/code/TatorUpload.py', ['--type_id', type_id, '--media_path', filename]);
+	    //this.tatorup = spawn('/home/pi/git/coconut/test/FakeTatorUpload.py');
+	    if (media_id) {
+		this.tatorup = spawn('/home/pi/git/maka-niu/code/TatorUpload.py', ['--type_id', type_id, '--media_path', filename, '--media_id', media_id]);
+	    } else {
+		this.tatorup = spawn('/home/pi/git/maka-niu/code/TatorUpload.py', ['--type_id', type_id, '--media_path', filename]);
+	    }
 	    this.tatorup.stdout.on('data', (data) => {
 		data = data.toString();
 		log.log(data);
@@ -210,6 +234,33 @@ class UploadAll extends EventEmitter {
 
     reportUploadSingleFileProgress(line) {
 	console.log('reportUploadSingleFileProgress', line);
+	// we are also going to try and snag the media_id from the
+	// end of the current upload for our txt file upload hack
+	if (line && line.includes(':response body:')) {
+	    if (line.includes('Image saved successfully')) {
+		try {
+		    line = line.trim();  // remove newlines, linefeeds
+		    let matches = line.match(/:response body: b'(.*)'$/);
+		    if (matches && matches.length === 2) {
+			let data = JSON.parse(matches[1]);
+			console.log('data', data);
+			if (data.message && data.message.includes('Image saved successfully')) {
+			    if (data.id) {
+				this.upload_media_id = data.id;
+				console.log('spotted the media id!', this.upload_media_id);
+			    } else {
+				console.error('did not spot the media id');
+			    }
+			} else {
+			    console.error('could not parse the response body for the media id');
+			    console.error(matches);
+			}
+		    }
+		} catch(err) {
+		    console.error('error thrown while spotting media id', err);
+		}
+	    }
+	}
     }
 }
 

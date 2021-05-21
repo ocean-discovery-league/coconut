@@ -157,8 +157,10 @@ async function fillInMissionID() {
     console.log(response);
     let json = await response.json();
     console.log(json);
+    let hostname_banner = document.querySelector('#hostname');
     let username_field = document.querySelector('#username');
     let missionid_field = document.querySelector('#missionid');
+    hostname_banner.innerText = json.hostname || '';
     username_field.value  = json.username  || '';
     missionid_field.value = json.missionid || '';
 }
@@ -300,7 +302,7 @@ async function save_missionid(event) {
 	console.log(missionid);
 
 	let json = { username, missionid };
-	savemissionidstatus_div.innerHTML = ' &nbsp; &nbsp; . . .';
+	savemissionidstatus_div.innerHTML = ' &nbsp; &nbsp;• • •';
 	let response = await fetch(missionid_request, {
 	    method: 'POST',
 	    body: JSON.stringify(json),

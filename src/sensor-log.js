@@ -28,6 +28,8 @@ class SensorLog {
 	}
 
 	// some examples:
+	// DEID:mkn0014
+	// MACA:b8:27:eb:2c:bd:6a
 	// KELL:162390187667       20210222        170359.652      0.01    0.1     22.70
 	// GNSS:162724467044       20210222        170359.983      42.3593454      -71.1120747
 	// BATT:162868440360       20210222        170400.131      10.03
@@ -70,9 +72,12 @@ class SensorLog {
     async readFirstLine(filename) {
 	let readstream = fs.createReadStream(filename, 'utf8');
 	let readbyline = byline.createStream(readstream);
-	let firstline = await new Promise((resolve) => {
-	    readbyline.once('data', (line) => resolve(line));
-	});
+	let firstline;
+	while (!firstline || firstline.startsWith('DEID') || firstLine.startsWith('MACA')) {
+	    firstline = await new Promise((resolve) => {
+		readbyline.once('data', (line) => resolve(line));
+	    });
+	}
 	readstream.destroy();
 	return firstline;
     }

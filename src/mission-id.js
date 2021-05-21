@@ -1,11 +1,12 @@
 'use strict';
 
+const os = require('os');
 const fs = require('fs');
 const fsP = require('fs').promises;
 const path = require('path');
 const util = require('util');
 
-const MEDIA_DIR = '/var/www/html/media';
+const MEDIA_DIR = '/var/www/html';
 const MISSION_ID_FILE = MEDIA_DIR + '/mission_id.json';
 
 const shunt = () => {};
@@ -29,7 +30,7 @@ class MissionID {
     addRoutes(app) {
 	app.get('/missionid', async (req, res) => {
 	    try {
-		let missionid = await this.getMissionID();
+		let missionid = await this.getMissionId();
 		let json = JSON.stringify(missionid);
 		res.setHeader('Content-Type', 'application/json');
 		res.end(json);
@@ -42,7 +43,7 @@ class MissionID {
 	app.post('/missionid', async (req, res) => {
             try {
                 log.log('connect', req.body);
-                let saved = await this.saveMissionID(req.body.username, req.body.missionid);
+                let saved = await this.saveMissionId(req.body.username, req.body.missionid);
 		if (!saved) {
 		    throw new Error('error saving missionid');
 		}
@@ -54,11 +55,12 @@ class MissionID {
     }
     
 
-    async getMissionID() {
+    async getMissionId() {
 	let data = {};
 	try {
 	    let json = await fsP.readFile(MISSION_ID_FILE);
 	    data = JSON.parse(json);
+	    data.hostname = os.hostname();
 	} catch(err) {
 	    console.error(`error getting mission id file ${MISSION_ID_FILE}`, err);
 	}
@@ -66,7 +68,7 @@ class MissionID {
     }
 
 
-    async saveMissionID(username, missionid) {
+    async saveMissionId(username, missionid) {
 	let success = false;
 	try {
 	    let lastchanged = (new Date(Date.now())).toISOString();
@@ -77,6 +79,27 @@ class MissionID {
 	    success = true;
 	} catch(err) {
 	    console.error(`error saving mission id file ${MISSION_ID_FILE}`, err);
+	}
+	return success;
+    }
+
+
+    async writeMissionIdMarkerFile(sensor_log_filename) {
+	// write a parallel file based on the sensor log file name that
+	// just contains the mission id info
+	let success = false;
+	let filename;
+	try {
+	    filename = sensor_log_filename + '.id.txt';
+	    console.log('filename', filename);
+	    let data = await this.getMissionId();
+	    data.missionstarted = (new Date(Date.now())).toISOString();
+	    let json = JSON.stringify(data);
+	    console.log('missionid marker file json', json);
+	    await fsP.writeFile(filename, json, 'utf8');
+	    success = true;
+	} catch(err) {
+	    console.error(`error saving mission id marker file ${filename}`, err);
 	}
 	return success;
     }

@@ -3,6 +3,7 @@
 const RingInput = require('./ring-input.js');
 const SensorInput = require('./sensor-input');
 const MissionEngine = require('./mission-engine');
+const MissionId = require('./mission-id');
 const missions = require('../missions');
 
 let log = console;
@@ -46,7 +47,9 @@ class MissionManager {
 		this.filename = filename;
 		this.modenum = modenum;
 		this.sensorInput = new SensorInput();
-		await this.sensorInput.init();
+		let missionId = new MissionId();
+		missionId.writeMissionIdMarkerFile(this.filename);  // no need to await
+		await this.sensorInput.init(this.filename);
 		await this.sensorInput.start(this.filename);
 
 		let name = `ring${this.modenum}`;
