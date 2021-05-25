@@ -8,31 +8,38 @@
 <body>
 <div id="sectionholder">
 
-<section>
-  <div style="height:50px;margin-bottom:25px">
-    <button id="uploadall" onclick="window.client.upload_all(event)" style="position: absolute; top:23px; left: 30px; color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 14px; line-height: 18px; border-top: 8px solid; border-bottom: 8px solid; border-right: 12px solid; border-left: 12px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
+<section id="media_manager">
+  <h2 style="font-size:64px">
+    <span style="font-size:58px">Media Manager</span>
+  </h2>
+
+  <br>
+  <br>
+
+  <center>
+    <button id="uploadall" onclick="window.client.upload_all(event)" style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 14px; line-height: 18px; border-top: 8px solid; border-bottom: 8px solid; border-right: 12px solid; border-left: 12px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
       Upload All Files To Tator.io
     </button>
-    <div id="uploadstatus" style="color:white;font-size:20px;line-height:22px;text-align:left;margin-left:50px;margin-bottom:5px"></div>
-    <div id="filecounts" style="color:lightgray;font-size:20px;line-height:22px;text-align:left;margin-left:50px"></div>
-  </div>
+    <div id="uploadstatus" style="color:white;font-size:20px;line-height:22px;margin-top:20px">&nbsp;</div>
+    <div id="filecounts" style="color:lightgray;font-size:20px;line-height:22px;margin-top:5px">&nbsp;</div>
+  </center>
+  <br>
+  <br>
   <iframe id="mediamanager" width="100%" height="100%">
   </iframe>
 </section>
 
 
 <section id="username_section">
-  <div class="header">
-    <h2 style="font-size:64px">🥥
-      <span style="font-size:58px">Mission ID</span>
-    </h2>
-  </div>
+  <h2 style="font-size:64px">🥥
+    <span style="font-size:58px">Mission ID</span>
+  </h2>
 
   <br>
   <br>
 
   <center>
-    <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="hostname"></span></div>
+    <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="hostname">&nbsp;</span><br><span id="macaddress" style="color:darkgrey">&nbsp;</span></div>
     <br>
 
       <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px">
@@ -71,21 +78,17 @@
 
 
 <section id="wifi_section">
-  <div class="header">
-    <h2 style="font-size:64px">📶
-      <span style="font-size:58px">WiFi Setup</span>
-    </h2>
-  </div>
+  <h2 style="font-size:64px">📶
+    <span style="font-size:58px">WiFi Setup</span>
+  </h2>
 
   <br>
   <br>
   <center>
-    <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="connection">• • •</span></div>
+    <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="connection">• • •<br>&nbsp;</span></div>
   </center>
 
   <center>
-    <br>
-
       <form width="70%" id="connect_wifi_form" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px">
 	<table width="400" style="display:grid;place-items:center;background-color:#1B3C45">
 	  <tr><td>
@@ -136,8 +139,6 @@
 
 
 <section>
-  <br>
-
   <h2 style="font-size:64px">📹
     <span style="font-size:58px">Video Setup</span></h2>
   <br>
@@ -155,8 +156,6 @@
 
 
 <section>
-  <br>
-
   <h2 style="font-size:64px">📷
     <span style="font-size:58px">Photo Setup</span></h2>
 
@@ -172,8 +171,6 @@
 
 
 <section>
-  <br>
-
   <h2 style="font-size:64px">
     <span style="font-size:58px">Test Mission I</span></h2>
   <br>
@@ -195,8 +192,6 @@
 
 
 <section>
-  <br>
-      
   <h2 style="font-size:64px">
     <span style="font-size:58px">Test Mission II</span></h2>
   <br>

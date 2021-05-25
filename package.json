@@ -4,7 +4,7 @@
   "description": "",
   "main": "coconut.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "./run.sh"
   },
   "dependencies": {
     "body-parser": "^1.19.0",

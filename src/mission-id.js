@@ -8,6 +8,7 @@ const util = require('util');
 
 const MEDIA_DIR = '/var/www/html';
 const MISSION_ID_FILE = MEDIA_DIR + '/mission_id.json';
+const INTERFACE = process.argv[2] || 'wlan1';  // node index.js <INTERFACE>
 
 const shunt = () => {};
 let log = {
@@ -61,6 +62,8 @@ class MissionID {
 	    let json = await fsP.readFile(MISSION_ID_FILE);
 	    data = JSON.parse(json);
 	    data.hostname = os.hostname();
+	    data.macaddress = await this.determineMACAddress();
+	    console.log('mac', data.macaddress);
 	} catch(err) {
 	    console.error(`error getting mission id file ${MISSION_ID_FILE}`, err);
 	}
@@ -102,6 +105,19 @@ class MissionID {
 	    console.error(`error saving mission id marker file ${filename}`, err);
 	}
 	return success;
+    }
+
+
+    async determineMACAddress() {
+	let interfaces = os.networkInterfaces();
+	if (interfaces[INTERFACE]) {
+	    for (let address of interfaces[INTERFACE]) {
+		if (address.family === 'IPv4') {
+		    return address.mac;
+		}
+	    }
+	}
+	return undefined;
     }
 }
 

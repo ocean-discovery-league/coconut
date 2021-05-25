@@ -49,7 +49,7 @@ class WiFi {
         router.get('/status', async (req, res) => {
             let json = '{}';
             try {
-                let data = await this.wireless.status()
+                let data = await this.getStatus()
                 json = JSON.stringify(data);
             } catch(err) {
                 log.error(err);
@@ -95,6 +95,26 @@ class WiFi {
             res.setHeader('Content-Type', 'application/json');
             res.end(json);
         });
+    }
+
+
+    async getStatus() {
+        let data = await this.wireless.status();
+	data.ip_address = await this.determineIPAddress();
+	return data;
+    }
+
+
+    async determineIPAddress() {
+	let interfaces = os.networkInterfaces();
+	if (interfaces[INTERFACE]) {
+	    for (let address of interfaces[INTERFACE]) {
+		if (address.family === 'IPv4') {
+		    return address.address;
+		}
+	    }
+	}
+	return undefined;
     }
 
 

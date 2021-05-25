@@ -7,7 +7,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-ExecStart=/usr/local/coconut/start.sh
+ExecStart=/usr/local/coconut/run.sh
 
 [Install]
 WantedBy=multi-user.target

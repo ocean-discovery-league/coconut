@@ -43,9 +43,9 @@ async function monitorStatus() {
     try {
 	if (isVisible()) {
             let response = await fetch(status_request);
-            let json = await response.json();
-	    if (json && !json.retry && Object.keys(json).length !== 0) {
-		showStatus(json);
+            let data = await response.json();
+	    if (data && !data.retry && Object.keys(data).length !== 0) {
+		showStatus(data);
 	    }
 	}
     } catch(err) {
@@ -55,27 +55,30 @@ async function monitorStatus() {
 }
 
 
-function showStatus(json) {
+function showStatus(status) {
     let connectiondiv = document.querySelector('#connection');
-    let state = json.wpa_state;
-    let status = '• • •';
-    //console.log(json);
+    let state = status.wpa_state;
+    let html = '• • •<br>&nbsp;';
+    console.log(status);
     if (state) {
-	let ssid = json.ssid.replace(/\n$/, '');  // remove newline at end of string
+	let ssid = status.ssid.replace(/\n$/, '');  // remove newline at end of string
 	if (state === 'COMPLETED') {
-	    status = '<div style="position:relative" data-ssid="' + (ssid || '') + '"><font color="gray">connected to </font>' + (ssid || 'unknown') + '&nbsp;&nbsp;';
+	    html = '<div style="position:relative" data-ssid="' + (ssid || '') + '"><font color="gray">connected to </font>' + (ssid || 'unknown') + '&nbsp;&nbsp;';
 	    if (current_rssid) {
-		status += '<span style="position:absolute;color:#AAAAAA">' + current_rssid + '</span>';
+		html += '<span style="position:absolute;color:#AAAAAA">' + current_rssid + '</span>';
 	    }
-	    status += '</div>';
+	    html += '</div>';
 	} else {
 	    console.log('state =', state);
 	}
+	if (status.ip_address) {
+	    html += '<br><span style="position:absolute;color:#AAAAAA">' + status.ip_address + '</span>';
+	} else {
+	    html += '<br>&nbsp;';
+	}
     }
-    //connectiondiv.innerHTML = json.ssid + ` &nbsp; <button onclick="fetch(new Request('/disconnect',{method:'POST'}))">&#x274c/button>`;
-    connectiondiv.innerHTML = status;
-    //let statusdiv = document.querySelector('#statusdiv');
-    //statusdiv.innerHTML = JSON.stringify(json);
+    //connectiondiv.innerHTML = status.ssid + ` &nbsp; <button onclick="fetch(new Request('/disconnect',{method:'POST'}))">&#x274c/button>`;
+    connectiondiv.innerHTML = html;
 }
 
 
@@ -107,7 +110,7 @@ function showScan(json) {
 	    if (!ssid || ssid.includes('\x00') || ssid.includes('\\x00')) {
 		continue;
 	    }
-	    if (ssid.startsWith('s02-') || ssid.startsWith('JiboStation')) {
+	    if (ssid.startsWith('mkn0')) {
 		continue;
 	    }
 	    if (seen.includes(ssid)) {
@@ -118,7 +121,7 @@ function showScan(json) {
 		+ '<div style="position:relative">'
 		+ '<div style="position:absolute;color:#AAAAAA;left:-38px">' + network.signal + '</div>'
 		+ '<div style="position:absolute;color:#AAAAAA;left:-62px;font-size:14px;opacity:0.6">' + (network.security ? '🔒' : '') + '</div>'
-		+ ssid + '</li>\n';
+		+ '<span class="clickssid">' + ssid + '</span></li>\n';  // FIXME unsafe!
 	    current_rssid = network.signal;
 	}
     } catch(err) {
@@ -158,9 +161,11 @@ async function fillInMissionID() {
     let json = await response.json();
     console.log(json);
     let hostname_banner = document.querySelector('#hostname');
+    let macaddress_banner = document.querySelector('#macaddress');
     let username_field = document.querySelector('#username');
     let missionid_field = document.querySelector('#missionid');
     hostname_banner.innerText = json.hostname || '';
+    macaddress_banner.innerText = json.macaddress || '';
     username_field.value  = json.username  || '';
     missionid_field.value = json.missionid || '';
 }
@@ -424,10 +429,10 @@ function update_upload_progress(data) {
 
 
 function click_network(event) {
-    let network_li = event.target;
-    let ssid = network_li.innerHTML;
+    let network_li = event.target.parentElement;  // FIXME breaks if there's any li element padding, or li children go deeper than one level
+    let clickssid = network_li.querySelector('.clickssid');
     let ssid_input = document.getElementById('ssid');
-    ssid_input.value = ssid;
+    ssid_input.value = clickssid.textContent;
 }
 
 window.client.init = init;
