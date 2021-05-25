@@ -1,18 +1,117 @@
---- preview.php~	2020-10-02 02:24:29.965693888 +0100
-+++ preview.php	2021-05-19 16:44:35.712636312 +0100
-@@ -452,6 +452,7 @@
- 
-    </head>
-    <body>
-+      <!-- #### hack to keep people in the preview section of the media manager -jon
-       <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-          <div class="container">
-             <div class="navbar-header">
-@@ -459,6 +460,7 @@
+--- preview.php	2021-05-19 16:44:35.712636312 +0100
++++ preview.php.new	2021-05-23 22:00:30.794175992 +0100
+@@ -13,13 +13,16 @@
+    define('BTN_DELETESEL_CONFIRM', 'Are you sure to delete selected items?');
+    define('BTN_SELECTALL', 'Select All');
+    define('BTN_SELECTNONE', 'Deselect');
+-   define('BTN_GETZIP', 'Get Zip');
+-   define('BTN_LOCKSEL', 'Lock Sel');
++   //define('BTN_GETZIP', 'Get Zip');
++   define('BTN_GETZIP', 'Download Zip');
++   //define('BTN_LOCKSEL', 'Lock Sel');
++   define('BTN_LOCKSEL', 'Lock Selected');
+    define('BTN_UNLOCKSEL', 'Unlock Selected');
+    define('BTN_UPDATESIZEORDER', 'Update');
+    define('TXT_PREVIEW', 'Preview');
+    define('TXT_THUMB', 'Thumb');
+-   define('TXT_FILES', 'Files');
++   //define('TXT_FILES', 'Files');
++   define('TXT_FILES', '');
+    
+    define('CONVERT_CMD', 'convertCmd.txt');
+    
+@@ -396,16 +399,10 @@
+       global $previewSize,$thumbSize,$sortOrder, $showTypes;
+       global $timeFilter, $timeFilterMax;
+       
+-      echo TXT_PREVIEW . " <input type='number' name='previewSize' value='$previewSize' style='width: 4em;'>";
+-      echo "&nbsp;&nbsp;" . TXT_THUMB . " <input type='number' name='thumbSize' value='$thumbSize' style='width: 4em;'>";
+-      echo "&nbsp;<button class='btn btn-primary' type='submit' name='action' value='updateSizeOrder'>" . BTN_UPDATESIZEORDER . "</button>";
+-      echo '&nbsp;Sort&nbsp;<select id="sortOrder" name="sortOrder" onchange="this.form.submit()">';
+-      if ($sortOrder == 1) $selected = "selected"; else $selected = "";
+-      echo "<option value='1' $selected>Ascending</option>";
+-      if ($sortOrder == 2) $selected = "selected"; else $selected = "";
+-      echo "<option value='2'  $selected>Descending</option>";
+-      echo '</select>';
+-      echo '&nbsp;Types&nbsp;<select id="showTypes" name="showTypes" onchange="this.form.submit()">';
++      //echo TXT_PREVIEW . " <input type='number' name='previewSize' value='$previewSize' style='width: 4em;'>";
++      //echo "&nbsp;&nbsp;" . TXT_THUMB . " <input type='number' name='thumbSize' value='$thumbSize' style='width: 4em;'>";
++      //echo "&nbsp;<button class='btn btn-primary' type='submit' name='action' value='updateSizeOrder'>" . BTN_UPDATESIZEORDER . "</button>";
++      echo '<div style="display:inline-block;text-align:left">Types&nbsp;<select id="showTypes" name="showTypes" onchange="this.form.submit()">';
+       if ($showTypes == 1) $selected = "selected"; else $selected = "";
+       echo "<option value='1' $selected>Images &amp Videos</option>";
+       if ($showTypes == 2) $selected = "selected"; else $selected = "";
+@@ -413,7 +410,7 @@
+       if ($showTypes == 3) $selected = "selected"; else $selected = "";
+       echo "<option value='3'  $selected>Videos only</option>";
+       echo '</select>';
+-      echo '&nbsp;Filter&nbsp;<select id="timeFilter" name="timeFilter" onchange="this.form.submit()">';
++      echo '<br>&nbsp;Filter&nbsp;<select id="timeFilter" name="timeFilter" onchange="this.form.submit()">';
+       if ($timeFilter == 1) $selected = "selected"; else $selected = "";
+       echo "<option value='1' $selected>All</option>";
+       for($tf = 2; $tf < $timeFilterMax;$tf++) {
+@@ -425,7 +422,14 @@
+       $tfStr = $timeFilterMax * 24 . '+ hours old';
+       echo "<option value='$timeFilterMax'  $selected>$tfStr</option>";
+       echo '</select>';
+-	  echo '<br>';
++      echo '<br>&nbsp;&nbsp;Sort&nbsp;<select id="sortOrder" name="sortOrder" onchange="this.form.submit()">';
++      if ($sortOrder == 1) $selected = "selected"; else $selected = "";
++      echo "<option value='1' $selected>Ascending</option>";
++      if ($sortOrder == 2) $selected = "selected"; else $selected = "";
++      echo "<option value='2'  $selected>Descending</option>";
++      echo '</select>';
++
++      echo '</div><br>';
+    }
+    $f = fopen(BASE_DIR . '/' . CONVERT_CMD, 'r');
+    $convertCmd = trim(fgets($f));
+@@ -460,9 +464,10 @@
              </div>
           </div>
        </div>
-+      #### hack to keep people in the preview section of the media manager -jon -->
+-      #### hack to keep people in the preview section of the media manager -jon -->
++      #### hack to keep people in the preview section of the media manager -jon
++      -->
      
-       <div class="container-fluid">
+-      <div class="container-fluid">
++      <div class="container-fluid" style="margin-top:-50px">
        <form action="preview.php" method="POST">
+          <div id='preview' style="display: none; min-height: <?php echo $previewSize ?>px">
+             <h1 <?php echo pvDisplayStyle(''); ?>>
+@@ -474,7 +479,6 @@
+                <button class='btn btn-danger' type='submit' name='delete1' onclick='return confirm("<?php echo BTN_DELETE_CONFIRM; ?>");'><?php echo BTN_DELETE; ?></button>
+                
+                <button class='btn btn-primary' type='submit' name='convert'><?php echo BTN_CONVERT ?></button>
+-               <br>
+             </h1>
+ 
+             <div id='media'></div>
+@@ -487,14 +491,17 @@
+             }
+          </script>
+ 
++	 <center>
+          <h1 <?php echo pvDisplayStyle(''); ?>><?php echo TXT_FILES; ?>
+          <button class='btn btn-primary' type='submit' name='action' value='selectNone'><?php echo BTN_SELECTNONE; ?></button>
+          <button class='btn btn-primary' type='submit' name='action' value='selectAll'><?php echo BTN_SELECTALL; ?></button>
+          <button class='btn btn-primary' type='submit' name='action' value='zipSel'><?php echo BTN_GETZIP; ?></button>
+-         <button class='btn btn-warning' type='submit' name='action' value='deleteSel' onclick="return confirm('<?php echo BTN_DELETESEL_CONFIRM; ?>')"><?php echo BTN_DELETESEL; ?></button>
+-         <button class='btn btn-danger' type='submit' name='action' value='deleteAll' onclick="return confirm('<?php echo BTN_DELETEALL_CONFIRM; ?>')"><?php echo BTN_DELETEALL; ?></button>
++	 <br>
+          <button class='btn btn-primary' type='submit' name='action' value='lockSel'><?php echo BTN_LOCKSEL; ?></button>
+          <button class='btn btn-primary' type='submit' name='action' value='unlockSel'><?php echo BTN_UNLOCKSEL; ?></button>
++	 <br>
++         <button class='btn btn-warning' type='submit' name='action' value='deleteSel' onclick="return confirm('<?php echo BTN_DELETESEL_CONFIRM; ?>')"><?php echo BTN_DELETESEL; ?></button>
++         <button class='btn btn-danger' type='submit' name='action' value='deleteAll' onclick="return confirm('<?php echo BTN_DELETEALL_CONFIRM; ?>')"><?php echo BTN_DELETEALL; ?></button>
+          </h1>
+          <?php
+          diskUsage();
+@@ -508,6 +515,7 @@
+          }
+          if(CONTROLS_POS == 'bottom') {echo "<br>";settingsControls();}
+       ?>
++      </center>
+       </form>
+       
+       </div>
