@@ -13,7 +13,7 @@ body {
     overscroll-behaviour: contain;
     font-size: 17px;
     line-height: 24px;
-    color: #373737;
+    color: white;
     background: #F9F9F9;
     
     margin: 0 auto;
@@ -145,7 +145,7 @@ table {
     padding: 0;
     width: 100%;
     font-size: 17px;
-    color: #373737;
+    color: lightgray;
     background: #F9F9F9;
 }
 
