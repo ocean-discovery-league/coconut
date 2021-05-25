@@ -1,5 +1,5 @@
 --- preview.php	2021-05-19 16:44:35.712636312 +0100
-+++ preview.php.new	2021-05-23 22:00:30.794175992 +0100
++++ preview.php.new	2021-05-25 18:27:36.790530417 +0100
 @@ -13,13 +13,16 @@
     define('BTN_DELETESEL_CONFIRM', 'Are you sure to delete selected items?');
     define('BTN_SELECTALL', 'Select All');
@@ -20,7 +20,17 @@
     
     define('CONVERT_CMD', 'convertCmd.txt');
     
-@@ -396,16 +399,10 @@
+@@ -256,7 +259,8 @@
+             if (!maintainFolders($file, $deleteMainFiles, $deleteSubFiles, false)) $empty=false;
+          }  else {
+             if (($deleteSubFiles && !$root) || ($deleteMainFiles && $root)) {
+-              if(is_writeable($file)) unlink($file);
++              //if(is_writeable($file)) unlink($file);
++	      unlink($file);
+             } else {
+                $empty=false;
+             }
+@@ -396,16 +400,10 @@
        global $previewSize,$thumbSize,$sortOrder, $showTypes;
        global $timeFilter, $timeFilterMax;
        
@@ -41,7 +51,7 @@
        if ($showTypes == 1) $selected = "selected"; else $selected = "";
        echo "<option value='1' $selected>Images &amp Videos</option>";
        if ($showTypes == 2) $selected = "selected"; else $selected = "";
-@@ -413,7 +410,7 @@
+@@ -413,7 +411,7 @@
        if ($showTypes == 3) $selected = "selected"; else $selected = "";
        echo "<option value='3'  $selected>Videos only</option>";
        echo '</select>';
@@ -50,7 +60,7 @@
        if ($timeFilter == 1) $selected = "selected"; else $selected = "";
        echo "<option value='1' $selected>All</option>";
        for($tf = 2; $tf < $timeFilterMax;$tf++) {
-@@ -425,7 +422,14 @@
+@@ -425,7 +423,14 @@
        $tfStr = $timeFilterMax * 24 . '+ hours old';
        echo "<option value='$timeFilterMax'  $selected>$tfStr</option>";
        echo '</select>';
@@ -66,7 +76,7 @@
     }
     $f = fopen(BASE_DIR . '/' . CONVERT_CMD, 'r');
     $convertCmd = trim(fgets($f));
-@@ -460,9 +464,10 @@
+@@ -460,9 +465,10 @@
              </div>
           </div>
        </div>
@@ -79,7 +89,7 @@
        <form action="preview.php" method="POST">
           <div id='preview' style="display: none; min-height: <?php echo $previewSize ?>px">
              <h1 <?php echo pvDisplayStyle(''); ?>>
-@@ -474,7 +479,6 @@
+@@ -474,7 +480,6 @@
                 <button class='btn btn-danger' type='submit' name='delete1' onclick='return confirm("<?php echo BTN_DELETE_CONFIRM; ?>");'><?php echo BTN_DELETE; ?></button>
                 
                 <button class='btn btn-primary' type='submit' name='convert'><?php echo BTN_CONVERT ?></button>
@@ -87,7 +97,7 @@
              </h1>
  
              <div id='media'></div>
-@@ -487,14 +491,17 @@
+@@ -487,14 +492,17 @@
              }
           </script>
  
@@ -107,7 +117,7 @@
           </h1>
           <?php
           diskUsage();
-@@ -508,6 +515,7 @@
+@@ -508,6 +516,7 @@
           }
           if(CONTROLS_POS == 'bottom') {echo "<br>";settingsControls();}
        ?>
