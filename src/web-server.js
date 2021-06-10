@@ -35,6 +35,7 @@ class WebServer {
 	server.listen(PORT, BIND, () => {
 	    log.log(`server started on port ${PORT}`);
 	});
+	server.setTimeout(99999 * 1000);
 
 	let wifi = new WiFi();
 	wifi.init(app,
