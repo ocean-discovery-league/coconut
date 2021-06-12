@@ -136,6 +136,7 @@ class MissionEngine extends EventEmitter {
 		    break;
 
 		case 'RECORD_VIDEO':
+		    await this.raspiMJPEG.setFilenameAnnotation();
 		    await this.raspiMJPEG.sendCommand('ru 1');
 		    await this.raspiMJPEG.sendCommand('tl 0');
 		    await this.raspiMJPEG.sendCommand('ca 1');
@@ -147,10 +148,12 @@ class MissionEngine extends EventEmitter {
 
 		case 'PAUSE_AND_BOX_VIDEO':
 		    await this.raspiMJPEG.sendCommand('ca 0');
-		    await this.raspiMJPEG.sendCommand('sy boxh264.sh box');
+		    //await this.raspiMJPEG.sendCommand('sy boxh264.sh box');
+		    this.raspiMJPEG.sendCommand('sy boxh264.sh box');  // i don't think we want to await this
 		    break;
 
 		case 'TIME_LAPSE':
+		    await this.raspiMJPEG.setFilenameAnnotation();
 		    await this.raspiMJPEG.sendCommand('ca 0');
 		    await this.raspiMJPEG.sendCommand('md 0');
 		    await this.raspiMJPEG.sendCommand('tl '+options.cycle);
@@ -168,6 +171,7 @@ class MissionEngine extends EventEmitter {
 		    await this.raspiMJPEG.sendCommand('ca 0');
 		    await this.raspiMJPEG.sendCommand('tl 0');
 		    await this.raspiMJPEG.sendCommand('md 0');
+		    this.raspiMJPEG.sendCommand('sy boxh264.sh box');  // i don't think we want to await this
 		    break;
 
 		case 'ACTION_CLOCK_RESET':  // this should probably not be a peer to actions
@@ -194,7 +198,7 @@ class MissionEngine extends EventEmitter {
 async function tests() {
     log = console;
     const missions = require('../missions');
-    let name = 'time-based';
+    let name = 'mission1';
     if (!(name in missions)) {
 	throw new Error(`unknown mission name ${name}`);
     }

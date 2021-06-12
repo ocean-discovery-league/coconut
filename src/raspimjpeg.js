@@ -1,5 +1,6 @@
 'use strict';
 
+const os = require('os');
 const fs = require('fs');
 const fsP = require('fs').promises;
 const { EventEmitter } = require('events');
@@ -8,6 +9,7 @@ const FIFO_FILENAME = '/var/www/html/FIFO';
 const STATUS_FILENAME = '/var/www/html/status_mjpeg.txt';
 const DEFAULT_STATUS_CHANGE_WAIT_TIMEOUT = 1000;  // 1sec
 const COMMAND_MINIMUM_SETTLING_TIME = 200;  // 200ms
+const USER_ANNOTATE_FILENAME = '/dev/shm/mjpeg/user_annotate.txt';
 
 async function timeoutP(msecs) {
     return new Promise((resolve) => { setTimeout(resolve, msecs) });
@@ -53,6 +55,21 @@ class RaspiMJPEG extends EventEmitter {
 	this.last_status = status;
 	log.log('raspimjpeg status:', status);
 	return status;
+    }
+
+
+    async setFilenameAnnotation() {
+	let serial_number = os.hostname();
+	let date_now = new Date(Date.now());
+	let time_stamp = date_now.toISOString();
+	// example: 2021-06-12T16:05:58.089Z
+	time_stamp = time_stamp.replace('T', '_');
+	time_stamp = time_stamp.replace('Z', '');
+	time_stamp = time_stamp.replace(/:/g, '_');
+	time_stamp = time_stamp.replace(/-/g, '_');
+	let annotation = `${serial_number}_${time_stamp}`;
+	log.log('setting filename annotation to', annotation);
+	await fsP.writeFile(USER_ANNOTATE_FILENAME, annotation, 'utf8');
     }
 
 
