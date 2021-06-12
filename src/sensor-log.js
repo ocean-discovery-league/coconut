@@ -73,7 +73,7 @@ class SensorLog {
 	let readstream = fs.createReadStream(filename, 'utf8');
 	let readbyline = byline.createStream(readstream);
 	let firstline;
-	while (!firstline || firstline.startsWith('DEID') || firstLine.startsWith('MACA')) {
+	while (!firstline || firstline.startsWith('DEID') || firstline.startsWith('MACA')) {
 	    firstline = await new Promise((resolve) => {
 		readbyline.once('data', (line) => resolve(line));
 	    });
