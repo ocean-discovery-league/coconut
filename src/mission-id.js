@@ -63,9 +63,13 @@ class MissionID {
 	    data = JSON.parse(json);
 	    data.hostname = os.hostname();
 	    data.macaddress = await this.determineMACAddress();
-	    console.log('mac', data.macaddress);
+	    log.log('mac', data.macaddress);
 	} catch(err) {
-	    console.error(`error getting mission id file ${MISSION_ID_FILE}`, err);
+	    if ((err.code === 'ENOENT') {
+		log.log(`no mission file ${MISSION_ID_FILE}`);
+	    } else {
+		log.error(`error getting mission id file ${MISSION_ID_FILE}`, err);
+	    }
 	}
 	return data;
     }
@@ -77,11 +81,11 @@ class MissionID {
 	    let lastchanged = (new Date(Date.now())).toISOString();
 	    let data = {username, missionid, lastchanged};
 	    let json = JSON.stringify(data);
-	    console.log('missionid json', json);
+	    log.log('missionid json', json);
 	    await fsP.writeFile(MISSION_ID_FILE, json, 'utf8');
 	    success = true;
 	} catch(err) {
-	    console.error(`error saving mission id file ${MISSION_ID_FILE}`, err);
+	    log.error(`error saving mission id file ${MISSION_ID_FILE}`, err);
 	}
 	return success;
     }
@@ -94,15 +98,15 @@ class MissionID {
 	let filename;
 	try {
 	    filename = sensor_log_filename + '.id.txt';
-	    console.log('filename', filename);
+	    log.log('filename', filename);
 	    let data = await this.getMissionId();
 	    data.missionstarted = (new Date(Date.now())).toISOString();
 	    let json = JSON.stringify(data);
-	    console.log('missionid marker file json', json);
+	    log.log('missionid marker file json', json);
 	    await fsP.writeFile(filename, json, 'utf8');
 	    success = true;
 	} catch(err) {
-	    console.error(`error saving mission id marker file ${filename}`, err);
+	    log.error(`error saving mission id marker file ${filename}`, err);
 	}
 	return success;
     }
