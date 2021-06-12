@@ -65,7 +65,7 @@ class MissionID {
 	    data.macaddress = await this.determineMACAddress();
 	    log.log('mac', data.macaddress);
 	} catch(err) {
-	    if ((err.code === 'ENOENT') {
+	    if (err.code === 'ENOENT') {
 		log.log(`no mission file ${MISSION_ID_FILE}`);
 	    } else {
 		log.error(`error getting mission id file ${MISSION_ID_FILE}`, err);
