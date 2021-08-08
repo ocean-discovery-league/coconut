@@ -8,7 +8,7 @@
 /// pictures every 5 seconds until GPS lock is regained
 
 const params = {
-    TIME_LAPSE_CYCLE: 50  // in 1/10s,  50 = take picture every 5 secs
+    TIME_LAPSE_CYCLE: 600  // in 1/10s,  600 = take picture every 60 secs
 };
 
 
