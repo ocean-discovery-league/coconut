@@ -12,7 +12,7 @@ const params = {
     DEPTH_START_METERS: 2.0,  // start recording phase when we are deeper than this
     RECORD_CYCLE_MINS: 5,     // how many minutes to record per cycle
     PAUSE_CYCLE_MINS: 15,     // how many minutes to pause per cycle
-    DEPTH_END_MISSION_METERS: 2.0  // end everything when we come back up and are shallower than this
+    DEPTH_END_MISSION_METERS: 1.5  // end everything when we come back up and are shallower than this
 };
 
 const MS_PER_MINUTE = 1000 * 60;
