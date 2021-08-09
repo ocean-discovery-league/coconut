@@ -64,7 +64,7 @@ window.missionPrograms.mission2a = [
         { key: "Phase2", text: "Record", isGroup: true, category: "Pool" },
         { key: "Action2-1", text: "record", isGroup: true, group: "Phase2", color: "#D2E0E3" },
         { key: "Block2-1-1", text: "Timelapse Photos", group: "Action2-1", color: "#D2E0E3" },
-        { key: "Block2-1-2", text: "⏱  Every 5 Secs", group: "Action2-1", color: "#7BA5AF" },
+        { key: "Block2-1-2", text: "⏱  Every 60 Secs", group: "Action2-1", color: "#7BA5AF" },
 
         { key: "Phase3", text: "End", isGroup: true, category: "Pool" },
         { key: "Action3-1", text: "end", isGroup: true, group: "Phase3", color: "#FAE6CE" },
