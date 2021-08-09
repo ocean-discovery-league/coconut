@@ -115,7 +115,7 @@ class UploadAll extends EventEmitter {
 
     async createMediaId() {
 	this.upload_media_id = false;
-	await this.uploadOneFile('static/coconut.jpg', 120);
+	await this.uploadOneFile('static/tatorfile.jpg', 120);
 	let media_id;
 	if (this.upload_media_id) {
 	    media_id = this.upload_media_id;
