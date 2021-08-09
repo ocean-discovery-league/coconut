@@ -14,17 +14,17 @@ window.missionPrograms.mission1a = [
 
         { key: "Phase2", text: "Phase 2", isGroup: true, category: "Pool" },
         { key: "Action2-1", text: "record", isGroup: true, group: "Phase2", color: "#D2E0E3" },
-        { key: "Block2-1-1", text: " If Depth >2 m ", group: "Action2-1", color: "#D2E0E3" },
+        { key: "Block2-1-1", text: " If Depth >1.5 m ", group: "Action2-1", color: "#D2E0E3" },
         { key: "Block2-1-2", text: " Record Video ", group: "Action2-1", color: "#7BA5AF" },
         { key: "Block2-1-3", text: "⏱  For 5 Minutes", group: "Action2-1", color: "#4D818E" },
         { key: "Action2-2", text: "next", isGroup: true, group: "Phase2", color: "#D2E0E3" },
-        { key: "Block2-2-1", text: " If Depth >2 m ", group: "Action2-2", color: "#D2E0E3" },
+        { key: "Block2-2-1", text: " If Depth >1.5 m ", group: "Action2-2", color: "#D2E0E3" },
         { key: "Block2-2-2", text: " Pause Video ", group: "Action2-2", color: "#7BA5AF" },
         { key: "Block2-2-3", text: "⏱  For 15 Minutes", group: "Action2-2", color: "#4D818E" },
 
         { key: "Phase3", text: "End", isGroup: true, category: "Pool" },
         { key: "Action3-1", text: "end", isGroup: true, group: "Phase3", color: "#FAE6CE" },
-        { key: "Block3-1-1", text: " If Depth <2 m ", group: "Action3-1", color: "#FAE6CE" },
+        { key: "Block3-1-1", text: " If Depth <1.5 m ", group: "Action3-1", color: "#FAE6CE" },
         { key: "Block3-1-2", text: "End Mission", group: "Action3-1", color: "#F1B36F" },
     ],
     [ // link data
