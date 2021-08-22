@@ -156,7 +156,8 @@ class MissionEngine extends EventEmitter {
 		    await this.raspiMJPEG.setFilenameAnnotation();
 		    await this.raspiMJPEG.sendCommand('ca 0');
 		    await this.raspiMJPEG.sendCommand('md 0');
-		    await this.raspiMJPEG.sendCommand('tl '+options.cycle);
+		    await this.raspiMJPEG.sendCommand('tv '+options.cycle);
+		    await this.raspiMJPEG.sendCommand('tl 1');
 		    break;
 
 		case 'STOP_CAMERA':
