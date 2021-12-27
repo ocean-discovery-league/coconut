@@ -10,7 +10,7 @@ git clone https://github.com/tj/n node/n
 #https://raspberrypi.stackexchange.com/questions/111130/how-to-install-nodejs-v12-on-raspi-zero-armv6-not-available-for-download-anymor
 # download the unofficial build and stick it into n's downloaded versions directory
 # so it'll find it there and not try to look for it at nodejs.org and fail
-if [[ `uname -m` -eq "arm6l" ]]; then
+if [[ `uname -m` = "armv6l" ]]; then
     echo "Downloading nodejs ${node_version} for armv6 from unofficial builds..."
     mkdir -p node/n/versions/node
     (cd node/n/versions/node
@@ -24,7 +24,7 @@ fi
 N_PREFIX=`pwd`/node node/bin/n $node_version
 
 # arm6l version of node crashes because of no wasm support
-if [[ `name -m` -eq "arm6l" ]]; then
+if [[ `uname -m` = "armv6l" ]]; then
     mv node/bin/node{,.actual}
     cat > node/bin/node <EOF
 #!/bin/sh
