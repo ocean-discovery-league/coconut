@@ -8,7 +8,12 @@
 /bin
 /node
 /python
-/node_modules
-/node_modules.old
-/node_modules.hide
+node_modules
+node_modules.old
+node_modules.hide
 /build
+/.svelte-kit
+/package
+.env
+.env.*
+!.env.example
