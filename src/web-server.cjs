@@ -13,6 +13,7 @@ const WiFi = require('./wifi.cjs');
 const PORT = 6252;
 //const BIND = '127.0.0.1';
 const BIND = '0.0.0.0';
+const BUILD_DIR = __dirname + '/../build';
 const STATIC_DIR = __dirname + '/../static';
 
 let log = console;
@@ -28,7 +29,8 @@ class WebServer {
 
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
-        //app.use(serveStatic(STATIC_DIR));
+        app.use(serveStatic(BUILD_DIR));
+        app.use(serveStatic(STATIC_DIR));
 
         let server = http.createServer(app);
         let io = socketio(server);
@@ -53,7 +55,7 @@ class WebServer {
         let missionID = new MissionID();
         await missionID.init(app, io);
 
-        app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
+        //app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
     }
 }
 
