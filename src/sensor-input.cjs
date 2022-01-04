@@ -4,9 +4,9 @@ const fs = require('fs');
 const fsP = require('fs').promises;
 const tail = require('tail');
 const byline = require('byline');
-const byclock = require('./byclock');
-const sensors = require('./sensors');
-const sensorLog = require('./sensor-log');
+const byclock = require('./byclock.cjs');
+const sensors = require('./sensors.cjs');
+const sensorLog = require('./sensor-log.cjs');
 
 const NS_PER_SEC = 1e9;
 const NS_PER_MS = 1000000;

@@ -10,20 +10,20 @@ let missions = {};
 function scanForMissions() {
     let filenames = fs.readdirSync(__dirname);
     for (let filename of filenames) {
-	if (!filename.endsWith('.js')) {
-	    continue;
-	}
-	if (filename === 'index.js') {
-	    continue;
-	}
+    if (!filename.endsWith('.cjs')) {
+        continue;
+    }
+    if (filename === 'index.cjs') {
+        continue;
+    }
 
-	let mission_name = path.basename(filename, '.js');
-	try {
-	    missions[mission_name] = require('./' + mission_name);
-	} catch(err) {
-	    console.error(`could not load mission ${__dirname+'/'+mission_name+'.js'}`);
-	    console.error(err);
-	}
+    let mission_name = path.basename(filename, '.cjs');
+    try {
+        missions[mission_name] = require('./' + filename);
+    } catch(err) {
+        console.error(`could not load mission ${__dirname+'/'+mission_name+'.cjs'}`);
+        console.error(err);
+    }
     }
 }
 
@@ -35,9 +35,9 @@ if (require.main === module) {
     let mission_names = Object.keys(missions).sort();
     console.log(`${mission_names.length} missions found and loaded:`);
     for (let mission_name of mission_names) {
-	console.log(`  ${mission_name}`);
+    console.log(`  ${mission_name}`);
     }
 }
-    
+
 
 module.exports = missions;

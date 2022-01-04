@@ -1,8 +1,8 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-const PulseClock = require('./pulse-clock');
-const RaspiMJPEG = require('./raspimjpeg');
+const PulseClock = require('./pulse-clock.cjs');
+const RaspiMJPEG = require('./raspimjpeg.cjs');
 
 const PULSE_CLOCK_INTERVAL_MS = 300;
 const MINUTE_MS = 1000 * 60;

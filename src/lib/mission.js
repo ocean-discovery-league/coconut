@@ -1,21 +1,26 @@
-(function() {
+import * as go from 'gojs';
 
 const MINLENGTH = 350;  // this controls the minimum length of any swimlane
 const MINBREADTH = 70;  // this controls the minimum breadth of any non-collapsed swimlane
 let n=0;  // used in addNode to create unique keys FIXME
 
 
-class Mission {
+
+export default class Mission {
     constructor() {
 	this.currentSelection = undefined;
     }
 
 
-    init(missionProgram, missionId, label_name, toolbox_name) {
-	this.program = missionProgram;
-	this.id = missionId;
-	this.label_name = label_name;
-	this.toolbox_name = toolbox_name;
+    init(programid) {
+        if (!window.missionPrograms[programid]) {
+            throw new Error(`mission program '${programid}' not found`);
+        }
+	this.programid = programid;
+        this.program = window.missionPrograms[programid];
+	this.diagram_div_id = this.programid + '-diagram';
+	this.label_div_id   = this.programid + '-label';
+	this.toolbox_div_id = this.programid + '-toolbox';
 	this.initDiagram();
     }
 
@@ -45,22 +50,22 @@ class Mission {
         let shape = part.elt(0);
         console.log('shape', shape);
         console.log('data', part.data);
-        let label_el = document.querySelectorAll(this.label_name)[0];
-        let toolbox = document.querySelectorAll(this.toolbox_name)[0];
+        let label_div   = document.querySelector('#'+this.label_div_id);
+        let toolbox_div = document.querySelector('#'+this.toolbox_div_id);
         if (part && part.isSelected) {
-            console.log(label_el.value)
+            console.log(label_div.value)
             console.log(part.data.key);
-            console.log(label_el.value)
+            console.log(label_div.value)
             this.currentSelection = part;
-            label_el.value=part.data.key;
-            console.log('style', toolbox.style);
-            toolbox.style.bottom = '0px';
+            label_div.value=part.data.key;
+            console.log('style', toolbox_div.style);
+            toolbox_div.style.bottom = '0px';
         } else {
             console.log('unselect');
             this.currentSelection = undefined;
-            label_el.value='';
-            console.log('style', toolbox.style);
-            toolbox.style.bottom ='-150px';
+            label_div.value='';
+            console.log('style', toolbox_div.style);
+            toolbox_div.style.bottom ='-150px';
         }
         
     }
@@ -68,9 +73,9 @@ class Mission {
 
     onChangeHandler() {
         console.log('onchange', this.currentSelection);
-        let label_el = document.querySelectorAll('#label')[0];
+        let label_div = document.querySelector('#'+this.label_div_id);
         if (this.currentSelection) {
-            this.diagram.model.set(this.currentSelection.data, 'key', label_el.value);
+            this.diagram.model.set(this.currentSelection.data, 'key', label_div.value);
         }
     }
 
@@ -120,7 +125,7 @@ class Mission {
         var $ = go.GraphObject.make;
 
         this.diagram =
-            $(go.Diagram, this.id,
+            $(go.Diagram, this.diagram_div_id,
               {
                   // use a custom ResizingTool (along with a custom ResizeAdornment on each Group)
                   resizingTool: new LaneResizingTool(),
@@ -509,11 +514,3 @@ class PoolLayout extends go.GridLayout {
         diagram.commitTransaction("PoolLayout");
     };
 }
-
-
-window.Mission = Mission;
-// window.mission1.onChangeHandler = onChangeHandler;
-// window.mission1.deleteNode = deleteNode;
-// window.mission1.addNode = addNode;
-
-})();

@@ -1,5 +1,6 @@
 'use strict';
 
+const os = require('os');
 const fs = require('fs');
 const fsP = require('fs').promises;
 const path = require('path');
@@ -7,7 +8,7 @@ const util = require('util');
 const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
 
-const MEDIA_DIR = '/var/www/html/media';
+const MEDIA_DIR = (os.platform() === 'darwin') ? './test/media' : '/var/www/html/media';
 
 const shunt = () => {};
 let log = {

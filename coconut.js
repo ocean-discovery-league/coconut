@@ -1,7 +1,7 @@
 'use strict';
 
-const WebServer = require('./src/web-server');
-const MissionManager = require('./src/mission-manager');
+import WebServer from './src/web-server.cjs';
+import MissionManager from './src/mission-manager.cjs';
 
 
 async function main() {
