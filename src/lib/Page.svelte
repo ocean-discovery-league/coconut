@@ -54,5 +54,5 @@
 </section>
 
 <style>
-  x-* { outline: solid 1px lightblue; }
+  /* * { outline: solid 1px lightblue; } */
 </style>

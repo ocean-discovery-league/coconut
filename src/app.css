@@ -9,7 +9,7 @@ body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     width: 100% !important;
     max-width: 100%;
-    //overflow-y: hidden;
+    /* overflow-y: hidden; */
     overscroll-behaviour: contain;
     font-size: 17px;
     line-height: 24px;
@@ -38,18 +38,18 @@ section {
   width: 100vw;
   min-width: 100vw;
   height: 150vh;
-  //border-right: 1px solid white;
-  //padding: 1rem;
+  /* border-right: 1px solid white; */
+  /* padding: 1rem; */
   padding-top: 80px;
   scroll-snap-align: start;
-  //scroll-snap-stop: always;
+  /* scroll-snap-stop: always; */
   text-align: center;
   position: relative;
 }
 
 section:nth-child(even) {
     background-color: #13343D;
-    // https://www.colorhexa.com/006994  // old
+    /* old colors - https://www.colorhexa.com/006994 */
 }
 section:nth-child(odd) {
     background-color: #1B3C45;
@@ -65,7 +65,7 @@ section:nth-child(odd) {
 }
 
 h1, h2, h3, h4 {
-    //color: #2ab27b;
+    /* color: #2ab27b; */
     color: #FFFFFF;
     margin-bottom: 12px;
     line-height: 26px;
