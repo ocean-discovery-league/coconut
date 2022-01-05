@@ -10,18 +10,18 @@ let missions = {};
 function scanForMissions() {
     let filenames = fs.readdirSync(__dirname);
     for (let filename of filenames) {
-    if (!filename.endsWith('.cjs')) {
+    if (!filename.endsWith('.js')) {
         continue;
     }
-    if (filename === 'index.cjs') {
+    if (filename === 'index.js') {
         continue;
     }
 
-    let mission_name = path.basename(filename, '.cjs');
+    let mission_name = path.basename(filename, '.js');
     try {
         missions[mission_name] = require('./' + filename);
     } catch(err) {
-        console.error(`could not load mission ${__dirname+'/'+mission_name+'.cjs'}`);
+        console.error(`could not load mission ${__dirname+'/'+mission_name+'.js'}`);
         console.error(err);
     }
     }

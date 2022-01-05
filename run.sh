@@ -9,4 +9,4 @@ source ./activate
 INTERFACE='wlan0'
 
 echo "starting coconut daemon"
-exec node ./coconut.js $INTERFACE
+exec node ./server/coconut.js $INTERFACE
