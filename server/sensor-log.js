@@ -3,7 +3,7 @@
 const fs = require('fs');
 const util = require('util');
 const byline = require('byline');
-const sensors = require('./sensors.cjs');
+const sensors = require('./sensors.js');
 const MEDIA_DIR = '/var/www/html/media';
 
 const shunt = () => {};

@@ -6,14 +6,14 @@ const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const socketio = require('socket.io');
-const UploadAll = require('./upload-all.cjs');
-const MissionID = require('./mission-id.cjs');
-const WiFi = require('./wifi.cjs');
+const UploadAll = require('./upload-all.js');
+const MissionID = require('./mission-id.js');
+const WiFi = require('./wifi.js');
 
 const PORT = 6252;
 //const BIND = '127.0.0.1';
 const BIND = '0.0.0.0';
-const BUILD_DIR = __dirname + '/../build';
+const CLIENT_DIR = __dirname + '/../client/build';
 const STATIC_DIR = __dirname + '/../static';
 
 let log = console;
@@ -29,7 +29,7 @@ class WebServer {
 
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
-        app.use(serveStatic(BUILD_DIR));
+        app.use(serveStatic(CLIENT_DIR));
         app.use(serveStatic(STATIC_DIR));
 
         let server = http.createServer(app);

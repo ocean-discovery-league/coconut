@@ -1,8 +1,8 @@
 'use strict';
 
 const stream = require('stream');
-const SensorLog = require('./sensor-log.cjs');
-const PulseClock = require('./pulse-clock.cjs');
+const SensorLog = require('./sensor-log.js');
+const PulseClock = require('./pulse-clock.js');
 
 const shunt = () => {};
 let log = {

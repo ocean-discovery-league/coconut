@@ -1,10 +1,10 @@
 'use strict';
 
-const RingInput = require('./ring-input.cjs');
-const SensorInput = require('./sensor-input.cjs');
-const MissionEngine = require('./mission-engine.cjs');
-const MissionId = require('./mission-id.cjs');
-const missions = require('../missions/index.cjs');
+const RingInput = require('./ring-input.js');
+const SensorInput = require('./sensor-input.js');
+const MissionEngine = require('./mission-engine.js');
+const MissionId = require('./mission-id.js');
+const missions = require('../missions/index.js');
 
 let log = console;
 
