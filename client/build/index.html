@@ -11,14 +11,16 @@
 		
 
 		<link rel="stylesheet" href="/_app/assets/start-61d1577b.css">
-		<link rel="stylesheet" href="/_app/assets/pages/__layout.svelte-4c988237.css">
-		<link rel="modulepreload" href="/_app/start-4a3fa1d8.js">
-		<link rel="modulepreload" href="/_app/chunks/vendor-fe0ac470.js">
-		<link rel="modulepreload" href="/_app/pages/__layout.svelte-45f7371d.js">
-		<link rel="modulepreload" href="/_app/pages/index.svelte-d59ed9d7.js">
+		<link rel="stylesheet" href="/_app/assets/vendor-2c0e3971.css">
+		<link rel="stylesheet" href="/_app/assets/pages/__layout.svelte-9365a014.css">
+		<link rel="stylesheet" href="/_app/assets/pages/index.svelte-f0a10b71.css">
+		<link rel="modulepreload" href="/_app/start-98a50620.js">
+		<link rel="modulepreload" href="/_app/chunks/vendor-b1daa0ab.js">
+		<link rel="modulepreload" href="/_app/pages/__layout.svelte-43fb59c2.js">
+		<link rel="modulepreload" href="/_app/pages/index.svelte-590cc29f.js">
 
 		<script type="module">
-			import { start } from "/_app/start-4a3fa1d8.js";
+			import { start } from "/_app/start-98a50620.js";
 			start({
 				target: document.querySelector("#svelte"),
 				paths: {"base":"","assets":""},
@@ -30,8 +32,8 @@
 					status: 200,
 					error: null,
 					nodes: [
-						import("/_app/pages/__layout.svelte-45f7371d.js"),
-						import("/_app/pages/index.svelte-d59ed9d7.js")
+						import("/_app/pages/__layout.svelte-43fb59c2.js"),
+						import("/_app/pages/index.svelte-590cc29f.js")
 					],
 					url: new URL("http://prerender/"),
 					params: {}
@@ -139,11 +141,13 @@
 <h2>All settings are currently automatic</h2>
 
 <center><div style="position:relative">
-  <div id="mission1a-diagram" style="width:75%;height:790px"></div>
-  <div id="mission1a-toolbox" style="position:fixed;left:0px;bottom:-150px;height:150px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s"><button value="delete">🚮</button>
-    <button value="add_before">↪️</button>
-    <button value="add_after">↩️</button>
-    <input id="mission1a-label"></div></div></center>
+<div id="mission1-diagram" style="width:75%;height:790px"></div>
+
+  <div style="position:fixed;left:0px;bottom:-200px;height:200px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s"><br>
+    <div class="sliderContainer svelte-ddbtk9">
+      <div class="close svelte-ddbtk9"><svg fill="none" viewBox="0 0 24 24" height="48" width="48" xmlns="http://www.w3.org/2000/svg"><path xmlns="http://www.w3.org/2000/svg" d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM7.79289 7.79289C8.18342 7.40237 8.81658 7.40237 9.20711 7.79289L12 10.5858L14.7929 7.79289C15.1834 7.40237 15.8166 7.40237 16.2071 7.79289C16.5976 8.18342 16.5976 8.81658 16.2071 9.20711L13.4142 12L16.2071 14.7929C16.5976 15.1834 16.5976 15.8166 16.2071 16.2071C15.8166 16.5976 15.1834 16.5976 14.7929 16.2071L12 13.4142L9.20711 16.2071C8.81658 16.5976 8.18342 16.5976 7.79289 16.2071C7.40237 15.8166 7.40237 15.1834 7.79289 14.7929L10.5858 12L7.79289 9.20711C7.40237 8.81658 7.40237 8.18342 7.79289 7.79289Z" fill="#7BA5AF"></path></svg></div></div>
+    </div>
+</div></center>
 </section>
 
 
@@ -153,11 +157,13 @@
 <h2>All settings are currently automatic</h2>
 
 <center><div style="position:relative">
-  <div id="mission2a-diagram" style="width:75%;height:700px"></div>
-  <div id="mission2a-toolbox" style="position:fixed;left:0px;bottom:-150px;height:150px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s"><button value="delete">🚮</button>
-    <button value="add_before">↪️</button>
-    <button value="add_after">↩️</button>
-    <input id="mission2a-label"></div></div></center>
+<div id="mission2-diagram" style="width:75%;height:700px"></div>
+
+  <div style="position:fixed;left:0px;bottom:-200px;height:200px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s"><br>
+    <div class="sliderContainer svelte-ddbtk9">
+      <div class="close svelte-ddbtk9"><svg fill="none" viewBox="0 0 24 24" height="48" width="48" xmlns="http://www.w3.org/2000/svg"><path xmlns="http://www.w3.org/2000/svg" d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM7.79289 7.79289C8.18342 7.40237 8.81658 7.40237 9.20711 7.79289L12 10.5858L14.7929 7.79289C15.1834 7.40237 15.8166 7.40237 16.2071 7.79289C16.5976 8.18342 16.5976 8.81658 16.2071 9.20711L13.4142 12L16.2071 14.7929C16.5976 15.1834 16.5976 15.8166 16.2071 16.2071C15.8166 16.5976 15.1834 16.5976 14.7929 16.2071L12 13.4142L9.20711 16.2071C8.81658 16.5976 8.18342 16.5976 7.79289 16.2071C7.40237 15.8166 7.40237 15.1834 7.79289 14.7929L10.5858 12L7.79289 9.20711C7.40237 8.81658 7.40237 8.18342 7.79289 7.79289Z" fill="#7BA5AF"></path></svg></div></div>
+    </div>
+</div></center>
 </section></div>
 </main>
 
@@ -166,6 +172,6 @@
     <script src="/socket.io/socket.io.js"></script>
     <!-- <script src="go.js"></script> -->
     <!-- <script src="go-debug.js"></script> -->
-    <script src="/mission-programs.js"></script>
+    <!-- <script src="/mission-programs.js"></script> -->
   </body>
 </html>
