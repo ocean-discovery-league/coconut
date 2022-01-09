@@ -10,5 +10,5 @@
 <h2>All settings are currently automatic</h2>
 
 <center>
-  <MissionProgram programid="mission2a" height="700px"/>
+  <MissionProgram programid="mission2" height="700px"/>
 </center>

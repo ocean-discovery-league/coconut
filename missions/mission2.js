@@ -7,7 +7,7 @@
 /// this mission waits until GPS lock has been lost, and then takes
 /// pictures every 5 seconds until GPS lock is regained
 
-const params = {
+let params = {
     TIME_LAPSE_CYCLE: 600  // in 1/10s,  600 = take picture every 60 secs
 };
 
@@ -50,4 +50,52 @@ function mission2(current_phase, cycle_num, elapsed, action_elapsed, monoclock, 
 }
 
 
-module.exports = {program: mission2, params: params};
+const diagram = [
+    [ // node data
+        // { key: "Phase0", text: "Start", isGroup: true, category: "Pool" },
+        // { key: "Action0-1", text: "start", isGroup: true, group: "Phase0", color: "#FDF3CD" },
+        // { key: "Block0-1-1", text: " If Collar @ M2 ", group: "Action0-1", color: "#FDF3CD" },
+        // { key: "Block0-1-2", text: " Start Mission ", group: "Action0-1", color: "#FBDB6B" },
+
+        { key: "Phase1", text: "Wait", isGroup: true, category: "Pool" },
+        { key: "Action1-1", text: "no GPS", isGroup: true, group: "Phase1", color: "#D2E0E3" },
+        { key: "Block1-1-1", text: " Start ", group: "Action1-1", color: "#FBDB6B" },
+        { key: "Block1-1-2", text: "If No GPS Signal" , group: "Action1-1", color: "#D2E0E3" },
+
+        { key: "Phase2", text: "Record", isGroup: true, category: "Pool" },
+        { key: "Action2-1", text: "record", isGroup: true, group: "Phase2", color: "#D2E0E3" },
+        { key: "Block2-1-1", text: "Timelapse Photos", group: "Action2-1", color: "#D2E0E3" },
+        { key: "Block2-1-2", text: "{}", group: "Action2-1", color: "#7BA5AF",
+	  param: "TIME_LAPSE_CYCLE",
+	  value: 600,
+	  type: "interval",
+	  scale: "decisecond",
+	  units_label: "seconds",
+	  template: "⏱ Every {x} sec{s}",
+	  default: 600,
+	  range: {
+	    low: 1,
+	    high: 36000
+	  }
+	},
+        { key: "Phase3", text: "End", isGroup: true, category: "Pool" },
+        { key: "Action3-1", text: "end", isGroup: true, group: "Phase3", color: "#FAE6CE" },
+        { key: "Block3-1-1", text: "End ", group: "Action3-1", color: "#F1B36F" },
+        { key: "Block3-1-2", text: "If GPS Signal", group: "Action3-1", color: "#FAE6CE" },
+    ],
+    [ // link data
+        { from: "Block0-1-1", to: "Block0-1-2" },
+        { from: "Phase0", to: "Phase1" },
+
+        { from: "Block1-1-1", to: "Block1-1-2" },
+        { from: "Phase1", to: "Phase2" },
+
+        { from: "Block2-1-1", to: "Block2-1-2" },
+        { from: "Phase2", to: "Phase3" },
+
+        { from: "Block3-1-1", to: "Block3-1-2" },
+    ]
+];
+
+
+module.exports = {program: mission2, params: params, diagram: diagram};
