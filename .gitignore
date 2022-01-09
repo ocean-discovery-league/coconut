@@ -14,6 +14,7 @@ node_modules.hide
 #/client/build
 /client/.svelte-kit
 /client/package
+/missions/*.json
 .env
 .env.*
 !.env.example

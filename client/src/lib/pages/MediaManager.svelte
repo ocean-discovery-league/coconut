@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
+  import { getSocketIO } from '$lib/utils';
 
   let socket;
 
@@ -7,13 +8,7 @@
     let mediamanager = document.getElementById('mediamanager');
     mediamanager.src = window.location.protocol + '//' + window.location.hostname + '/html/preview.php';
     
-    socket = io.connect();
-    socket.on('error', console.error);
-    socket.on('connection', () => {
-      console.log('web socket connected');
-    });
-    socket.on('disconnect', () => console.log('web socket disconnected'));
-
+    socket = getSocketIO();
     socket.on('filecounts', (data) => update_file_counts(data));
     socket.on('uploadprogress', (data) => update_upload_progress(data));
   });

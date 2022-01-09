@@ -20,7 +20,7 @@ let log = console;
 
 
 class WebServer {
-    async init() {
+    async init(missionPrograms) {
         let app = express();
         app.use((req, res, next) => {
             log.log(req.method, req.url);
@@ -29,7 +29,7 @@ class WebServer {
 
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
-        app.use(serveStatic(CLIENT_DIR));
+        //app.use(serveStatic(CLIENT_DIR));
         app.use(serveStatic(STATIC_DIR));
 
         let server = http.createServer(app);
@@ -49,13 +49,15 @@ class WebServer {
             }
         });
 
+        missionPrograms.addRoutes(app, io);
+
         let uploadAll = new UploadAll();
         uploadAll.init(app, io);
 
         let missionID = new MissionID();
         await missionID.init(app, io);
 
-        //app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
+        app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
     }
 }
 

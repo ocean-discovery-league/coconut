@@ -4,13 +4,13 @@ const RingInput = require('./ring-input.js');
 const SensorInput = require('./sensor-input.js');
 const MissionEngine = require('./mission-engine.js');
 const MissionId = require('./mission-id.js');
-const missions = require('../missions/index.js');
 
 let log = console;
 
 
 class MissionManager {
-    async init() {
+    async init(missionPrograms) {
+	this.missionPrograms = missionPrograms;
 	this.ringInput = new RingInput();
 	await this.ringInput.init();
     }
@@ -53,7 +53,7 @@ class MissionManager {
 		await this.sensorInput.start(this.filename);
 
 		let name = `ring${this.modenum}`;
-		let mission = missions[name];
+		let mission = this.missionPrograms.get(name);
 		if (!mission) {
 		    await this.stopMission();
 		    throw new Error('mission ${name} not found!');
@@ -69,7 +69,7 @@ class MissionManager {
 	    this.sensorInput = new SensorInput();
 	    await this.sensorInput.init();
 	    await this.sensorInput.start(this.filename, true, speedFactor);
-	    let mission = missions[missionName];
+	    let mission = this.missionPrograms.get(missionName);
 	    if (!mission) {
 		await this.stopMission();
 		throw new Error('mission ${missionName} not found!');
@@ -101,13 +101,16 @@ async function tests() {
     log = console;
     let name = process.argv[2] || 'mission1';
     let filename = '../test/MKN0002_M1_2021_02_22_17_03_57.423.txt';
-    if (name in missions) {
+    const MissionPrograms = require('./mission-programs');
+    await missionPrograms.init();
+
+    if (missionPrograms.get(name)) {
 	let missionManager = new MissionManager();
-	await missionManager.init();
+	await missionManager.init(missionPrograms);
 	await missionManager.start(name, filename, 30.0);
     } else {
 	log.error(`unknown mission name ${name}`);
-	log.error(`available missions: ${Object.keys(missions).sort().join(' ')}`);
+	//log.error(`available missions: ${Object.keys(missions).sort().join(' ')}`);
     }
 }
 

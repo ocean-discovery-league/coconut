@@ -10,5 +10,5 @@
 <h2>All settings are currently automatic</h2>
 
 <center>
-  <MissionProgram programid="mission1a"/>
+  <MissionProgram programid="mission1"/>
 </center>
