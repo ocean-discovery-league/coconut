@@ -29,7 +29,7 @@ class WebServer {
 
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
-        //app.use(serveStatic(CLIENT_DIR));
+        app.use(serveStatic(CLIENT_DIR));
         app.use(serveStatic(STATIC_DIR));
 
         let server = http.createServer(app);
@@ -57,7 +57,7 @@ class WebServer {
         let missionID = new MissionID();
         await missionID.init(app, io);
 
-        app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
+        //app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
     }
 }
 
