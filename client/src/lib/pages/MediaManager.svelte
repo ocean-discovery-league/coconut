@@ -122,7 +122,7 @@
 <br>
 
 <center>
-  <button id="uploadall" onclick="window.client.upload_all(event)" style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 14px; line-height: 18px; border-top: 8px solid; border-bottom: 8px solid; border-right: 12px solid; border-left: 12px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
+  <button id="uploadall" on:click={upload_all} style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 14px; line-height: 18px; border-top: 8px solid; border-bottom: 8px solid; border-right: 12px solid; border-left: 12px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
     Upload All Files To Tator.io
   </button>
   <div id="uploadstatus" style="color:white;font-size:20px;line-height:22px;margin-top:20px">&nbsp;</div>
