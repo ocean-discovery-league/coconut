@@ -74,7 +74,7 @@ const diagram = [
 	  value: 2,
 	  type: "interval",
 	  scale: "m",
-	  units_label: "meters",
+	  units_label: "meter{s}",
 	  template: "⬇️ If depth > {x}m",
 	  default: 2,
 	  range: {
@@ -92,7 +92,7 @@ const diagram = [
 	  value: 5,
 	  type: "interval",
 	  scale: "minutes",
-	  units_label: "minutes",
+	  units_label: "minute{s}",
 	  template: "⏱ For {x} minute{s}",
 	  default: 5,
 	  range: {
@@ -108,7 +108,7 @@ const diagram = [
 	  value: 15,
 	  type: "interval",
 	  scale: "minutes",
-	  units_label: "minutes",
+	  units_label: "minute{s}",
 	  template: "⏱ For {x} minute{s}",
 	  default: 15,
 	  range: {

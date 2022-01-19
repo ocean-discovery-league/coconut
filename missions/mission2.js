@@ -70,7 +70,7 @@ const diagram = [
 	  value: 600,
 	  type: "interval",
 	  scale: "decisecond",
-	  units_label: "seconds",
+	  units_label: "second{s}",
 	  template: "⏱ Every {x} sec{s}",
 	  default: 600,
 	  range: {

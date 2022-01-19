@@ -21,6 +21,19 @@
   let toolbox_div_id = programid + '-toolbox';
 
 
+  export function clearSelection() {
+    console.log('clearSelection()', diagram);
+    if (diagram) {
+      console.log('clearing');
+      diagram.clearSelection();
+      let canvas = document.querySelector(`#${diagram_div_id} > canvas`);
+      console.log('canvas', canvas);
+      if (canvas) {
+	canvas.blur();
+      }
+    }
+  }
+
   onMount( async ()=> {
     let request = await fetch(`/mission/diagram/${programid}`);
     program = await request.json();
@@ -341,11 +354,27 @@
           { margin: new go.Margin(8, 12, 8, 12), font: "24px Helvetica,sans-serif" },
           new go.Binding("text", "", formatNodeTextLabel)),  // binding to get TextBlock.text from node.value
         {
-          dragComputation: stayInGroup, // limit dragging of Nodes to stay within the containing Group, defined above
-          selectionChanged: (part) => { console.log('partp', part); dispatch('selectionchanged', part)},
+          //dragComputation: stayInGroup, // limit dragging of Nodes to stay within the containin
+          dragComputation: (e) => { e.diagram.currentTool.doCancel(); },
+          selectionChanged: (part) => { console.log('partp', part);
+					if (part.data.param) {
+					  dispatch('selectionchanged', part);
+					} else {
+					  //part.diagram.currentTool.doCancel();
+					  //part.diagram.cancelSelection();
+					}
+				      },
+
+
         }
        );
 
+    diagram.isReadOnly = true;
+    diagram.toolManager.panningTool.isEnabled = false;
+    diagram.toolManager.dragSelectingTool.isEnabled = false;
+    diagram.allowHorizontalScroll = false;
+    diagram.allowVerticalScroll = false;
+    
     // define some sample graphs in some of the lanes
     //diagram.model = new go.GraphLinksModel();
     diagram.model = new go.GraphLinksModel(program[0], program[1]);
@@ -357,6 +386,19 @@
     
     // force all actions' layouts to be performed
     relayoutLanes();
+
+    let tool = diagram.toolManager.clickSelectingTool;
+    tool.standardMouseSelect = () => {
+      let diagram = tool.diagram;
+      let e = diagram.lastInput;
+      console.log('over', e);
+      if (e.targetObject) {
+	console.log('to', e.targetObject);
+	console.log('to()', e.targetObject());
+      }
+      go.ClickSelectingTool.prototype.standardMouseSelect.call(tool);
+      //diagram.clearSelection();
+    }
   }  // end initDiagram
 
 
@@ -503,4 +545,4 @@
 
 
 <!-- <div id={diagram_div_id} style="width:75%;height:{height};pointer-events:none"></div> -->
-<div id={diagram_div_id} style="width:75%;height:{height}"></div>
+<div id={diagram_div_id} style="width:530px;height:{height}"></div>

@@ -18,15 +18,31 @@
   let units_label = 'Secs';
   let diagram_div_id = programid + '-diagram';
   let missiondiagram;
+  let scrollX;
+
+  $: {
+    scrollX = scrollX;
+    console.log(scrollX);
+    editing = false;
+  }
 
   let socket;
   let mission;
   let currentSelection;
   let min;
   let max;
+  let isScrollingInterval;
 
   onMount( () => {
     socket = getSocketIO();
+    isScrollingInterval = setInterval(isScrolling, 100);
+  });
+
+  onDestroy( () => {
+    if (isScrollingInterval) {
+      clearInterval(isScrollingInterval);
+      isScrollingInterval = false;
+    }
   });
 
   $: param_value = Math.round(edit_value*edit_scale);
@@ -48,6 +64,14 @@
     }
   }
 
+  $: if (currentSelection && editing) {
+    let node = currentSelection.data;
+    if (node) {
+      units_label = node.units_label;
+      units_label = units_label.replace(/{s}/g, (edit_value === 1) ? '':'s');
+    }
+  }
+
   function selectionChangedHandler(event) {
     let part = event.detail;
     let node = part.data;
@@ -55,7 +79,7 @@
     if (part && part.isSelected) {
       currentSelection = part;
       if (node && node.param) {
-	if (node.scale === 'deciseconds') {
+	if (node.scale === 'decisecond') {
 	  edit_scale = 10;
 	  edit_step = 0.1;
 	} else if (node.scale === 'm') {
@@ -75,6 +99,8 @@
 	min = Number((node.range.low/edit_scale).toFixed(fixed));
 	max = Number((node.range.high/edit_scale).toFixed(fixed));
 	units_label = node.units_label;
+	units_label = units_label.replace(/{s}/g, (edit_value === 1) ? '':'s');
+	console.log((edit_value === 1), edit_value)
 	editing = true;
       } else {
 	editing = false;
@@ -84,8 +110,25 @@
       editing = false;
     }
   }
+
+  let sectionholder;
+  let scrollLeft;
+  function isScrolling() {
+    if (!sectionholder) {
+      sectionholder = document.querySelector('#sectionholder');
+    }
+
+    if (sectionholder.scrollLeft != scrollLeft) {
+      //console.log('moved!');
+      scrollLeft = sectionholder.scrollLeft;
+      editing = false;
+      missiondiagram.clearSelection();
+    }
+  }
 </script>
 
+
+<svelte:window bind:scrollX={scrollX} />
 
 <div style="position:relative">
   <MissionDiagram {programid} {height} on:selectionchanged={selectionChangedHandler} bind:this={missiondiagram}/>
@@ -127,8 +170,8 @@
 
   .close {
     position: absolute;
-    top: -20px;
-    right: -15px;
+    top: -11px;
+    right: -10px;
   }
 
   .units {
