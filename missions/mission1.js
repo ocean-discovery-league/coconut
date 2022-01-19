@@ -5,10 +5,10 @@
 ///
 
 /// this mission waits until depth is greater than 2 meters
-/// and then record video in a 5 minutes on, 15 minutes off cycle
+/// and then records video in a 5 minutes on, 15 minutes off cycle
 /// until we rise back up to the surface again
 
-const params = {
+let params = {
     DEPTH_START_METERS: 2.0,  // start recording phase when we are deeper than this
     RECORD_CYCLE_MINS: 5,     // how many minutes to record per cycle
     PAUSE_CYCLE_MINS: 15,     // how many minutes to pause per cycle
@@ -60,4 +60,99 @@ function mission1(current_phase, cycle_num, elapsed, action_elapsed, monoclock, 
 }
 
 
-module.exports = {program: mission1, params: params};
+const diagram = [
+    [ // node data
+        //{ key: "Phase0", text: "Start", isGroup: true, category: "Pool" },
+        //{ key: "Action0-1", text: "start", isGroup: true, group: "Phase0", color: "#FDF3CD" },
+        //{ key: "Block0-1-1", text: " If Collar @ M1 ", group: "Action0-1", color: "#FDF3CD" },
+
+        { key: "Phase1", text: "Phase 1", isGroup: true, category: "Pool" },
+        { key: "Action1-1", text: "depth", isGroup: true, group: "Phase1", color: "#D2E0E3" },
+        { key: "Block1-1-1", text: " Start ", group: "Action1-1", color: "#FBDB6B" },
+        { key: "Block1-1-2", text: "{}", group: "Action1-1", color: "#D2E0E3",
+	  param: "DEPTH_START_METERS",
+	  value: 2,
+	  type: "interval",
+	  scale: "m",
+	  units_label: "meter{s}",
+	  template: "⬇️ If depth > {x}m",
+	  default: 2,
+	  range: {
+	    low: 0,
+	    high: 2500
+	  }
+	},
+
+        { key: "Phase2", text: "Phase 2", isGroup: true, category: "Pool" },
+        { key: "Action2-1", text: "record", isGroup: true, group: "Phase2", color: "#D2E0E3" },
+        //{ key: "Block2-1-1", text: " If depth > 1.5m ", group: "Action2-1", color: "#D2E0E3" },
+        { key: "Block2-1-2", text: " Record video ", group: "Action2-1", color: "#7BA5AF" },
+        { key: "Block2-1-3", text: "{}", group: "Action2-1", color: "#4D818E",
+	  param: "RECORD_CYCLE_MINS",
+	  value: 5,
+	  type: "interval",
+	  scale: "minutes",
+	  units_label: "minute{s}",
+	  template: "⏱ For {x} minute{s}",
+	  default: 5,
+	  range: {
+	    low: 1,
+	    high: 1440
+	  }
+	},
+        { key: "Action2-2", text: "next", isGroup: true, group: "Phase2", color: "#D2E0E3" },
+        //{ key: "Block2-2-1", text: " If depth > 1.5m ", group: "Action2-2", color: "#D2E0E3" },
+        { key: "Block2-2-2", text: " Pause video ", group: "Action2-2", color: "#7BA5AF" },
+        { key: "Block2-2-3", text: "{}", group: "Action2-2", color: "#4D818E",
+	  param: "PAUSE_CYCLE_MINS",
+	  value: 15,
+	  type: "interval",
+	  scale: "minutes",
+	  units_label: "minute{s}",
+	  template: "⏱ For {x} minute{s}",
+	  default: 15,
+	  range: {
+	    low: 1,
+	    high: 1440
+	  }
+	},
+        { key: "Phase3", text: "End", isGroup: true, category: "Pool" },
+        { key: "Action3-1", text: "end", isGroup: true, group: "Phase3", color: "#FAE6CE" },
+        { key: "Block3-1-1", text: " End ", group: "Action3-1", color: "#F1B36F" },
+        { key: "Block3-1-2", text: "{}", group: "Action3-1", color: "#FAE6CE",
+	  param: "DEPTH_END_MISSION_METERS",
+	  value: 1.5,
+	  type: "interval",
+	  scale: "m",
+	  units_label: "meters",
+	  template: "⬆️ If depth < {x}m",
+	  default: 1.5,
+	  range: {
+	    low: 0,
+	    high: 2500
+	  }
+	},
+    ],
+    [ // link data
+        { from: "Block0-1-1", to: "Block0-1-2" },
+        { from: "Phase0", to: "Phase1" },
+
+        { from: "Block1-1-1", to: "Block1-1-2" },
+        { from: "Phase1", to: "Phase2" },
+
+        //{ from: "Block2-1-1", to: "Block2-1-2" },
+        { from: "Block2-1-2", to: "Block2-1-3" },
+
+	//{ from: "Block2-2-1", to: "Block2-2-2" },
+        { from: "Block2-2-2", to: "Block2-2-3" },
+
+        { from: "Block2-1-2", to: "Block2-2-2" },
+        { from: "Block2-2-2", to: "Block2-1-2" },
+        { from: "Phase2", to: "Phase3" },
+
+        { from: "Block3-1-1", to: "Block3-1-2" },
+    ]
+];
+
+
+module.exports = {program: mission1, params: params, diagram: diagram};
