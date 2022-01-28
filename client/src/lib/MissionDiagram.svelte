@@ -4,6 +4,7 @@
 
   export let programid;
   export let height;
+  export let formatNodeTextLabel;
 
   const MINLENGTH = 350;  // this controls the minimum length of any swimlane
   const MINBREADTH = 70;  // this controls the minimum breadth of any non-collapsed swimlane
@@ -22,12 +23,9 @@
 
 
   export function clearSelection() {
-    console.log('clearSelection()', diagram);
     if (diagram) {
-      console.log('clearing');
       diagram.clearSelection();
       let canvas = document.querySelector(`#${diagram_div_id} > canvas`);
-      console.log('canvas', canvas);
       if (canvas) {
 	canvas.blur();
       }
@@ -39,26 +37,6 @@
     program = await request.json();
     initDiagram(diagram);
   });
-
-
-  export function formatNodeTextLabel(node) {
-    let text = node.text;
-    if (node && node.template) {
-      let value = formatParamValue(node);
-      text = node.template;
-      text = text.replace(/{x}/g, value);
-      text = text.replace(/{s}/g, (value === 1) ? '':'s');
-    }
-    return text;
-  }
-
-  function formatParamValue(node) {
-    if (node.scale === 'decisecond') {
-      return (node.value/10).toFixed(1);
-    } else {
-      return node.value;
-    }
-  }
 
 
   // may be called to force the lanes to be laid out again
@@ -321,9 +299,9 @@
           { defaultColumnSeparatorStroke: "#D2E0E3" },
           $(go.Panel, "Horizontal",
             { column: 0, angle: 270 },
-            $(go.TextBlock,
-              { font: "12pt Helvetica,sans-serif", editable: true, margin: new go.Margin(3, 0, 0, 0) },
-              new go.Binding("text").makeTwoWay())
+            // $(go.TextBlock,
+            //   { font: "12pt Helvetica,sans-serif", editable: true, margin: new go.Margin(3, 0, 0, 0) },
+            //   new go.Binding("text").makeTwoWay())
            ),
           $(go.Placeholder,
             { column: 1 })
@@ -374,6 +352,7 @@
     diagram.toolManager.dragSelectingTool.isEnabled = false;
     diagram.allowHorizontalScroll = false;
     diagram.allowVerticalScroll = false;
+    diagram.allowZoom = false;
     
     // define some sample graphs in some of the lanes
     //diagram.model = new go.GraphLinksModel();
@@ -392,10 +371,6 @@
       let diagram = tool.diagram;
       let e = diagram.lastInput;
       console.log('over', e);
-      if (e.targetObject) {
-	console.log('to', e.targetObject);
-	console.log('to()', e.targetObject());
-      }
       go.ClickSelectingTool.prototype.standardMouseSelect.call(tool);
       //diagram.clearSelection();
     }

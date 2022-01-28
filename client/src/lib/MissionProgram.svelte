@@ -1,8 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import MissionDiagram from '$lib/MissionDiagram.svelte';
-  //import Slider from '$lib/common/Slider.svelte';
-  //import SliderGroup from '$lib/common/SliderGroup.svelte';
+  import CloseButton from '$lib/CloseButton.svelte';
   import RangeSlider from 'svelte-range-slider-pips';
   import { getSocketIO } from '$lib/utils';
 
@@ -10,151 +9,180 @@
   export let height = '790px';
 
   let editing;
-  let edit_step;
-  let edit_scale;
-  let edit_value;
-  let edit_values = [];
-  let param_value;
-  let units_label = 'Secs';
+  let sliders = [0];
+  let units_label = '';
   let diagram_div_id = programid + '-diagram';
   let missiondiagram;
-  let scrollX;
-
-  $: {
-    scrollX = scrollX;
-    console.log(scrollX);
-    editing = false;
-  }
 
   let socket;
   let mission;
   let currentSelection;
   let min;
   let max;
-  let isScrollingInterval;
 
   onMount( () => {
     socket = getSocketIO();
-    isScrollingInterval = setInterval(isScrolling, 100);
   });
 
   onDestroy( () => {
-    if (isScrollingInterval) {
-      clearInterval(isScrollingInterval);
-      isScrollingInterval = false;
-    }
   });
 
-  $: param_value = Math.round(edit_value*edit_scale);
-  $: edit_values[0] = edit_value;
-
   $: if (currentSelection && editing) {
+    console.log('.', editing.value);
     let node = currentSelection.data;
     let diagram = currentSelection.diagram;
+    let new_value = Math.round(editing.value * editing.scale);
+    sliders[0] = editing.value;
+    socket.emit('updateparam', { programid, name: currentSelection.data.param, value: new_value });
     if (node && node.param && diagram) {
-      // if (node.type === 'interval') {
-      // 	edit_value = Number(edit_value);
-      // 	if (Number.isNaN(edit_value)) {
-      // 	  edit_value = node.default;
-      // 	}
-      // }
-      diagram.model.set(node, 'value', param_value);
-      //console.log('updateparam', { programid, name: currentSelection.data.param, value: param_value });
-      socket.emit('updateparam', { programid, name: currentSelection.data.param, value: param_value });
+      console.log('?', new_value);
+      let label = node.label || '#';
+      label = label.replace(/{s}/g, (editing.value === 1) ? '':'s');
+      units_label = label;
+      diagram.model.set(node, 'value', new_value);
     }
   }
 
-  $: if (currentSelection && editing) {
+  function unitsChangedHandler(event) {
+    console.log('unitsChangedHandler');
     let node = currentSelection.data;
-    if (node) {
-      units_label = node.units_label;
-      units_label = units_label.replace(/{s}/g, (edit_value === 1) ? '':'s');
-    }
+    let units = editing.options[editing.edit_units];
+    console.log(editing.edit_units);
+
+    let fixed = (units.step < 1) ? 1 : 0;
+    //editing.value = (node.value / units.scale).toFixed(fixed);  // not sure we want the jumping
+    editing = { ...editing, ...units };
+    min = Number((units.range.low).toFixed(fixed));
+    max = Number((units.range.high).toFixed(fixed));
+
+    // save the chosen editing units
+    node.edit_units = editing.edit_units;
+    let param_name = currentSelection.data.param + '_EDIT_UNITS';
+    socket.emit('updateparam', { programid, name: param_name, value: node.edit_units });
+    console.log('bop!');
+  }
+
+  function inputChangedHandler(event) {
+    console.log('1', event);
+    sliders[0] = editing.value;
+  }
+
+  function rangeChangedHandler(event) {
+    console.log('-', event);
+    editing.value = event.detail.value
   }
 
   function selectionChangedHandler(event) {
+    console.log('selectionChangedHandler');
     let part = event.detail;
     let node = part.data;
     let shape = part.elt(0);
-    if (part && part.isSelected) {
-      currentSelection = part;
-      if (node && node.param) {
-	if (node.scale === 'decisecond') {
-	  edit_scale = 10;
-	  edit_step = 0.1;
-	} else if (node.scale === 'm') {
-	  edit_scale = 1;
-	  edit_step = 0.1;
-	} else {
-	  edit_scale = 1;
-	  edit_step = 1;
-	}
-	let fixed;
-	if (node.scale === 0.1) {
-	  fixed = 1;
-	} else {
-	  fixed = 0;
-	}
-	edit_value = (node.value/edit_scale).toFixed(fixed);
-	min = Number((node.range.low/edit_scale).toFixed(fixed));
-	max = Number((node.range.high/edit_scale).toFixed(fixed));
-	units_label = node.units_label;
-	units_label = units_label.replace(/{s}/g, (edit_value === 1) ? '':'s');
-	console.log((edit_value === 1), edit_value)
-	editing = true;
-      } else {
-	editing = false;
-      }
-    } else {
+
+    if (!part || !part.isSelected || !node || !node.param) {
       currentSelection = undefined;
       editing = false;
+      return;
     }
+      
+    currentSelection = part;
+
+    let editing_defaults = {
+      step: 1,
+      scale: 1,
+    };
+
+    let units = {};
+    if (node.editing && node.editing.options) {
+      let options = node.editing.options;
+      let edit_units = node.edit_units;
+      if (!edit_units || !(edit_units in options)) {
+	edit_units = editing.options_order[0];
+      }
+      units = options[edit_units];
+      units.edit_units = edit_units;  // so that it gets xfered onto editing via ...units below
+    }
+
+    if (node.editing) {
+      editing = { ...editing_defaults, ...node.editing, ...units };
+    } else {
+      editing = { ...editing_defaults, ...units };
+    }
+
+    console.log(editing);
+
+    let fixed = (units.step < 1) ? 1 : 0;
+    editing.value = (node.value / editing.scale).toFixed(fixed).replace(/\.0+$/,'');
+    // min = Number((editing.range.low / editing.scale).toFixed(fixed));
+    // max = Number((editing.range.high / editing.scale).toFixed(fixed));
+    min = Number((units.range.low).toFixed(fixed));
+    max = Number((units.range.high).toFixed(fixed));
+
+    units_label = node.label || '';
+    units_label = units_label.replace(/{s}/g, (editing.value === 1) ? '':'s');
+    console.log((editing.value === 1), editing.value)
   }
 
-  let sectionholder;
-  let scrollLeft;
-  function isScrolling() {
-    if (!sectionholder) {
-      sectionholder = document.querySelector('#sectionholder');
+
+  function formatNodeTextLabel(node) {
+    if (node.editing && node.editing.options && !node.editing.options_order) {
+      // compute the pulldown menu order based on rank
+      let options = node.editing.options;
+      node.editing.options_order = Object.keys(options);
+      node.editing.options_order.sort( (one, two) => {
+	return options[one].rank > options[two].rank ? 1 : -1;
+      });
     }
 
-    if (sectionholder.scrollLeft != scrollLeft) {
-      //console.log('moved!');
-      scrollLeft = sectionholder.scrollLeft;
-      editing = false;
-      missiondiagram.clearSelection();
+    let units = {};
+    if (node.edit_units && node.editing.options) {
+      units = node.editing.options[node.edit_units];
     }
+
+    console.log('/', node.value);
+    let text = node.text;
+    console.log('a', node);
+    if (node && node.template) {
+      console.log('b', node.template);
+      let value = node.value;
+      let scale = units.scale || node.scale || 1;
+      //let fixed = (node.scale === 0.1) ? 1 : 0;
+      let fixed = 1;
+      value = (value / scale).toFixed(fixed).replace(/\.0+$/,'');
+      console.log('c', value);
+      text = node.template;
+      text = text.replace(/{units}/g, node.edit_units || '');
+      text = text.replace(/{abbr}/g, units.abbr || node.abbr || node.edit_units || '');
+      text = text.replace(/{x}/g, value);
+      text = text.replace(/{s}/g, (value === 1) ? '':'s');
+    }
+    console.log({text});
+    return text;
   }
 </script>
 
 
-<svelte:window bind:scrollX={scrollX} />
-
 <div style="position:relative">
-  <MissionDiagram {programid} {height} on:selectionchanged={selectionChangedHandler} bind:this={missiondiagram}/>
+  <MissionDiagram {programid} {height} on:selectionchanged={selectionChangedHandler} bind:this={missiondiagram} {formatNodeTextLabel}/>
 
   <div style="position:fixed;left:0px;bottom:{editing ? '0px':'-200px'};height:200px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s">
     <br>
     <div class="sliderContainer">
       {#if editing}
-	<input type='text' size='6' bind:value={edit_value} on:change={(e) => {console.log(e);edit_values[0] = edit_value}}/>
-	<span class='units'>{units_label}</span>
-	<RangeSlider bind:values={edit_values} on:change={(e) => {console.log(e); edit_value = e.detail.value}} step={edit_step} {min} {max}
+	<input type='text' size='6' bind:value={editing.value} on:change={inputChangedHandler}/>
+	{#if !editing.options}
+	  <span class='units'>{units_label}</span>
+	{:else}
+	  <select class='units_select' id='edit_units' bind:value={editing.edit_units} on:change={unitsChangedHandler}>
+	    {#each editing.options_order as key}
+	      <option class='units' value={key}>{editing.options[key].label}</option>
+	    {/each}
+	  </select>
+	{/if}
+	<RangeSlider bind:values={sliders} on:change={rangeChangedHandler} step={editing.step} {min} {max}
 	  pips first='label' last='label' rest={false}/>
-	<!-- <Slider bind:value={edit_value} bind:minValue={min} bind:maxValue={max} step={0.1} on:change={slider.value=edit_value}/> -->
-	<!-- <SliderGroup bind:settings class=".sliders" /> -->
       {/if}
-      <div class="close" on:click={() => {editing = false; currentSelection.diagram.clearSelection()}}>
-	<svg fill="none" viewBox="0 0 24 24" height="48" width="48" xmlns="http://www.w3.org/2000/svg">
-	  <path xmlns="http://www.w3.org/2000/svg" d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM7.79289 7.79289C8.18342 7.40237 8.81658 7.40237 9.20711 7.79289L12 10.5858L14.7929 7.79289C15.1834 7.40237 15.8166 7.40237 16.2071 7.79289C16.5976 8.18342 16.5976 8.81658 16.2071 9.20711L13.4142 12L16.2071 14.7929C16.5976 15.1834 16.5976 15.8166 16.2071 16.2071C15.8166 16.5976 15.1834 16.5976 14.7929 16.2071L12 13.4142L9.20711 16.2071C8.81658 16.5976 8.18342 16.5976 7.79289 16.2071C7.40237 15.8166 7.40237 15.1834 7.79289 14.7929L10.5858 12L7.79289 9.20711C7.40237 8.81658 7.40237 8.18342 7.79289 7.79289Z" fill="#7BA5AF"></path>
-	</svg>
-      </div>
+      <CloseButton on:click={() => {editing = false; currentSelection.diagram.clearSelection()}}/>
     </div>
-    <!--
-    <button value="delete" on:click={mission.deleteNode()}>🚮</button>
-    <button value="add_before" on:click={mission.addNode(false)}>↪️</button>
-    <button value="add_after" on:click={mission.addNode(true)}>↩️</button>
-    -->
   </div>
 </div>
 
@@ -168,16 +196,25 @@
     font-size: 30px;
   }
 
-  .close {
-    position: absolute;
-    top: -11px;
-    right: -10px;
-  }
-
   .units {
     position: relative;
     top: -6px;
     color: #7BA5AF;
+  }
+
+  .units_select {
+    position: relative;
+    width: 160px;
+    padding: 0px 8px 0px 0px;
+    top: -6px;
+    outline: 2px solid #7BA5AF;
+    font-size: 30px;
+    color: #7BA5AF;
+    background-color: black;
+  }
+
+  :global(.rangePips .pip) {
+    width: 3px;
   }
 
   input {

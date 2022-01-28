@@ -68,7 +68,7 @@
 <br>
 
 <center>
-  <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="hostname">&nbsp;</span><br><span id="macaddress" style="color:darkgrey">&nbsp;</span><br><span id="version" style="color:darkgrey">v0.3.0</span></div>
+  <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="hostname">&nbsp;</span><br><span id="macaddress" style="color:darkgrey">&nbsp;</span><br><span id="version" style="color:darkgrey">v0.3.1-beta</span></div>
   <br>
 
   <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px">

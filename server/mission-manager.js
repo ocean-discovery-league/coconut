@@ -53,7 +53,7 @@ class MissionManager {
 		await this.sensorInput.start(this.filename);
 
 		let name = `ring${this.modenum}`;
-		let mission = this.missionPrograms.get(name);
+		let mission = await this.missionPrograms.load(name);
 		if (!mission) {
 		    await this.stopMission();
 		    throw new Error('mission ${name} not found!');
@@ -69,7 +69,7 @@ class MissionManager {
 	    this.sensorInput = new SensorInput();
 	    await this.sensorInput.init();
 	    await this.sensorInput.start(this.filename, true, speedFactor);
-	    let mission = this.missionPrograms.get(missionName);
+	    let mission = await this.missionPrograms.load(missionName);
 	    if (!mission) {
 		await this.stopMission();
 		throw new Error('mission ${missionName} not found!');
@@ -104,7 +104,7 @@ async function tests() {
     const MissionPrograms = require('./mission-programs');
     await missionPrograms.init();
 
-    if (missionPrograms.get(name)) {
+    if (await missionPrograms.load(name)) {
 	let missionManager = new MissionManager();
 	await missionManager.init(missionPrograms);
 	await missionManager.start(name, filename, 30.0);

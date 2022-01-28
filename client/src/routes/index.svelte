@@ -9,14 +9,53 @@
   import MissionIISetup from '$lib/pages/MissionIISetup.svelte';
   import { onMount, onDestroy } from 'svelte';
 
+  // let scrollX;
+  // let scrollY;
+  let isScrollingInterval;
+
+  // $: {
+  //   scrollX = scrollX;
+  //   scrollY = scrollY;
+  //   console.log('scrolly', scrollX, scrollY);
+  //   if (sectionholder) {
+  //     sectionholder.scrollTop = 0;
+  //   }
+  //   //scrollY = 0;
+  // }
   
   onMount(() => {
+    isScrollingInterval = setInterval(isScrolling, 100);
   });
+
+  onDestroy( () => {
+    if (isScrollingInterval) {
+      clearInterval(isScrollingInterval);
+      isScrollingInterval = false;
+    }
+  });
+
+  let sectionholder;
+  let scrollLeft;
+  function isScrolling() {
+    if (!sectionholder) {
+      sectionholder = document.querySelector('#sectionholder');
+      scrollLeft = sectionholder.scrollLeft;
+    }
+
+    if (sectionholder.scrollLeft != scrollLeft) {
+      //console.log('moved! (index.svelte)');
+      scrollLeft = sectionholder.scrollLeft;
+      //sectionholder.scrollTop = 0;
+    }
+  }
+
 </script>
 
 <svelte:head>
   <title>Maka Niu</title>
 </svelte:head>
+
+<!-- <svelte:window bind:scrollX={scrollX} bind:scrollY={scrollY}/> -->
 
 <div id="sectionholder">
 
