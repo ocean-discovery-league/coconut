@@ -73,13 +73,14 @@ const diagram = [
 	  param: "DEPTH_START_METERS",
 	  value: 2,
 	  type: "interval",
-	  scale: "m",
-	  units_label: "meter{s}",
-	  template: "⬇️ If depth > {x}m",
+	  units: "meters",
+	  label: "meter{s}",
+	  abbr: "m",
+	  template: "When depth > {x}{abbr}",
 	  default: 2,
 	  range: {
-	    low: 0,
-	    high: 2500
+	    low: 1,
+	    high: 1500
 	  }
 	},
 
@@ -91,9 +92,9 @@ const diagram = [
 	  param: "RECORD_CYCLE_MINS",
 	  value: 5,
 	  type: "interval",
-	  scale: "minutes",
-	  units_label: "minute{s}",
-	  template: "⏱ For {x} minute{s}",
+	  units: "minutes",
+	  label: "minute{s}",
+	  template: "For {x} minute{s}",
 	  default: 5,
 	  range: {
 	    low: 1,
@@ -107,9 +108,9 @@ const diagram = [
 	  param: "PAUSE_CYCLE_MINS",
 	  value: 15,
 	  type: "interval",
-	  scale: "minutes",
-	  units_label: "minute{s}",
-	  template: "⏱ For {x} minute{s}",
+	  units: "minutes",
+	  label: "minute{s}",
+	  template: "For {x} minute{s}",
 	  default: 15,
 	  range: {
 	    low: 1,
@@ -121,15 +122,16 @@ const diagram = [
         { key: "Block3-1-1", text: " End ", group: "Action3-1", color: "#F1B36F" },
         { key: "Block3-1-2", text: "{}", group: "Action3-1", color: "#FAE6CE",
 	  param: "DEPTH_END_MISSION_METERS",
-	  value: 1.5,
+	  value: 1,
 	  type: "interval",
-	  scale: "m",
-	  units_label: "meters",
-	  template: "⬆️ If depth < {x}m",
+	  units: "meters",
+	  label: "meters",
+	  abbr: "m",
+	  template: "If depth < {x}{abbr}",
 	  default: 1.5,
 	  range: {
-	    low: 0,
-	    high: 2500
+	    low: 1,
+	    high: 1500
 	  }
 	},
     ],

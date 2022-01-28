@@ -57,7 +57,7 @@ class WebServer {
 
         //app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
         app.use(serveStatic(CLIENT_DIR));
-        app.use(serveStatic(STATIC_DIR));
+        //app.use(serveStatic(STATIC_DIR));
     }
 }
 

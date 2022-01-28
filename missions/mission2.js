@@ -68,20 +68,56 @@ const diagram = [
         { key: "Block2-1-2", text: "{}", group: "Action2-1", color: "#7BA5AF",
 	  param: "TIME_LAPSE_CYCLE",
 	  value: 600,
-	  type: "interval",
-	  scale: "decisecond",
-	  units_label: "second{s}",
-	  template: "⏱ Every {x} sec{s}",
 	  default: 600,
-	  range: {
-	    low: 1,
-	    high: 36000
-	  }
+	  type: "interval",
+	  units: "decisecond",
+	  edit_units: "seconds",
+	  template: "Every {x} {abbr}{s}",
+	  editing: {
+	    options: {
+	      second: {
+		rank: 1,
+		scale: 10,
+		step: 0.1,
+		range: {low: 0.1, high: 90},
+		label: 'seconds',
+		abbr: 'sec'
+	      },
+	      minute: {
+		rank: 2,
+		scale: 600,
+		step: 1,
+		range: {low: 1, high: 120},
+		label: 'minutes',
+		abbr: 'min'
+	      },
+	      hour: {
+		rank: 3,
+		scale: 36000,
+		step: 1,
+		range: {low: 1, high: 48},
+		label: 'hours'
+	      }
+	    },
+	  },
 	},
         { key: "Phase3", text: "End", isGroup: true, category: "Pool" },
         { key: "Action3-1", text: "end", isGroup: true, group: "Phase3", color: "#FAE6CE" },
         { key: "Block3-1-1", text: "End ", group: "Action3-1", color: "#F1B36F" },
-        { key: "Block3-1-2", text: "If GPS Signal", group: "Action3-1", color: "#FAE6CE" },
+      { key: "Block3-1-2", text: "If GPS Signal", group: "Action3-1", color: "#FAE6CE",
+      	  param: "DEPTH_END_MISSION_METERS",
+	  value: 2,
+	  default: 2,
+	  type: "interval",
+	  units: "meters",
+	  label: "meter{s}",
+	  abbr: "m",
+	  template: "If depth < {x}{abbr}",
+	  range: {
+	    low: 1,
+	    high: 1500
+	  },
+      },
     ],
     [ // link data
         { from: "Block0-1-1", to: "Block0-1-2" },
