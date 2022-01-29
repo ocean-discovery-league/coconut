@@ -5,6 +5,7 @@ const fs = require('fs');
 const fsP = require('fs').promises;
 const path = require('path');
 const util = require('util');
+const { version } = require('../../package.json');
 
 const MEDIA_DIR = '/var/www/html';
 const MISSION_ID_FILE = MEDIA_DIR + '/mission_id.json';
@@ -64,6 +65,8 @@ class MissionID {
 	    data.hostname = os.hostname();
 	    data.macaddress = await this.determineMACAddress();
 	    log.log('mac', data.macaddress);
+	    data.version = version;
+	    log.log('version', version);
 	} catch(err) {
 	    if (err.code === 'ENOENT') {
 		log.log(`no mission file ${MISSION_ID_FILE}`);

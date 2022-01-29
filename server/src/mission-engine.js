@@ -198,7 +198,7 @@ class MissionEngine extends EventEmitter {
 
 async function tests() {
     log = console;
-    const missions = require('../missions');
+    const missions = require('../../missions');
     let name = 'mission1';
     if (!(name in missions)) {
 	throw new Error(`unknown mission name ${name}`);

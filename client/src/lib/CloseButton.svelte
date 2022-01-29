@@ -28,7 +28,6 @@
       //console.log('moved!');
       scrollLeft = sectionholder.scrollLeft;
       dispatch('click');
-      missiondiagram.clearSelection();
     }
   }
 </script>

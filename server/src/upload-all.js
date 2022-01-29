@@ -8,7 +8,7 @@ const util = require('util');
 const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
 
-const MEDIA_DIR = (os.platform() === 'darwin') ? './test/media' : '/var/www/html/media';
+const MEDIA_DIR = (os.platform() === 'darwin') ? (__dirname + '/../test/media') : '/var/www/html/media';
 
 const shunt = () => {};
 let log = {

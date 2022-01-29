@@ -158,6 +158,11 @@
     console.log({text});
     return text;
   }
+
+  function closeHandler() {
+    editing = false;
+    currentSelection.diagram.clearSelection();
+  }
 </script>
 
 
@@ -181,7 +186,7 @@
 	<RangeSlider bind:values={sliders} on:change={rangeChangedHandler} step={editing.step} {min} {max}
 	  pips first='label' last='label' rest={false}/>
       {/if}
-      <CloseButton on:click={() => {editing = false; currentSelection.diagram.clearSelection()}}/>
+      <CloseButton on:click={closeHandler}/>
     </div>
   </div>
 </div>

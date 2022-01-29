@@ -8,7 +8,7 @@ const path = require('path');
 class MissionPrograms {
     constructor() {
       this.missions = {};
-      this.dir = path.resolve(`${__dirname}/../missions`);
+      this.dir = path.resolve(`${__dirname}/../../missions`);
     }
 
 

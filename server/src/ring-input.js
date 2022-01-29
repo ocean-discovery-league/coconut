@@ -7,7 +7,7 @@ const { EventEmitter } = require('events');
 
 const MEDIA_DIR = '/var/www/html/media';
 const RING_STATUS_FILENAME = '/home/pi/git/maka-niu/code/log/status.txt';
-const TEST_STATUS_FILENAME = './test/status.txt';
+const TEST_STATUS_FILENAME = __dirname + '/../test/status.txt';
 const STATUS_FILENAME = (os.platform() === 'darwin') ? TEST_STATUS_FILENAME : RING_STATUS_FILENAME;
 
 const shunt = () => {};
