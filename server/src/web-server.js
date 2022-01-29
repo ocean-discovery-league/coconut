@@ -55,7 +55,7 @@ class WebServer {
         let missionID = new MissionID();
         await missionID.init(app, io);
 
-        if (os.platform === 'darwinx') {
+      if (os.platform() === 'darwin') {
 	  const { createProxyMiddleware } = require('http-proxy-middleware');
           app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
 	  app.use(serveStatic(STATIC_DIR));

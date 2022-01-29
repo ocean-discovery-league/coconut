@@ -71,7 +71,7 @@ const diagram = [
 	  default: 600,
 	  type: "interval",
 	  units: "decisecond",
-	  edit_units: "seconds",
+	  edit_units: "second",
 	  template: "Every {x} {abbr}{s}",
 	  editing: {
 	    options: {
@@ -104,20 +104,7 @@ const diagram = [
         { key: "Phase3", text: "End", isGroup: true, category: "Pool" },
         { key: "Action3-1", text: "end", isGroup: true, group: "Phase3", color: "#FAE6CE" },
         { key: "Block3-1-1", text: "End ", group: "Action3-1", color: "#F1B36F" },
-      { key: "Block3-1-2", text: "If GPS Signal", group: "Action3-1", color: "#FAE6CE",
-      	  param: "DEPTH_END_MISSION_METERS",
-	  value: 2,
-	  default: 2,
-	  type: "interval",
-	  units: "meters",
-	  label: "meter{s}",
-	  abbr: "m",
-	  template: "If depth < {x}{abbr}",
-	  range: {
-	    low: 1,
-	    high: 1500
-	  },
-      },
+        { key: "Block3-1-2", text: "If GPS Signal", group: "Action3-1", color: "#FAE6CE" },
     ],
     [ // link data
         { from: "Block0-1-1", to: "Block0-1-2" },

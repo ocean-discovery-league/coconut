@@ -28,14 +28,12 @@
   });
 
   $: if (currentSelection && editing) {
-    console.log('.', editing.value);
     let node = currentSelection.data;
     let diagram = currentSelection.diagram;
     let new_value = Math.round(editing.value * editing.scale);
     sliders[0] = editing.value;
     socket.emit('updateparam', { programid, name: currentSelection.data.param, value: new_value });
     if (node && node.param && diagram) {
-      console.log('?', new_value);
       let label = node.label || '#';
       label = label.replace(/{s}/g, (editing.value === 1) ? '':'s');
       units_label = label;
@@ -44,10 +42,9 @@
   }
 
   function unitsChangedHandler(event) {
-    console.log('unitsChangedHandler');
+    //console.log('unitsChangedHandler');
     let node = currentSelection.data;
     let units = editing.options[editing.edit_units];
-    console.log(editing.edit_units);
 
     let fixed = (units.step < 1) ? 1 : 0;
     //editing.value = (node.value / units.scale).toFixed(fixed);  // not sure we want the jumping
@@ -59,21 +56,18 @@
     node.edit_units = editing.edit_units;
     let param_name = currentSelection.data.param + '_EDIT_UNITS';
     socket.emit('updateparam', { programid, name: param_name, value: node.edit_units });
-    console.log('bop!');
   }
 
   function inputChangedHandler(event) {
-    console.log('1', event);
     sliders[0] = editing.value;
   }
 
   function rangeChangedHandler(event) {
-    console.log('-', event);
     editing.value = event.detail.value
   }
 
   function selectionChangedHandler(event) {
-    console.log('selectionChangedHandler');
+    //console.log('selectionChangedHandler');
     let part = event.detail;
     let node = part.data;
     let shape = part.elt(0);
@@ -108,8 +102,6 @@
       editing = { ...editing_defaults, ...units };
     }
 
-    console.log(editing);
-
     let fixed = (units.step < 1) ? 1 : 0;
     editing.value = (node.value / editing.scale).toFixed(fixed).replace(/\.0+$/,'');
     // min = Number((editing.range.low / editing.scale).toFixed(fixed));
@@ -119,49 +111,48 @@
 
     units_label = node.label || '';
     units_label = units_label.replace(/{s}/g, (editing.value === 1) ? '':'s');
-    console.log((editing.value === 1), editing.value)
   }
 
 
   function formatNodeTextLabel(node) {
-    if (node.editing && node.editing.options && !node.editing.options_order) {
-      // compute the pulldown menu order based on rank
-      let options = node.editing.options;
-      node.editing.options_order = Object.keys(options);
-      node.editing.options_order.sort( (one, two) => {
-	return options[one].rank > options[two].rank ? 1 : -1;
-      });
-    }
+    let text = node.text || '#';
+    try {
+      if (node.editing && node.editing.options && !node.editing.options_order) {
+	// compute the pulldown menu order based on rank
+	let options = node.editing.options;
+	node.editing.options_order = Object.keys(options);
+	node.editing.options_order.sort( (one, two) => {
+	  return options[one].rank > options[two].rank ? 1 : -1;
+	});
+      }
 
-    let units = {};
-    if (node.edit_units && node.editing.options) {
-      units = node.editing.options[node.edit_units];
-    }
+      let units = {};
+      if (node.edit_units && node.editing.options) {
+	units = node.editing.options[node.edit_units];
+      }
 
-    console.log('/', node.value);
-    let text = node.text;
-    console.log('a', node);
-    if (node && node.template) {
-      console.log('b', node.template);
-      let value = node.value;
-      let scale = units.scale || node.scale || 1;
-      //let fixed = (node.scale === 0.1) ? 1 : 0;
-      let fixed = 1;
-      value = (value / scale).toFixed(fixed).replace(/\.0+$/,'');
-      console.log('c', value);
-      text = node.template;
-      text = text.replace(/{units}/g, node.edit_units || '');
-      text = text.replace(/{abbr}/g, units.abbr || node.abbr || node.edit_units || '');
-      text = text.replace(/{x}/g, value);
-      text = text.replace(/{s}/g, (value === 1) ? '':'s');
+      if (node && node.template) {
+	let value = node.value;
+	let scale = (units && units.scale) || node.scale || 1;
+	//let fixed = (node.scale === 0.1) ? 1 : 0;
+	let fixed = 1;
+	value = (value / scale).toFixed(fixed).replace(/\.0+$/,'');
+	text = node.template;
+	text = text.replace(/{units}/g, node.edit_units || '');
+	text = text.replace(/{abbr}/g, (units && units.abbr) || node.abbr || node.edit_units || '');
+	text = text.replace(/{x}/g, value);
+	text = text.replace(/{s}/g, (value === 1) ? '':'s');
+      }
+      //console.log({text});
+    } catch(err) {
+      console.error('error in formatNodeTextLabel', err);
     }
-    console.log({text});
     return text;
   }
 
   function closeHandler() {
     editing = false;
-    currentSelection.diagram.clearSelection();
+    missiondiagram.clearSelection();
   }
 </script>
 
