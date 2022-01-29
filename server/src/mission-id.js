@@ -14,8 +14,8 @@ const INTERFACE = process.argv[2] || 'wlan1';  // node index.js <INTERFACE>
 const shunt = () => {};
 let log = {
     debug: shunt,
-    log: shunt,
-    warn: shunt,
+    log: console.log,
+    warn: console.log,
     error: console.error,
 };
 
@@ -62,11 +62,6 @@ class MissionID {
 	try {
 	    let json = await fsP.readFile(MISSION_ID_FILE);
 	    data = JSON.parse(json);
-	    data.hostname = os.hostname();
-	    data.macaddress = await this.determineMACAddress();
-	    log.log('mac', data.macaddress);
-	    data.version = version;
-	    log.log('version', version);
 	} catch(err) {
 	    if (err.code === 'ENOENT') {
 		log.log(`no mission file ${MISSION_ID_FILE}`);
@@ -74,6 +69,11 @@ class MissionID {
 		log.error(`error getting mission id file ${MISSION_ID_FILE}`, err);
 	    }
 	}
+        data.hostname = os.hostname();
+        data.macaddress = await this.determineMACAddress();
+        log.log('mac', data.macaddress);
+        data.version = version;
+        log.log('version', version);
 	return data;
     }
 

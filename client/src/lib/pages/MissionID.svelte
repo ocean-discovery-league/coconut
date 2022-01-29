@@ -20,9 +20,9 @@
       let version_field = document.querySelector('#version');
       hostname_banner.innerText = json.hostname || '';
       macaddress_banner.innerText = json.macaddress || '';
+      version_field.innerText = 'v' + (json.version || '');
       username_field.value  = json.username  || '';
       missionid_field.value = json.missionid || '';
-      version_field.value = 'v' + (json.version || 'X');
     }
       
     async function save_missionid(event) {
@@ -70,7 +70,7 @@
 <br>
 
 <center>
-  <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="hostname">&nbsp;</span><br><span id="macaddress" style="color:darkgrey">&nbsp;</span><br><span id="version" style="color:darkgrey"></span></div>
+  <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="hostname">&nbsp;</span><br><span id="macaddress" style="color:darkgrey">&nbsp;</span><br><span id="version" style="color:darkgrey">X</span></div>
   <br>
 
   <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px">
