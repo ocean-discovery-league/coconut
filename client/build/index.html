@@ -5,22 +5,24 @@
     <!-- <meta charset="utf-8" /> -->
     <meta name="description" content="" />
     <link rel="icon" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0" />
+    <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0, minimal-ui" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Maka Niu</title>
 
 		
 
 		<link rel="stylesheet" href="/_app/assets/start-61d1577b.css">
 		<link rel="stylesheet" href="/_app/assets/vendor-2c0e3971.css">
-		<link rel="stylesheet" href="/_app/assets/pages/__layout.svelte-9365a014.css">
-		<link rel="stylesheet" href="/_app/assets/pages/index.svelte-6ffcb9b7.css">
-		<link rel="modulepreload" href="/_app/start-9af57592.js">
-		<link rel="modulepreload" href="/_app/chunks/vendor-0fc4abed.js">
-		<link rel="modulepreload" href="/_app/pages/__layout.svelte-ba09fd6e.js">
-		<link rel="modulepreload" href="/_app/pages/index.svelte-e1607240.js">
+		<link rel="stylesheet" href="/_app/assets/pages/__layout.svelte-112fbe9a.css">
+		<link rel="stylesheet" href="/_app/assets/pages/index.svelte-8e1c4879.css">
+		<link rel="modulepreload" href="/_app/start-9473c49a.js">
+		<link rel="modulepreload" href="/_app/chunks/vendor-742d2821.js">
+		<link rel="modulepreload" href="/_app/pages/__layout.svelte-c0cff060.js">
+		<link rel="modulepreload" href="/_app/pages/index.svelte-30bb2418.js">
 
 		<script type="module">
-			import { start } from "/_app/start-9af57592.js";
+			import { start } from "/_app/start-9473c49a.js";
 			start({
 				target: document.querySelector("#svelte"),
 				paths: {"base":"","assets":""},
@@ -32,8 +34,8 @@
 					status: 200,
 					error: null,
 					nodes: [
-						import("/_app/pages/__layout.svelte-ba09fd6e.js"),
-						import("/_app/pages/index.svelte-e1607240.js")
+						import("/_app/pages/__layout.svelte-c0cff060.js"),
+						import("/_app/pages/index.svelte-30bb2418.js")
 					],
 					url: new URL("http://prerender/"),
 					params: {}
@@ -50,121 +52,131 @@
 
 
 
-<div id="sectionholder"><section id="media_manager"><h2 style="font-size:64px"><span style="font-size:58px">Media Manager</span></h2>
+<div id="sectionholder" class="svelte-4d4h8x"><section class="svelte-36eriq"><div class="PageHeader svelte-36eriq">
+      <h2 class="svelte-fm0kpn"><div class="img-box svelte-fm0kpn"><img height="80px" width="80px" src="/favicon.png" alt="ODL Logo" class="svelte-fm0kpn"></div>
+  Media Manager
+</h2>
+    </div>
 
-<br>
-<br>
+  <div class="PageBody-container svelte-36eriq"><div class="PageBody svelte-36eriq"><center><div id="upload-container" class="svelte-x1y3xb"><button id="uploadall" class="svelte-x1y3xb">Upload All Files To Tator.io
+    </button>
+    <div id="uploadstatus" class="svelte-x1y3xb"> </div>
+    <div id="filecounts" class="svelte-x1y3xb"> </div></div></center>
 
-<center><button id="uploadall" style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 14px; line-height: 18px; border-top: 8px solid; border-bottom: 8px solid; border-right: 12px solid; border-left: 12px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">Upload All Files To Tator.io
-  </button>
-  <div id="uploadstatus" style="color:white;font-size:20px;line-height:22px;margin-top:20px"> </div>
-  <div id="filecounts" style="color:lightgray;font-size:20px;line-height:22px;margin-top:5px"> </div></center>
+<iframe id="mediamanager" title="Media Manager Files" class="svelte-x1y3xb"></iframe></div></div>
 
-<br>
-<br>
-
-<iframe id="mediamanager" title="Media Manager Files" width="100%" height="100%"></iframe>
 </section>
 
 
-  <section id="username_section"><h2 style="font-size:64px"><img height="80px" width="80px" src="/favicon.png" style="position:relative;top:18px;right:10px" alt="ODL Logo">
-  <span style="font-size:58px">Mission ID</span></h2>
+  <section class="svelte-36eriq"><div class="PageHeader svelte-36eriq">
+      <h2 class="svelte-fm0kpn"><div class="img-box svelte-fm0kpn"><img height="80px" width="80px" src="/favicon.png" alt="ODL Logo" class="svelte-fm0kpn"></div>
+  Mission ID
+</h2>
+    </div>
 
-<br>
-<br>
-
-<center><div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="hostname"> </span><br><span id="macaddress" style="color:darkgrey"> </span><br><span id="version" style="color:darkgrey">X</span></div>
+  <div class="PageBody-container svelte-36eriq"><div class="PageBody svelte-36eriq"><center><span id="hostname"> </span><br><span id="macaddress" class="svelte-c3ufbm"> </span>
+  <br>
+  <span id="version" class="svelte-c3ufbm">X</span>
   <br>
 
-  <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px"><table width="400" style="display:grid;place-items:center;background-color:#1B3C45"><tr><td><br>
+  <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post" class="svelte-c3ufbm"><table width="400" class="svelte-c3ufbm"><tr><td><br>
 	  <br>
-	  <div style="font-size:20px;font-weight:900"><label for="username">User Name</label><br>
-	    <input id="username" autocorrect="off" autocapitalize="none" type="text" name="username" size="18" style="font-size:24px;margin-top:5px;" required></div></td></tr><tr><td style="height:25px"></td></tr><tr><td style="font-size:20px;font-weight:900"><div style="font-size:20px;font-weight:900"><label for="missionid">Mission ID<div style="font-size:11px;margin-left:2px"></div></label>
-	    <input id="missionid" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" name="missionid" size="18" style="font-size:24px;margin-top:5px" required></div></td></tr><tr><td style="height:25px"></td></tr><tr><td style="text-align:center"><span style="display: inline-block; border-radius: 4px; background: #1f8b5f; border-bottom: 2px solid #1f8b5f;"><button id="savemissionid" style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 20px; line-height: 26px; border-top: 14px solid; border-bottom: 14px solid; border-right: 32px solid; border-left: 32px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">Save
-	    </button></span>
-	  <br>
-	  <br>
-	  <br>
-	  <br></td></tr></table>
-    <div id="savemissionidstatus" style="position:relative;top:-50px;left:315px;color:white;font-size:20px;line-height:22px;text-align:left;margin-left:50px;margin-bottom:5px"></div></form></center>
-<br>
-</section>
-
-
-  <section id="wifi_section"><h2 style="font-size:64px">📶
-    <span style="font-size:58px">WiFi Setup</span></h2>
-
-  <br>
-  <br>
-  <center><div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="connection">• • •<br> </span></div></center>
-
-  <center><form width="70%" id="connect_wifi_form" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px"><table width="400" style="display:grid;place-items:center;background-color:#1B3C45"><tr><td><br>
-	      <br>
-	      <div style="font-size:20px;font-weight:900"><label for="ssid">Network Name</label><br>
-		<input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" style="font-size:24px;margin-top:5px;" required></div></td></tr><tr><td style="height:25px"></td></tr><tr><td style="font-size:20px;font-weight:900"><div style="font-size:20px;font-weight:900"><label for="password">WiFi Password<div style="font-size:11px;margin-top:-8px;margin-left:2px"><i>leave blank if no password</i></div></label>
-		<input id="password" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" name="password" size="18" style="font-size:24px">
-		<button id="visibility" type="button" onclick="window.client.toggle_password_visibility(event)" style="width:30px;height:30px;position:absolute;margin-left:6px;margin-top:1px;border-radius:2px;border-width:1px;background-color:#BBEBFF">👁️</button></div></td></tr><tr><td style="height:25px"></td></tr><tr><td style="text-align:center"><span style="display: inline-block; border-radius: 4px; background: #1f8b5f; border-bottom: 2px solid #1f8b5f;"><button style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 20px; line-height: 26px; border-top: 14px solid; border-bottom: 14px solid; border-right: 32px solid; border-left: 32px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">Connect WiFi
-	      </button></span>
+	  <div><label for="username" class="svelte-c3ufbm">User Name</label>
 	    <br>
+	    <input id="username" autocorrect="off" autocapitalize="none" type="text" name="username" size="18" required class="svelte-c3ufbm"></div></td></tr><tr><td height="25"></td></tr><tr><td><div><label for="missionid" class="svelte-c3ufbm">Mission ID</label>
 	    <br>
-	    <br></td></tr></table></form></center>
-  <br>
-  <center><div style="display:grid;place-items:center"><div style="width:220px;text-align:left"><font color="gray">Visible networks</font>
-	<ul width="300" id="networks" style="list-style:none;font-size:20px;font-weight:900;margin-left:2px;margin-top:4px;white-space:nowrap"><li><i>looking for networks...</i></li></ul></div></div></center>
-
-  <div id="statusdiv"></div>
-  <div id="signaldiv"></div>
+	    <input id="missionid" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" name="missionid" size="18" required class="svelte-c3ufbm"></div></td></tr><tr><td height="25"></td></tr><tr><td><center><button id="savemissionid" class="svelte-c3ufbm">Save
+	    </button>
+	    <div id="savemissionidstatus" class="svelte-c3ufbm"></div></center></td></tr></table></form></center></div></div>
 
 </section>
 
 
-  <section id="video_setup_section"><h2 style="font-size:64px">📹
-    <span style="font-size:58px">Video Setup</span></h2>
+  <section class="svelte-36eriq"><div class="PageHeader svelte-36eriq">
+      <h2 class="svelte-fm0kpn"><div class="img-box svelte-fm0kpn"><img height="80px" width="80px" src="/favicon.png" alt="ODL Logo" class="svelte-fm0kpn"></div>
+  WiFi Setup
+</h2>
+    </div>
+
+  <div class="PageBody-container svelte-36eriq"><div class="PageBody svelte-36eriq"><center><div id="connection" class="svelte-g9j9zj">• • •<br> </div>
+
+  <form width="70%" id="connect_wifi_form" enctype="multipart/form-data" method="post" class="svelte-g9j9zj"><table width="400" class="svelte-g9j9zj"><tr><td><br>
+	  <br>
+	  <div><label for="ssid" class="svelte-g9j9zj">Network Name</label><br>
+	    <input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" required class="svelte-g9j9zj"></div></td></tr><tr><td height="25"></td></tr><tr><td><div><label for="password" class="svelte-g9j9zj">WiFi Password<div class="sublabel svelte-g9j9zj"><i>leave blank if no password</i></div></label>
+	    <input id="password" autocorrect="off" autocapitalize="none" autocomplete="off" type="test" name="password" size="18" class="svelte-g9j9zj">
+	    <button id="visibility" type="button" class="svelte-g9j9zj">👁️</button></div></td></tr><tr><td height="25"></td></tr><tr><td><center><button id="connect" class="svelte-g9j9zj">Connect WiFi
+	    </button></center></td></tr></table></form>
+
   <br>
-  <br>
-  
-  <h2>All settings are currently automatic</h2>
+
+  <div id="networklist-container" class="svelte-g9j9zj"><div id="networklist" class="svelte-g9j9zj"><font color="gray">Visible networks</font>
+      <ul width="300" id="networks" class="svelte-g9j9zj"><li><i>looking for networks...</i></li></ul></div></div>
+</center></div></div>
+
 </section>
 
 
-  <section id="photo_setup_section"><h2 style="font-size:64px">📷
-    <span style="font-size:58px">Photo Setup</span></h2>
+  <section class="svelte-36eriq"><div class="PageHeader svelte-36eriq">
+      <h2 class="svelte-fm0kpn"><div class="img-box svelte-fm0kpn"><img height="80px" width="80px" src="/favicon.png" alt="ODL Logo" class="svelte-fm0kpn"></div>
+  Video Setup
+</h2>
+    </div>
 
-  <br>
-  <br>
-  
-  <h2>All settings are currently automatic</h2>
+  <div class="PageBody-container svelte-36eriq"><div class="PageBody svelte-36eriq">
+  <h2 style="font-size:22px">All settings are currently automatic</h2></div></div>
+
 </section>
 
 
-  <section id="mission-1-setup"><h2 style="font-size:64px"><img height="80px" width="80px" src="/favicon.png" style="position:relative;top:18px;right:10px" alt="ODL Logo">
-  <span style="font-size:58px">Test Mission I</span></h2>
-<br>
+  <section class="svelte-36eriq"><div class="PageHeader svelte-36eriq">
+      <h2 class="svelte-fm0kpn"><div class="img-box svelte-fm0kpn"><img height="80px" width="80px" src="/favicon.png" alt="ODL Logo" class="svelte-fm0kpn"></div>
+  Photo Setup
+</h2>
+    </div>
 
-<center><div style="position:relative">
+  <div class="PageBody-container svelte-36eriq"><div class="PageBody svelte-36eriq">
+  <h2 style="font-size:22px">All settings are currently automatic</h2></div></div>
+
+</section>
+
+
+  <section class="svelte-36eriq"><div class="PageHeader svelte-36eriq">
+      <h2 class="svelte-fm0kpn"><div class="img-box svelte-fm0kpn"><img height="80px" width="80px" src="/favicon.png" alt="ODL Logo" class="svelte-fm0kpn"></div>
+  Mission I
+</h2>
+    </div>
+
+  <div class="PageBody-container svelte-36eriq"><div class="PageBody svelte-36eriq"><center><div style="position:relative">
 <div id="mission1-diagram" style="width:530px;height:790px"></div>
 
   <div style="position:fixed;left:0px;bottom:-200px;height:200px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s"><br>
     <div class="sliderContainer svelte-okhyeb">
       <div class="close svelte-1vddyue"><svg fill="none" viewBox="0 0 24 24" height="48" width="48" xmlns="http://www.w3.org/2000/svg"><path xmlns="http://www.w3.org/2000/svg" d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM7.79289 7.79289C8.18342 7.40237 8.81658 7.40237 9.20711 7.79289L12 10.5858L14.7929 7.79289C15.1834 7.40237 15.8166 7.40237 16.2071 7.79289C16.5976 8.18342 16.5976 8.81658 16.2071 9.20711L13.4142 12L16.2071 14.7929C16.5976 15.1834 16.5976 15.8166 16.2071 16.2071C15.8166 16.5976 15.1834 16.5976 14.7929 16.2071L12 13.4142L9.20711 16.2071C8.81658 16.5976 8.18342 16.5976 7.79289 16.2071C7.40237 15.8166 7.40237 15.1834 7.79289 14.7929L10.5858 12L7.79289 9.20711C7.40237 8.81658 7.40237 8.18342 7.79289 7.79289Z" fill="#7BA5AF"></path></svg>
 </div></div></div>
-</div></center>
+</div></center></div></div>
+
 </section>
 
 
-  <section id="mission-2-setup"><h2 style="font-size:64px"><img height="80px" width="80px" src="/favicon.png" style="position:relative;top:18px;right:10px" alt="ODL Logo">
-    <span style="font-size:58px">Test Mission II</span></h2>
-<br>
+  <section class="svelte-36eriq"><div class="PageHeader svelte-36eriq">
+      <h2 class="svelte-fm0kpn"><div class="img-box svelte-fm0kpn"><img height="80px" width="80px" src="/favicon.png" alt="ODL Logo" class="svelte-fm0kpn"></div>
+  Mission II
+</h2>
+    </div>
 
-<center><div style="position:relative">
+  <div class="PageBody-container svelte-36eriq"><div class="PageBody svelte-36eriq"><center><div style="position:relative">
 <div id="mission2-diagram" style="width:530px;height:700px"></div>
 
   <div style="position:fixed;left:0px;bottom:-200px;height:200px;z-index:900;width:100%;background-color:rgba(0,0,0,0.75);transition:all 0.2s"><br>
     <div class="sliderContainer svelte-okhyeb">
       <div class="close svelte-1vddyue"><svg fill="none" viewBox="0 0 24 24" height="48" width="48" xmlns="http://www.w3.org/2000/svg"><path xmlns="http://www.w3.org/2000/svg" d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM7.79289 7.79289C8.18342 7.40237 8.81658 7.40237 9.20711 7.79289L12 10.5858L14.7929 7.79289C15.1834 7.40237 15.8166 7.40237 16.2071 7.79289C16.5976 8.18342 16.5976 8.81658 16.2071 9.20711L13.4142 12L16.2071 14.7929C16.5976 15.1834 16.5976 15.8166 16.2071 16.2071C15.8166 16.5976 15.1834 16.5976 14.7929 16.2071L12 13.4142L9.20711 16.2071C8.81658 16.5976 8.18342 16.5976 7.79289 16.2071C7.40237 15.8166 7.40237 15.1834 7.79289 14.7929L10.5858 12L7.79289 9.20711C7.40237 8.81658 7.40237 8.18342 7.79289 7.79289Z" fill="#7BA5AF"></path></svg>
 </div></div></div>
-</div></center>
-</section></div>
+</div></center></div></div>
+
+</section>
+
+</div>
 </main>
 
 </div>
