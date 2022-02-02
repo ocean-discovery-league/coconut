@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
+  import PageBody from '$lib/PageBody.svelte';
 
   onMount(() => {
     const missionid_request = new Request('/missionid');
@@ -62,46 +63,99 @@
   });
 </script>
 
-<h2 style="font-size:64px"><img height="80px" width="80px" src="/favicon.png" style="position:relative;top:18px;right:10px" alt="ODL Logo"/>
-  <span style="font-size:58px">Mission ID</span>
-</h2>
 
-<br>
-<br>
-
-<center>
-  <div style="font-size:22px;font-weight:700;color:white;margin-bottom:20px"><span id="hostname">&nbsp;</span><br><span id="macaddress" style="color:darkgrey">&nbsp;</span><br><span id="version" style="color:darkgrey">X</span></div>
+<PageBody slot="PageBody">
+  <span id="hostname">&nbsp;</span><br><span id="macaddress">&nbsp;</span>
+  <br>
+  <span id="version">X</span>
   <br>
 
-  <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post" style="font-size: 20px; line-height: 26px; margin: 0 0 16px">
-    <table width="400" style="display:grid;place-items:center;background-color:#1B3C45">
+  <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post">
+    <table width="400">
       <tr><td>
 	  <br>
 	  <br>
-	  <div style="font-size:20px;font-weight:900">
-	    <label for="username">User Name</label><br>
-	    <input id="username" autocorrect="off" autocapitalize="none" type="text" name="username" size="18" style="font-size:24px;margin-top:5px;" required/>
+	  <div>
+	    <label for="username">User Name</label>
+	    <br>
+	    <input id="username" autocorrect="off" autocapitalize="none" type="text" name="username" size="18" required/>
 	  </div>
-      </td></tr><tr><td style="height:25px">
-      </td></tr><tr><td style="font-size:20px;font-weight:900">
-	  <div style="font-size:20px;font-weight:900">
-	    <label for="missionid">Mission ID<div style="font-size:11px;margin-left:2px"></div></label>
-	    <input id="missionid" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" name="missionid" size="18" style="font-size:24px;margin-top:5px" required/>
+      </td></tr><tr><td height="25">
+      </td></tr><tr><td>
+	  <div>
+	    <label for="missionid">Mission ID</label>
+	    <br>
+	    <input id="missionid" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" name="missionid" size="18" required/>
 	  </div>
-      </td></tr><tr><td style="height:25px">
-      </td></tr><tr><td style="text-align:center">
-	  <span style="display: inline-block; border-radius: 4px; background: #1f8b5f; border-bottom: 2px solid #1f8b5f;">
-	    <button id="savemissionid" style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 20px; line-height: 26px; border-top: 14px solid; border-bottom: 14px solid; border-right: 32px solid; border-left: 32px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
+      </td></tr><tr><td height="25">
+      </td></tr><tr><td>
+	  <center>
+	    <button id="savemissionid">
 	      Save
 	    </button>
-	  </span>
-	  <br>
-	  <br>
-	  <br>
-	  <br>
+	    <div id="savemissionidstatus"></div>
+	  </center>
       </td></tr>
     </table>
-    <div id="savemissionidstatus" style="position:relative;top:-50px;left:315px;color:white;font-size:20px;line-height:22px;text-align:left;margin-left:50px;margin-bottom:5px"></div>
   </form>
-</center>
-<br>
+</PageBody>
+
+
+<style>
+  #macaddress, #version {
+    color: darkgrey;
+  }
+
+  #savemissionidstatus {
+    position: relative;
+    color: darkgrey;
+    font-size: 20px;
+    line-height: 22px;
+    text-align: left;
+    margin-top: 30px;
+  }
+
+  form {
+    font-size: 20px;
+    line-height: 26px;
+    margin: 0 0 16px;
+  }
+
+  table {
+    display: grid;
+    margin-top: 30px;
+    place-items: center;
+    background-color: #13343D;
+  }
+
+  label {
+    font-size:20px;
+    font-weight:900;
+  }
+
+  input {
+    font-size: 24px;
+    margin-top: 5px;
+  }
+  
+  button {
+    color: white;
+    font-weight: normal;
+    text-decoration: none;
+    word-break: break-word;
+    font-size: 20px;
+    line-height: 26px;
+    border-top: 14px solid;
+    border-bottom: 14px solid;
+    border-right: 32px solid;
+    border-left: 32px solid;
+    background-color: #2ab27b;
+    border-color: #2ab27b;
+    display: inline-block;
+    letter-spacing: 1px;
+    min-width: 80px;
+    text-align: center;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+  }
+</style>

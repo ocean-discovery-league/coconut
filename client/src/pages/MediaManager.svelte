@@ -7,6 +7,7 @@
   onMount(() => {
     let mediamanager = document.getElementById('mediamanager');
     mediamanager.src = window.location.protocol + '//' + window.location.hostname + '/html/preview.php';
+    //mediamanager.src = 'http://mkn0014.local/html/preview.php';  // for debugging on my mac
     
     socket = getSocketIO();
     socket.on('filecounts', (data) => update_file_counts(data));
@@ -114,23 +115,60 @@
   }
 </script>
 
-<h2 style="font-size:64px">
-  <span style="font-size:58px">Media Manager</span>
-</h2>
-
-<br>
-<br>
-
 <center>
-  <button id="uploadall" on:click={upload_all} style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; font-size: 14px; line-height: 18px; border-top: 8px solid; border-bottom: 8px solid; border-right: 12px solid; border-left: 12px solid; background-color: #2ab27b; border-color: #2ab27b; display: inline-block; letter-spacing: 1px; min-width: 80px; text-align: center; border-radius: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);">
-    Upload All Files To Tator.io
-  </button>
-  <div id="uploadstatus" style="color:white;font-size:20px;line-height:22px;margin-top:20px">&nbsp;</div>
-  <div id="filecounts" style="color:lightgray;font-size:20px;line-height:22px;margin-top:5px">&nbsp;</div>
+  <div id="upload-container">
+    <button id="uploadall" on:click={upload_all}>
+      Upload All Files To Tator.io
+    </button>
+    <div id="uploadstatus">&nbsp;</div>
+    <div id="filecounts">&nbsp;</div>
+  </div>
 </center>
 
-<br>
-<br>
-
-<iframe id="mediamanager" title="Media Manager Files" width="100%" height="100%">
+<iframe id="mediamanager" title="Media Manager Files">
 </iframe>
+
+
+<style>
+  #upload-container {
+    height: 130px;
+    color: white;
+    font-size: 20px;
+    line-height: 22px;
+  }
+
+  #uploadstatus {
+    margin-top: 10px;
+  }
+
+  #filecounts {
+    color: lightgray;
+    margin-top: 5px;
+  }
+
+  button {
+    color: white;
+    font-weight: normal;
+    text-decoration: none;
+    word-break: break-word;
+    font-size: 14px;
+    line-height: 18px;
+    border-top: 8px solid;
+    border-bottom: 8px solid;
+    border-right: 12px solid;
+    border-left: 12px solid;
+    background-color: #2ab27b;
+    border-color: #2ab27b;
+    display: inline-block;
+    letter-spacing: 1px;
+    min-width: 80px;
+    text-align: center;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+  }
+ 
+  #mediamanager {
+    width: 100%;
+    height: calc(100vh - (120px + 151px));
+  }
+</style>

@@ -1,12 +1,12 @@
 <script>
   import Page from '$lib/Page.svelte';
-  import MediaManager from '$lib/pages/MediaManager.svelte';
-  import MissionID from '$lib/pages/MissionID.svelte';
-  import WiFiSetup from '$lib/pages/WiFiSetup.svelte';
-  import VideoSetup from '$lib/pages/VideoSetup.svelte';
-  import PhotoSetup from '$lib/pages/PhotoSetup.svelte';
-  import MissionISetup from '$lib/pages/MissionISetup.svelte';
-  import MissionIISetup from '$lib/pages/MissionIISetup.svelte';
+  import MediaManager from '$lib/../pages/MediaManager.svelte';
+  import MissionID from '$lib/../pages/MissionID.svelte';
+  import WiFiSetup from '$lib/../pages/WiFiSetup.svelte';
+  import VideoSetup from '$lib/../pages/VideoSetup.svelte';
+  import PhotoSetup from '$lib/../pages/PhotoSetup.svelte';
+  import MissionISetup from '$lib/../pages/MissionISetup.svelte';
+  import MissionIISetup from '$lib/../pages/MissionIISetup.svelte';
   import { onMount, onDestroy } from 'svelte';
 
   // let scrollX;
@@ -59,38 +59,56 @@
 
 <div id="sectionholder">
 
-  <Page id="media_manager">
+  <Page title="Media Manager">
     <MediaManager/>
   </Page>
 
 
-  <Page id="username_section">
+  <Page title="Mission ID">
     <MissionID/>
   </Page>
 
 
-  <Page id="wifi_section">
+  <Page title="WiFi Setup">
     <WiFiSetup/>
   </Page>
 
 
-  <Page id="video_setup_section">
+  <Page title="Video Setup">
     <VideoSetup/>
   </Page>
 
 
-  <Page id="photo_setup_section">
+  <Page title="Photo Setup">
     <PhotoSetup/>
   </Page>
 
 
-  <Page id="mission-1-setup">
+  <Page title="Mission I">
     <MissionISetup/>
   </Page>
 
 
-  <Page id="mission-2-setup">
+  <Page title="Mission II">
     <MissionIISetup/>
   </Page>
 
 </div>
+
+
+<style>
+  #sectionholder {
+    font-family: sans-serif;
+    scroll-snap-type: x mandatory;	
+    overscroll-behaviour: contain;
+    display: flex;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: scroll;
+    height: 100vh;
+  }
+  #sectionholder::-webkit-scrollbar {
+    display: none;
+    height: 0 !important;
+    width: 0 !important;
+  }
+</style>

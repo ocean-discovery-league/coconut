@@ -312,8 +312,8 @@
       $(go.Link,
         { routing: go.Link.AvoidsNodes, corner: 5 },
         { relinkableFrom: true, relinkableTo: true },
-        $(go.Shape, { stroke: "#D3E0E3", strokeWidth: 2 }),
-        $(go.Shape, { toArrow: "Standard", stroke: "#D3E0E3", fill: "#D3E0E3"})
+        $(go.Shape, { stroke: "#D3E0E3", strokeWidth: 4 }),
+        $(go.Shape, { toArrow: "Standard", stroke: "#D3E0E3", fill: "#D3E0E3", strokeWidth: 4})
        );
 
     diagram.nodeTemplate =
