@@ -1,11 +1,11 @@
 {
   "name": "coconut-client",
-  "version": "0.3.5-beta",
+  "version": "0.3.0",
   "description": "",
   "type": "module",
   "scripts": {
     "dev": "svelte-kit dev",
-    "build": "yarn version; svelte-kit build",
+    "build": "svelte-kit build",
     "package": "svelte-kit package",
     "preview": "svelte-kit preview",
     "lint": "prettier --ignore-path .gitignore --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",

@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import PageHeader from '$lib/PageHeader.svelte';
+  export let id = undefined;
   export let title;
 
 
@@ -50,7 +51,7 @@
   }
 </script>
 
-<section>
+<section {id}>
 
   <div class="PageHeader">
     <slot name="PageHeader">

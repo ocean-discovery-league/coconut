@@ -69,7 +69,7 @@
   </Page>
 
 
-  <Page title="WiFi Setup">
+  <Page title="WiFi Setup" id="wifi_setup">
     <WiFiSetup/>
   </Page>
 

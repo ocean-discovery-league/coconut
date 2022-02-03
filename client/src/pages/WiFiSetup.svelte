@@ -39,7 +39,7 @@
 
   function isVisible() {
     if (!wifi_section) {
-      wifi_section = document.querySelector('#wifi_section');
+      wifi_section = document.querySelector('#wifi_setup');
     }
 
     let rect = wifi_section.getBoundingClientRect();

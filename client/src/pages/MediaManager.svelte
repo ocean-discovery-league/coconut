@@ -1,13 +1,16 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { getSocketIO } from '$lib/utils';
+  import { dev } from '$app/env';
 
   let socket;
 
   onMount(() => {
     let mediamanager = document.getElementById('mediamanager');
     mediamanager.src = window.location.protocol + '//' + window.location.hostname + '/html/preview.php';
-    //mediamanager.src = 'http://mkn0014.local/html/preview.php';  // for debugging on my mac
+    if (dev) {
+      mediamanager.src = 'http://mkn0014.local/html/preview.php';  // for dev on mac
+    }
     
     socket = getSocketIO();
     socket.on('filecounts', (data) => update_file_counts(data));
