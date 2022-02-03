@@ -1,12 +1,12 @@
 {
   "name": "coconut",
-  "version": "0.3.6",
+  "version": "0.3.7-beta",
   "description": "",
   "main": "coconut.js",
   "scripts": {
     "start": "./run.sh",
     "dev": "cd client; yarn dev",
-    "build": "yarn version --patch; cd client; yarn build"
+    "build": "yarn version; cd client; yarn build"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
