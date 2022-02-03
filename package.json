@@ -1,6 +1,6 @@
 {
   "name": "coconut",
-  "version": "0.3.10-beta.0",
+  "version": "0.3.10",
   "description": "",
   "main": "coconut.js",
   "scripts": {
