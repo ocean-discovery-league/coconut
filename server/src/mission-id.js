@@ -7,8 +7,9 @@ const path = require('path');
 const util = require('util');
 const { version } = require('../../package.json');
 
-const MEDIA_DIR = '/var/www/html';
-const MISSION_ID_FILE = MEDIA_DIR + '/mission_id.json';
+// const MEDIA_DIR = '/var/www/html';
+// const MISSION_ID_FILE = MEDIA_DIR + '/mission_id.json';
+const MISSION_ID_FILE = path.resolve(`${__dirname}/../../missions/mission-id.json`);
 const INTERFACE = process.argv[2] || 'wlan1';  // node index.js <INTERFACE>
 
 const shunt = () => {};

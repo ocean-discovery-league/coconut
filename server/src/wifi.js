@@ -34,9 +34,6 @@ class WiFi {
         this.routes(this.router);
         // this.app.use(this.router);
 
-        // this.staticDir = path.join(STATIC_DIR);
-        // this.app.use(serveStatic(this.staticDir));  // html and friends
-
         // let httpOptions = {};
         // this.server = http.createServer(httpOptions, this.app);
 

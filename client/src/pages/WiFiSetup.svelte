@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
+  import Button from '$lib/Button.svelte';
 
   let status_request;
   let scan_request;
@@ -12,6 +13,7 @@
   let current_rssid;
   let wifi_section;
 
+  let visible_networks = false;
 
   onMount(() => {
     status_request = new Request('/status');
@@ -81,7 +83,7 @@
     let connectiondiv = document.querySelector('#connection');
     let state = status.wpa_state;
     let html = '• • •<br>&nbsp;';
-    console.log(status);
+    //console.log(status);
     if (state) {
       let ssid = status.ssid.replace(/\n$/, '');  // remove newline at end of string
       if (state === 'COMPLETED') {
@@ -209,7 +211,7 @@
 
 
 <center>
-  <div id="connection">• • •<br>&nbsp;</div>
+  <div id="connection"><span style="color:darkgray">Not Connected</span><br>&nbsp;</div>
 
   <form width="70%" id="connect_wifi_form" enctype="multipart/form-data" method="post">
     <table width="400">
@@ -218,39 +220,45 @@
 	  <br>
 	  <div>
 	    <label for="ssid">Network Name</label><br>
-	    <input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" required/>
+	    <input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" autocomplete="off" required/>
 	  </div>
       </td></tr><tr><td height="25">
       </td></tr><tr><td>
 	  <div>
-	    <label for="password">WiFi Password<div class="sublabel"><i>leave blank if no password</i></div></label>
+	    <div id="visibility-container">
+	      <label for="password">WiFi Password<div class="sublabel">blank if no password</div></label>
+	      <button
+		id="visibility"
+		type="button"
+		on:click={toggle_password_visibility}
+		>
+		{password_visibility_icon}
+	      </button>
+	    </div>
 	    <input id="password" autocorrect="off" autocapitalize="none" autocomplete="off" type={password_input_type} name="password" size="18"/>
-	    <button
-	      id="visibility"
-	      type="button"
-	      on:click={toggle_password_visibility}
-	    >
-	      {password_visibility_icon}
-	    </button>
 	  </div>
-      </td></tr><tr><td height="25">
+      </td></tr><tr><td height="40">
       </td></tr><tr><td>
 	  <center>
-	    <button id="connect">
+	    <Button>
 	      Connect WiFi
-	    </button>
+	    </Button>
 	  </center>
       </td></tr>
     </table>
   </form>
 
   <br>
+  <br>
 
   <div id="networklist-container">
     <div id="networklist">
-      <font color="gray">Visible networks</font>
+      <center>
+	<span style="color:darkgray">Visible Networks</span>
+      </center>
+      <br>
       <ul width=300 id="networks">
-	<li><i>looking for networks...</i></li>
+	<li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color:darkgray">• • •</span></li>
       </ul>
     </div>
   </div>
@@ -268,10 +276,11 @@
   table {
     display: grid;
     place-items: center;
-    background-color: #1B3C45;
+    background-color: rgba(0,0,0,0);
   }
 
   form {
+    max-width: 800px;
     font-size: 20px;
     line-height: 26px;
     margin: 0 0 16px;
@@ -283,7 +292,7 @@
   }
 
   label .sublabel {
-    font-size: 11px;
+    font-size: 14px;
     margin-top: -8px;
     margin-left: 2px;
     color: darkgrey;
@@ -294,17 +303,24 @@
     margin-top: 5px;
   }
 
+  #visibility-container {
+    position: relative;
+  }
+  #visibility-container label {
+    display: inline-block;
+  }   
   button#visibility {
     width: 30px;
     height: 30px;
     position: absolute;
-    margin-left: 6px;
-    margin-top: 6px;
+    top: 8px;
+    right: 3px;
     border-radius: 2px;
     border-width: 1px;
     background-color: #BBEBFF;
   }
 
+/*
   button#connect {
     display: inline-block;
     color: white;
@@ -325,6 +341,7 @@
     border-radius: 4px;
     text-shadow: 0 1px 1px rgba(0,0,0,0.25);
   }
+*/
 
   #networklist-container {
     display: grid;

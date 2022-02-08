@@ -84,12 +84,12 @@
   </Page>
 
 
-  <Page title="Mission I">
+  <Page title="Mission &nbsp;I">
     <MissionISetup/>
   </Page>
 
 
-  <Page title="Mission II">
+  <Page title="Mission &nbsp;II">
     <MissionIISetup/>
   </Page>
 

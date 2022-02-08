@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { getSocketIO } from '$lib/utils';
   import { dev } from '$app/env';
+  import Button from '$lib/Button.svelte';
 
   let socket;
 
@@ -120,9 +121,9 @@
 
 <center>
   <div id="upload-container">
-    <button id="uploadall" on:click={upload_all}>
+    <Button width=280 height=36 fontsize='16px' nofeedback on:click={upload_all}>
       Upload All Files To Tator.io
-    </button>
+    </Button>
     <div id="uploadstatus">&nbsp;</div>
     <div id="filecounts">&nbsp;</div>
   </div>
@@ -134,7 +135,7 @@
 
 <style>
   #upload-container {
-    height: 130px;
+    height: 140px;
     color: white;
     font-size: 20px;
     line-height: 22px;
@@ -149,6 +150,7 @@
     margin-top: 5px;
   }
 
+/*
   button {
     color: white;
     font-weight: normal;
@@ -169,6 +171,7 @@
     border-radius: 4px;
     text-shadow: 0 1px 1px rgba(0,0,0,0.25);
   }
+*/
  
   #mediamanager {
     width: 100%;

@@ -21,15 +21,18 @@ function mission2(current_phase, cycle_num, elapsed, action_elapsed, monoclock, 
     /// Phase 1 - wait until the GPS loses lock (goes underwater)
     ///
     if (current_phase === 1) {
-	let gps_state;
-	if (sensors.GNSS) {
-	    gps_state = sensors.GNSS.getIsLocked(monoclock);
-	}
-	if (gps_state === true || gps_state === undefined) {
-	    new_action = 'WAIT';
-	} else {
-	    new_phase = current_phase + 1;
-	}
+	// let gps_state;
+	// if (sensors.GNSS) {
+	//     gps_state = sensors.GNSS.getIsLocked(monoclock);
+	// }
+	// if (gps_state === true || gps_state === undefined) {
+	//     new_action = 'WAIT';
+	// } else {
+	//     new_phase = current_phase + 1;
+        // }
+
+        // new plan: no gps, start always
+        new_phase = current_phase + 1;
     }
 
     ///
@@ -41,9 +44,9 @@ function mission2(current_phase, cycle_num, elapsed, action_elapsed, monoclock, 
 	    cycle: params.TIME_LAPSE_CYCLE
 	};
 
-	if (sensors.GNSS && sensors.GNSS.getIsLocked(monoclock)) {
-	    new_phase = -1;  // end mission
-	}
+	// if (sensors.GNSS && sensors.GNSS.getIsLocked(monoclock)) {
+	//     new_phase = -1;  // end mission
+	// }
     }
 
     return [new_action, new_phase, options];
@@ -58,14 +61,14 @@ const diagram = [
         // { key: "Block0-1-2", text: " Start Mission ", group: "Action0-1", color: "#FBDB6B" },
 
         { key: "Phase1", text: "Wait", isGroup: true, category: "Pool" },
-        { key: "Action1-1", text: "no GPS", isGroup: true, group: "Phase1", color: "#D2E0E3" },
-        { key: "Block1-1-1", text: " Start ", group: "Action1-1", color: "#FBDB6B" },
-        { key: "Block1-1-2", text: "If No GPS Signal" , group: "Action1-1", color: "#D2E0E3" },
+        { key: "Action1-1", text: "start", isGroup: true, group: "Phase1", color: "#69F4E4" },
+        { key: "Block1-1-1", text: "Start", group: "Action1-1", color: "#F4E469" },
+        { key: "Block1-1-2", text: "By Ring" , group: "Action1-1", color: "#187D8B" },
 
         { key: "Phase2", text: "Record", isGroup: true, category: "Pool" },
-        { key: "Action2-1", text: "record", isGroup: true, group: "Phase2", color: "#D2E0E3" },
-        { key: "Block2-1-1", text: "Timelapse Photos", group: "Action2-1", color: "#D2E0E3" },
-        { key: "Block2-1-2", text: "{}", group: "Action2-1", color: "#7BA5AF",
+        { key: "Action2-1", text: "record", isGroup: true, group: "Phase2", color: "#69F4E4" },
+        { key: "Block2-1-1", text: "Timelapse Photo", group: "Action2-1", color: "#187D8B" },
+        { key: "Block2-1-2", text: "{}", group: "Action2-1", color: "#44CCCC",
 	  param: "TIME_LAPSE_CYCLE",
 	  value: 600,
 	  default: 600,
@@ -102,21 +105,21 @@ const diagram = [
 	  },
 	},
         { key: "Phase3", text: "End", isGroup: true, category: "Pool" },
-        { key: "Action3-1", text: "end", isGroup: true, group: "Phase3", color: "#FAE6CE" },
-        { key: "Block3-1-1", text: "End ", group: "Action3-1", color: "#F1B36F" },
-        { key: "Block3-1-2", text: "If GPS Signal", group: "Action3-1", color: "#FAE6CE" },
+        { key: "Action3-1", text: "end", isGroup: true, group: "Phase3", color: "#69F4E4" },
+        { key: "Block3-1-1", text: "End", group: "Action3-1", color: "#FF9A00" },
+        { key: "Block3-1-2", text: "By Ring", group: "Action3-1", color: "#187D8B" },
     ],
     [ // link data
-        { from: "Block0-1-1", to: "Block0-1-2" },
+        // { from: "Block0-1-1", to: "Block0-1-2" },
         { from: "Phase0", to: "Phase1" },
 
-        { from: "Block1-1-1", to: "Block1-1-2" },
+        // { from: "Block1-1-1", to: "Block1-1-2" },
         { from: "Phase1", to: "Phase2" },
 
-        { from: "Block2-1-1", to: "Block2-1-2" },
+        // { from: "Block2-1-1", to: "Block2-1-2" },
         { from: "Phase2", to: "Phase3" },
 
-        { from: "Block3-1-1", to: "Block3-1-2" },
+        // { from: "Block3-1-1", to: "Block3-1-2" },
     ]
 ];
 

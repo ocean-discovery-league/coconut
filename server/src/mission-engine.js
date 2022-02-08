@@ -10,11 +10,6 @@ const MINUTE_MS = 1000 * 60;
 let log = console;
 
 
-// global.window = {};
-// require('../static/mission-programs.js');
-// const missionPrograms = window.missionPrograms;
-
-
 class MissionEngine extends EventEmitter {
     async init() {
 	this.pulseClock = new PulseClock(PULSE_CLOCK_INTERVAL_MS);

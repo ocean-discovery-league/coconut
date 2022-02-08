@@ -14,7 +14,7 @@ const PORT = 6252;
 //const BIND = '127.0.0.1';
 const BIND = '0.0.0.0';
 const CLIENT_DIR = __dirname + '/../../client/build';
-const STATIC_DIR = __dirname + '/../../static';
+const STATIC_DIR = __dirname + '/../static';
 
 let log = console;
 

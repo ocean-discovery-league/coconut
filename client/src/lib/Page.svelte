@@ -87,10 +87,10 @@
   }
 
   section:nth-child(even) {
-    background-color: #13343D;
+    background-color: #1A4565 /*#1B617C;*/ /*#13343D;*/
   }
   section:nth-child(odd) {
-    background-color: #1B3C45;
+    background-color: #29617C /*#187D8B;*/ /*#1B3C45;*/
   }
   
   .PageHeader {
