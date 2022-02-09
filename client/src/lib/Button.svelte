@@ -87,6 +87,6 @@
   }
 
   .error {
-    color: #DD2C1D; /*red;*/
+    color: #DD2C1D;
   }
 </style>

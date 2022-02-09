@@ -5,6 +5,7 @@
   import Button from '$lib/Button.svelte';
 
   let socket;
+  let button_text = 'Upload All Files To Tator.io';
 
   onMount(() => {
     let mediamanager = document.getElementById('mediamanager');
@@ -19,16 +20,20 @@
   });
 
   let uploading = false;
+  let uploading_error = false;
+  let uploading_response = false;
+  let canceling = false;
+  let canceled = false;
 
   async function upload_all(event) {
-    let uploadall_button = document.querySelector('#uploadall');
-    let uploadstatus_div = document.querySelector('#uploadstatus');
     if (!uploading) {
       try {
 	console.log('upload all!');
-	uploadall_button.innerText = '  Cancel Upload ';
-	uploadstatus_div.innerText = 'Uploading...';
 	uploading = true;
+	uploading_error = false;
+	uploading_response = false;
+	canceling = false;
+	canceled = false;
 	let response = await fetch('/uploadall', {
 	  method: 'POST',
 	  //body: JSON.stringify(json),
@@ -38,21 +43,16 @@
 	});
 	
 	uploading = false;
-	uploadall_button.innerText = 'Upload All Files To Tator.io';
 	if (response.ok) {
 	  let text = await response.text();
 	  console.log('text', text);
-	  if (!text) {
-	    text = 'Upload done!';
-	  }
-	  uploadstatus_div.innerText = text;
+	  upload_response = text || 'Upload done!';
 	} else {
-	  uploadstatus_div.innerText = `Upload error: ${response.statusText}`;
+	  uploading_error = `Upload error: ${response.statusText}`;
 	}
       } catch(err) {
 	uploading = false;
-	uploadall_button.innerText = 'Upload All Files To Tator.io';
-	uploadstatus_div.innerText = `Upload error: ${err}`;
+	uploading_error = `Upload error: ${err}`;
       }
     } else {
       upload_all_cancel(event);
@@ -61,26 +61,22 @@
 
 
   async function upload_all_cancel(event) {
-    let uploadall_button = document.querySelector('#uploadall');
-    let uploadstatus_div = document.querySelector('#uploadstatus');
     if (uploading) {
       try {
 	console.log('upload all cancel!');
-	uploadall_button.innerText = 'Canceling...';
-	//uploadstatus_div.innerText = 'Uploading...';
+	canceling = true;
 	let response = await fetch('/uploadall_cancel', { method: 'POST' });
 	
 	uploading = false;
-	uploadall_button.innerText = 'Upload All';
 	if (response.ok) {
-	  uploadstatus_div.innerText = 'Upload canceled';
+	  canceling = false;
+	  canceled = true;
 	} else {
-	  uploadstatus_div.innerText = `Upload cancel error: ${response.statusText}`;
+	  uploading_error = `Upload cancel error: ${response.statusText}`;
 	}
       } catch(err) {
 	uploading = false;
-	uploadall_button.innerText = 'Upload All';
-	uploadstatus_div.innerText = `Upload error: ${err}`;
+	uploading_error = `Upload error: ${err}`;
       }
     }
   }
@@ -122,9 +118,31 @@
 <center>
   <div id="upload-container">
     <Button width=280 height=36 fontsize='16px' nofeedback on:click={upload_all}>
-      Upload All Files To Tator.io
+      {#if uploading}
+	{#if canceling}
+	  Canceling...
+	{:else}
+	  Cancel Upload
+	{/if}
+      {:else}
+	Upload All Files To Tator.io
+      {/if}
     </Button>
-    <div id="uploadstatus">&nbsp;</div>
+    <div id="uploadstatus">
+      {#if uploading}
+	Uploading...
+      {:else}
+	{#if canceled}
+	  Uploading canceled
+	{:else if uploading_error}
+	   <span class="error">{uploading_error}</span>
+        {:else if uploading_response}
+	  {uploading_response}
+	{:else}
+	  &nbsp;
+	{/if}
+      {/if}
+    </div>
     <div id="filecounts">&nbsp;</div>
   </div>
 </center>
@@ -176,5 +194,9 @@
   #mediamanager {
     width: 100%;
     height: calc(100vh - (120px + 151px));
+  }
+
+  .error {
+    color: #DD2C1D;
   }
 </style>
