@@ -6,6 +6,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
 const socketio = require('socket.io');
+const cors = require('cors');
 const UploadAll = require('./upload-all.js');
 const MissionID = require('./mission-id.js');
 const WiFi = require('./wifi.js');
@@ -27,6 +28,7 @@ class WebServer {
             next();
         });
 
+	app.use(cors({origin: '*'}));
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
 
