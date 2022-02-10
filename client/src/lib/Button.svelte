@@ -89,4 +89,28 @@
   .error {
     color: #DD2C1D;
   }
+
+  /* old buttons: */
+  /* upload button
+  button#connect {
+    display: inline-block;
+    color: white;
+    background-color: #2ab27b;
+    font-weight: normal;
+    text-decoration: none;
+    word-break: break-word;
+    font-size: 20px;
+    line-height: 26px;
+    border: 14px solid;
+    border-bottom: 14px solid;
+    border-right: 32px solid;
+    border-left: 32px solid;
+    border-color: #2ab27b;
+    letter-spacing: 1px;
+    min-width: 80px;
+    text-align: center;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+  }
+ */
 </style>

@@ -1,30 +1,46 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
+  import { dev } from '$app/env'
   import Button from '$lib/Button.svelte';
 
-  let status_request;
   let scan_request;
-  let signal_request;
+  let status_request;
+  let connect_request;
 
-  const STATUS_INTERVAL = 1 * 1000;  // 1 second
   const SCAN_INTERVAL = 5 * 1000;  // 5 seconds
-  const SIGNAL_INTERVAL = 1 * 1000;  // 1 second
+  const STATUS_INTERVAL = 1 * 1000;  // 1 second
 
-  let current_rssid;
+  let scanTimeout;
+  let statusTimeout;
+
+  let connected_ssid;
+  let connected_ipaddress;
+  let connected_rssi;
   let wifi_section;
 
   let visible_networks = false;
 
   onMount(() => {
-    status_request = new Request('/status');
     scan_request = new Request('/scan');
-    signal_request = new Request('/signal');
+    status_request = new Request('/status');
+    connect_request = new Request('/connect');
+
+    if (dev) {
+      scan_request = new Request('http://192.168.10.1/scan');
+      status_request = new Request('http://192.168.10.1/status');
+      connect_request = new Request('http://192.168.10.1/connect');
+    }
 
     let wifi_form = document.getElementById('connect_wifi_form');
     wifi_form.addEventListener('submit', connect_wifi);
     monitorStatus();
     monitorScan();
-    //monitorSignal();
+  });
+
+
+  onDestroy(() => {
+    clearTimeout(scanTimeout);
+    clearTimeout(statusTimeout);
   });
 
 
@@ -32,7 +48,7 @@
   let password_visibility_icon;
   let password_input_type;
   $: password_visibility_icon = password_is_visible ? '👁️' : '😆';
-  $: password_input_type = password_is_visible ? 'test' : 'password';
+  $: password_input_type = password_is_visible ? 'text' : 'password';
   function toggle_password_visibility(event) {
     password_is_visible = !password_is_visible;
     event.preventDefault();  // keep from stealing keyboard focus
@@ -59,7 +75,7 @@
   // setTimeout and then wait for the first full frame after that
   // (so we can check isVisible without triggering any reflows)
   function setTimeoutAnimationFrame(callback, interval) {
-    setTimeout(() => window.requestAnimationFrame(callback), interval);
+    return setTimeout(() => window.requestAnimationFrame(callback), interval);
   }
 
 
@@ -75,34 +91,26 @@
     } catch(err) {
       console.error(err);
     }
-    setTimeoutAnimationFrame(monitorStatus, STATUS_INTERVAL);
+    statusTimeout = setTimeoutAnimationFrame(monitorStatus, STATUS_INTERVAL);
   }
 
 
   function showStatus(status) {
-    let connectiondiv = document.querySelector('#connection');
     let state = status.wpa_state;
-    let html = '• • •<br>&nbsp;';
     //console.log(status);
     if (state) {
       let ssid = status.ssid.replace(/\n$/, '');  // remove newline at end of string
       if (state === 'COMPLETED') {
-	html = '<div style="position:relative" data-ssid="' + (ssid || '') + '"><font color="gray">connected to </font>' + (ssid || 'unknown') + '&nbsp;&nbsp;';
-	if (current_rssid) {
-	  html += '<span style="position:absolute;color:#AAAAAA">' + current_rssid + '</span>';
+	connected_ssid = ssid || 'unknown';
+	if (status.ip_address) {
+	  connected_ipaddress = status.ip_address;
 	}
-	html += '</div>';
       } else {
-	console.log('state =', state);
-      }
-      if (status.ip_address) {
-	html += '<br><span style="position:absolute;color:#AAAAAA">' + status.ip_address + '</span>';
-      } else {
-	html += '<br>&nbsp;';
+	connected_ssid = false;
+	console.log('unknown state =', state);
       }
     }
     //connectiondiv.innerHTML = status.ssid + ` &nbsp; <button onclick="fetch(new Request('/disconnect',{method:'POST'}))">&#x274c/button>`;
-    connectiondiv.innerHTML = html;
   }
 
 
@@ -119,14 +127,13 @@
     } catch(err) {
       console.error(err);
     }
-    setTimeoutAnimationFrame(monitorScan, SCAN_INTERVAL);
+    scanTimeout = setTimeoutAnimationFrame(monitorScan, SCAN_INTERVAL);
   }
 
 
   function showScan(json) {
-    let networks_ul = document.querySelector('#networks');
-    let html = '';
     let seen = [];
+    visible_networks = [];
     try {
       for (let n=0; n<json.length; n++) {
 	let network = json[n];
@@ -141,40 +148,19 @@
 	  continue;
 	}
 	seen.push(ssid);
-	html += '<li onclick="window.client.click_network(event)">'
-	  + '<div style="position:relative">'
-	  + '<div style="position:absolute;color:#AAAAAA;left:-38px">' + network.signal + '</div>'
-	  + '<div style="position:absolute;color:#AAAAAA;left:-62px;font-size:14px;opacity:0.6">' + (network.security ? '🔒' : '') + '</div>'
-	  + '<span class="clickssid">' + ssid + '</span></li>\n';  // FIXME unsafe!
-	current_rssid = network.signal;
-      }
-    } catch(err) {
-      console.error(err);
-    }
-    networks_ul.innerHTML = html;
-  }
 
+	network.ssid = ssid;
+	visible_networks.push(network);
 
-  async function monitorSignal() {
-    try {
-      if (isVisible()) {
-        let response = await fetch(signal_request);
-        let json = await response.json();
-	if (json && !json.retry && Object.keys(json).length !== 0) {
-	  showSignal(json);
+	if (ssid === connected_ssid) {
+	  connected_rssi = network.signal;
 	}
       }
     } catch(err) {
       console.error(err);
     }
-    setTimeoutAnimationFrame(monitorSignal, SIGNAL_INTERVAL);
   }
 
-
-  function showSignal(json) {
-    //let signaldiv = document.querySelector('#signaldiv');
-    //signaldiv.innerHTML = JSON.stringify(json);
-  }
 
   async function connect_wifi(event) {
     console.log(event);
@@ -186,23 +172,23 @@
     console.log(formdata.get('ssid'));
     console.log(formdata.get('password'));
 
-    let json = {
+    let data = {
       ssid: formdata.get('ssid'),
       password: formdata.get('password')
     };
-    await fetch('/connect', {
+    await fetch(connect_request, {
       method: 'POST',
-      body: JSON.stringify(json),
+      body: JSON.stringify(data),
       headers: {
 	'Content-Type': 'application/json'
       }
     });
-    //await fetch(new Request('/connect',{method:'POST',body:formdata}))
   }
 
-
   function click_network(event) {
-    let network_li = event.target.parentElement;  // FIXME breaks if there's any li element padding, or li children go deeper than one level
+    let network_li = event.target.parentElement;
+    // FIXME ^^^ breaks if there's any li element padding
+    // or li children go deeper than one level
     let clickssid = network_li.querySelector('.clickssid');
     let ssid_input = document.getElementById('ssid');
     ssid_input.value = clickssid.textContent;
@@ -211,7 +197,25 @@
 
 
 <center>
-  <div id="connection"><span style="color:darkgray">Not Connected</span><br>&nbsp;</div>
+  <div id="connection">
+    {#if !connected_ssid}
+      <span style="color:darkgray">Not Connected</span>
+      <br>
+      &nbsp;
+    {:else}
+      <div style="position:relative">
+	<span style="color:gray">connected to </span>{connected_ssid}
+	{#if connected_rssi}
+	  &nbsp;<span style="position:absolute;color:#AAAAAA">{connected_rssi}</span>
+	{/if}
+      </div>
+      {#if connected_ipaddress}
+	<span style="color:#AAAAAA">{connected_ipaddress}</span>
+      {:else}
+	&nbsp;
+      {/if}
+    {/if}
+  </div>
 
   <form width="70%" id="connect_wifi_form" enctype="multipart/form-data" method="post">
     <table width="400">
@@ -240,7 +244,7 @@
       </td></tr><tr><td height="40">
       </td></tr><tr><td>
 	  <center>
-	    <Button>
+	    <Button nofeedback>
 	      Connect WiFi
 	    </Button>
 	  </center>
@@ -258,7 +262,21 @@
       </center>
       <br>
       <ul width=300 id="networks">
-	<li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color:darkgray">• • •</span></li>
+	{#if visible_networks === false}
+	  <li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color:darkgray">• • •</span></li>
+	{:else if visible_networks.length === 0}
+	  <li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color:darkgray">none</span></li>
+	{:else}
+	  {#each visible_networks as network}
+	    <li on:click={click_network}>
+	      <div style="position:relative">
+		<div style="position:absolute;color:#AAAAAA;left:-38px">{network.signal}</div>
+		<div style="position:absolute;color:#AAAAAA;left:-62px;font-size:14px;opacity:0.6">{network.security ? '🔒' : ''}</div>
+		<span class="clickssid">{network.ssid}</span>
+	      </div>
+	    </li>
+	  {/each}
+	{/if}
       </ul>
     </div>
   </div>
@@ -319,29 +337,6 @@
     border-width: 1px;
     background-color: #BBEBFF;
   }
-
-/*
-  button#connect {
-    display: inline-block;
-    color: white;
-    background-color: #2ab27b;
-    font-weight: normal;
-    text-decoration: none;
-    word-break: break-word;
-    font-size: 20px;
-    line-height: 26px;
-    border: 14px solid;
-    border-bottom: 14px solid;
-    border-right: 32px solid;
-    border-left: 32px solid;
-    border-color: #2ab27b;
-    letter-spacing: 1px;
-    min-width: 80px;
-    text-align: center;
-    border-radius: 4px;
-    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
-  }
-*/
 
   #networklist-container {
     display: grid;

@@ -27,9 +27,9 @@
       let username_field = document.querySelector('#username');
       let missionid_field = document.querySelector('#missionid');
       let version_field = document.querySelector('#version');
-      hostname_banner.innerText = json.hostname || '';
-      macaddress_banner.innerText = json.macaddress || '';
-      version_field.innerText = 'v' + (json.version || '');
+      hostname_banner.innerText = json.hostname || '• • •';
+      macaddress_banner.innerText = json.macaddress || '• • •';
+      version_field.innerText = 'v' + (json.version || '• • •');
 
       username_field.value  = json.username  || '';
       missionid_field.value = json.missionid || '';
@@ -75,13 +75,11 @@
 
 <PageBody slot="PageBody">
   <span id="hostname">&nbsp;</span><br><span id="macaddress">&nbsp;</span>
-  <span id="version">• • •</span>
+  <div id="version">• • •</div>
 
   <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post" autocomplete="off">
     <table width="400">
       <tr><td>
-	  <br>
-	  <br>
 	  <div>
 	    <label for="username">User Name</label>
 	    <br>
@@ -118,7 +116,7 @@
 
   table {
     display: grid;
-    margin-top: 20px;
+    margin-top: 48px;
     place-items: center;
     background-color: rgba(0,0,0,0);
   }

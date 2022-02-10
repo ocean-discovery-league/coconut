@@ -17,8 +17,8 @@
   let socket;
   let mission;
   let currentSelection;
-  let min;
-  let max;
+  let min = 0;
+  let max = 1500;
 
   onMount( () => {
     socket = getSocketIO();
