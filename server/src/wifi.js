@@ -151,6 +151,24 @@ class WiFi {
 	    await this.wireless.saveConfiguration();
 	}
     }
+
+
+    async disableAll() {
+	if (USE_NM) {
+	    // FIXME only if we ever go back to using NM again
+	} else {
+	    let networks = await this.wireless.listNetworks();
+	    for (let network of networks) {
+		if (!network.ssid) {
+		    console.log(`removing network without ssid ${network.id}`);
+		    await this.wireless.removeNetwork(network.id);
+		} else {
+		    console.log(`disabling network ${network.id}`);
+		    await this.wireless.disableNetwork(network.id);
+		}
+	    }
+	}
+    }
 }
 
 module.exports = WiFi;
