@@ -1,3 +1,6 @@
+<!-- note: not really a fully realized "SteppedLogRangeSlider" yet, -->
+<!-- just a slight wrapped on a plain RangeSlider -->
+
 <script>
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   import RangeSlider from 'svelte-range-slider-pips';

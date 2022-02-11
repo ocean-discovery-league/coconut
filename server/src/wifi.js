@@ -92,6 +92,20 @@ class WiFi {
             res.setHeader('Content-Type', 'application/json');
             res.end(json);
         });
+
+        router.post('/disconnect', async (req, res) => {
+            let json = '{}';
+            try {
+                log.log('disconnect');
+                let data = await this.disconnectWiFi();
+                json = JSON.stringify(data);
+                log.log('result', data);
+            } catch(err) {
+                log.error(err);
+            }
+            res.setHeader('Content-Type', 'application/json');
+            res.end(json);
+        });
     }
 
 
@@ -120,7 +134,21 @@ class WiFi {
 	    let result = await nmcli.connect(ssid, password);
 	    log.log('result', result);
 	} else {
-	    this.wireless.connect(ssid, password);  // TODO this isn't right
+	    await this.disableAll();
+	    await this.wireless.connect(ssid, password);
+	    await this.wireless.saveConfiguration();
+	}
+    }
+
+
+    async disconnectWiFi() {
+	if (USE_NM) {
+	    let result = await nmcli.disconnect();
+	    log.log('result', result);
+	} else {
+	    await this.disableAll();
+	    await this.wireless.disconnect();
+	    await this.wireless.saveConfiguration();
 	}
     }
 }

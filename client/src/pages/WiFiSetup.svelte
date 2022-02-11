@@ -6,6 +6,7 @@
   let scan_request;
   let status_request;
   let connect_request;
+  let disconnect_request;
 
   const SCAN_INTERVAL = 5 * 1000;  // 5 seconds
   const STATUS_INTERVAL = 1 * 1000;  // 1 second
@@ -24,11 +25,13 @@
     scan_request = new Request('/scan');
     status_request = new Request('/status');
     connect_request = new Request('/connect');
+    disconnect_request = new Request('/disconnect');
 
     if (dev) {
       scan_request = new Request('http://192.168.10.1/scan');
       status_request = new Request('http://192.168.10.1/status');
       connect_request = new Request('http://192.168.10.1/connect');
+      disconnect_request = new Request('http://192.168.10.1/disconnect');
     }
 
     let wifi_form = document.getElementById('connect_wifi_form');
@@ -110,7 +113,6 @@
 	console.log('unknown state =', state);
       }
     }
-    //connectiondiv.innerHTML = status.ssid + ` &nbsp; <button onclick="fetch(new Request('/disconnect',{method:'POST'}))">&#x274c/button>`;
   }
 
 
@@ -185,6 +187,13 @@
     });
   }
 
+  async function disconnect_wifi(event) {
+    event.preventDefault();
+    await fetch(disconnect_request, {
+      method: 'POST',
+    });
+  }
+
   function click_network(event) {
     let network_li = event.target.parentElement;
     // FIXME ^^^ breaks if there's any li element padding
@@ -214,6 +223,7 @@
       {:else}
 	&nbsp;
       {/if}
+      <br><button id="disconnect" on:click={disconnect_wifi}>disconnect</button>
     {/if}
   </div>
 
@@ -336,6 +346,10 @@
     border-radius: 2px;
     border-width: 1px;
     background-color: #BBEBFF;
+  }
+
+  button#disconnect {
+    background-color: #DD2C1D;
   }
 
   #networklist-container {

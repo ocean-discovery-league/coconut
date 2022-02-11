@@ -17,8 +17,8 @@
   let socket;
   let mission;
   let currentSelection;
-  let min = 0;
-  let max = 1500;
+  let min;
+  let max;
 
   onMount( () => {
     socket = getSocketIO();
@@ -99,15 +99,14 @@
     if (node.editing) {
       editing = { ...editing_defaults, ...node.editing, ...units };
     } else {
-      editing = { ...editing_defaults, ...units };
+      editing = { ...editing_defaults, ...node, ...units };
     }
 
     let fixed = (units.step < 1) ? 1 : 0;
     editing.value = (node.value / editing.scale).toFixed(fixed).replace(/\.0+$/,'');
-    // min = Number((editing.range.low / editing.scale).toFixed(fixed));
-    // max = Number((editing.range.high / editing.scale).toFixed(fixed));
-    min = Number((units.range.low).toFixed(fixed));
-    max = Number((units.range.high).toFixed(fixed));
+    sliderValue = editing.value;
+    min = Number((editing.range.low / editing.scale).toFixed(fixed));
+    max = Number((editing.range.high / editing.scale).toFixed(fixed));
 
     units_label = node.label || '';
     units_label = units_label.replace(/{s}/g, (editing.value === 1) ? '':'s');

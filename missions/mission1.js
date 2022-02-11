@@ -98,7 +98,7 @@ const diagram = [
 	  default: 5,
 	  range: {
 	    low: 1,
-	    high: 1440
+	    high: 120
 	  }
 	},
         { key: "Action2-2", text: "next", isGroup: true, group: "Phase2", color: "#69F4E4" },
@@ -114,7 +114,7 @@ const diagram = [
 	  default: 15,
 	  range: {
 	    low: 1,
-	    high: 1440
+	    high: 120
 	  }
 	},
         { key: "Phase3", text: "End", isGroup: true, category: "Pool" },
