@@ -125,7 +125,7 @@ class MissionID {
 		    return address.mac;
 		}
 	    }
-	else if (interfaces[ALT_INTERFACE]) {
+	} else if (interfaces[ALT_INTERFACE]) {
 	    for (let address of interfaces[ALT_INTERFACE]) {
 		if (address.family === 'IPv4') {
 		    return address.mac;
