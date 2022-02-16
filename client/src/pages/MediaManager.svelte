@@ -5,18 +5,29 @@
   import Button from '$lib/Button.svelte';
 
   let socket;
-  let button_text = 'Upload All Files To Tator.io';
+  let iframe_src;
+  let uploadall_request;
+  let uploadallcancel_request;
 
   onMount(() => {
-    let mediamanager = document.getElementById('mediamanager');
-    mediamanager.src = window.location.protocol + '//' + window.location.hostname + '/html/preview.php';
-    if (dev) {
-      mediamanager.src = 'http://mkn0014.local/html/preview.php';  // for dev on mac
-    }
-    
-    socket = getSocketIO();
-    socket.on('filecounts', (data) => update_file_counts(data));
-    socket.on('uploadprogress', (data) => update_upload_progress(data));
+      iframe_src = window.location.protocol + '//' + window.location.hostname + '/html/preview.php';
+      uploadall_request       = new Request('/uploadall', {method: 'POST'});
+      uploadallcancel_request = new Request('/uploadall_cancel', {method: 'POST'});
+
+      if (dev) {
+          // for dev on mac
+          let root = 'http://192.168.10.1';
+          iframe_src  = root + '/html/preview.php';
+          // uploadall_request       = new Request(root + '/uploadall', {method: 'POST'});
+          // uploadallcancel_request = new Request(root + '/uploadall_cancel', {method: 'POST'});
+      }
+      
+      socket = getSocketIO();
+      socket.on('filecounts',     (data) => update_file_counts(data));
+      socket.on('uploadstarted',  (data) => update_upload_started(data));
+      socket.on('uploadprogress', (data) => update_upload_progress(data));
+      socket.on('uploadfinished', (data) => update_upload_finished(false, data));
+      socket.on('uploaderror',    (data) => update_upload_finished(data, false));
   });
 
   let uploading = false;
@@ -24,174 +35,181 @@
   let uploading_response = false;
   let canceling = false;
   let canceled = false;
+  let filecounts;
+  let filecounts_summary;
+  let uploading_summary = '';
 
   async function upload_all(event) {
-    if (!uploading) {
-      try {
-	console.log('upload all!');
-	uploading = true;
-	uploading_error = false;
-	uploading_response = false;
-	canceling = false;
-	canceled = false;
-	let response = await fetch('/uploadall', {
-	  method: 'POST',
-	  //body: JSON.stringify(json),
-	  headers: {
-	    'Content-Type': 'application/json'
-	  }
-	});
-	
-	uploading = false;
-	if (response.ok) {
-	  let text = await response.text();
-	  console.log('text', text);
-	  upload_response = text || 'Upload done!';
-	} else {
-	  uploading_error = `Upload error: ${response.statusText}`;
-	}
-      } catch(err) {
-	uploading = false;
-	uploading_error = `Upload error: ${err}`;
+      if (!uploading) {
+          try {
+              console.debug('upload all!');
+              uploading = true;
+              uploading_error = false;
+              uploading_response = false;
+              canceling = false;
+              canceled = false;
+              let response = await fetch(uploadall_request);
+              
+              uploading = false;
+              if (response.ok) {
+                  let text = await response.text();
+                  console.debug('upload response text', text);
+                  update_upload_finished(false, text);
+              } else {
+                  update_upload_finished(response.statusText);
+              }
+          } catch(err) {
+              update_upload_finished(err, false);
+          }
+      } else {
+          upload_all_cancel(event);
       }
-    } else {
-      upload_all_cancel(event);
-    }
   }
 
 
   async function upload_all_cancel(event) {
-    if (uploading) {
-      try {
-	console.log('upload all cancel!');
-	canceling = true;
-	let response = await fetch('/uploadall_cancel', { method: 'POST' });
-	
-	uploading = false;
-	if (response.ok) {
-	  canceling = false;
-	  canceled = true;
-	} else {
-	  uploading_error = `Upload cancel error: ${response.statusText}`;
-	}
-      } catch(err) {
-	uploading = false;
-	uploading_error = `Upload error: ${err}`;
+      if (uploading) {
+          try {
+              console.warn('upload all canceled!');
+              canceling = true;
+              let response = await fetch(uploadallcancel_request);
+              
+              uploading = false;
+              if (response.ok) {
+                  canceling = false;
+                  canceled = true;
+              } else {
+                  uploading_error = `Upload cancel error: ${response.statusText}`;
+              }
+          } catch(err) {
+              uploading = false;
+              uploading_error = `Upload error: ${err}`;
+          }
       }
-    }
   }
 
 
-  function update_file_counts(data) {
-    if (!uploading) {
-      let filecounts_div = document.querySelector('#filecounts');
-      let summary = file_counts_summary_text(data);
-      filecounts_div.innerText = summary;
-    }
+  $: {
+      if (filecounts) {
+          filecounts_summary = file_counts_summary_text(filecounts);
+      } else {
+          filecounts_summary = '• • •';
+      }
   }
 
 
   function file_counts_summary_text(filecounts) {
-    let jpg = filecounts.jpg || 0;
-    let mp4 = filecounts.mp4 || 0;
-    let h264 = filecounts.h264 || 0;
-    let text = `${filecounts.txt} txts, ${filecounts.jpg||0} jpgs, ${filecounts.mp4||0} mp4s`;
-    // if (filecounts.h264) {
-    //     text += ` ${filecounts.h264} h264`;
-    // }
-    return text;
+      let txts  = filecounts.txt || 0;
+      let jpgs  = filecounts.jpg || 0;
+      let mp4s  = filecounts.mp4 || 0;
+
+      let text = `${txts} txt${txts===1?'':'s'},
+                  ${jpgs} jpg${jpgs===1?'':'s'},
+                  ${mp4s} mp4${mp4s===1?'':'s'}`;
+
+      let h264 = filecounts.h264 || 0;
+      if (filecounts.h264) {
+          text += ` ${h264s} h264{h264s===1?'':'s'}`;
+      }
+
+      return text;
   }
 
 
+  function upload_counts_summary_text(data) {
+      return `Uploading ${data.n+1} of ${data.of+1} ${data.ext}{data.of===1?'':'s'}`;
+  }
+
+
+  function update_file_counts(data) {
+      if (!uploading) {
+          filecounts = data.filecounts;
+      }
+  }
+
+
+  function update_upload_started(data) {
+      uploading = true;
+      filecounts = data.filecounts;
+  }
+  
+
   function update_upload_progress(data) {
-    if (uploading) {
-      let uploadstatus_div = document.querySelector('#uploadstatus');
-      let filecounts_div = document.querySelector('#filecounts');
-      let html = `Uploading ${data.n+1} of ${data.of+1} ${data.ext}s`;
-      uploadstatus_div.innerHTML = html;
-      let summary = file_counts_summary_text(data.filecounts);
-      filecounts_div.innerText = summary;
-    }
+      if (!uploading) {
+          uploading = true;
+      }
+      filecounts = data.filecounts;
+      uploading_summary = upload_counts_summary_text(data);
+  }
+
+
+  function update_upload_finished(err, message) {
+      uploading = false;
+      if (err) {
+          uploading_error = `Upload error: ${err}`;
+          uploading_response = false;
+      } else {
+          uploading_error = false;
+          uploading_response = message || 'Upload done!';
+      }      
   }
 </script>
 
 <center>
-  <div id="upload-container">
+  <div class="upload-container">
     <Button width=280 height=36 fontsize='16px' nofeedback on:click={upload_all}>
       {#if uploading}
-	{#if canceling}
-	  Canceling...
-	{:else}
-	  Cancel Upload
-	{/if}
+        {#if canceling}
+          Canceling...
+        {:else}
+          Cancel Upload
+        {/if}
       {:else}
-	Upload All Files To Tator.io
+        Upload All Files To Tator.io
       {/if}
     </Button>
-    <div id="uploadstatus">
+    <div class="uploadstatus">
       {#if uploading}
-	Uploading...
+        Uploading...
       {:else}
-	{#if canceled}
-	  Uploading canceled
-	{:else if uploading_error}
-	   <span class="error">{uploading_error}</span>
+        {#if canceled}
+          Uploading canceled
+        {:else if uploading_error}
+          <span class="error">{uploading_error}</span>
         {:else if uploading_response}
-	  {uploading_response}
-	{:else}
-	  &nbsp;
-	{/if}
+          {uploading_response}
+        {:else}
+          {uploading_summary}
+        {/if}
       {/if}
     </div>
-    <div id="filecounts">&nbsp;</div>
+    <div class="filecounts">{filecounts_summary}</div>
   </div>
 </center>
 
-<iframe id="mediamanager" title="Media Manager Files">
+<iframe class="mediamanager" title="Media Manager Files" src={iframe_src}>
 </iframe>
 
 
 <style>
-  #upload-container {
+  .upload-container {
     height: 140px;
     color: white;
     font-size: 20px;
     line-height: 22px;
   }
 
-  #uploadstatus {
+  .uploadstatus {
     margin-top: 10px;
+    height: 1.1em;
   }
 
-  #filecounts {
-    color: lightgray;
+  .filecounts {
+    color: gray;
     margin-top: 5px;
   }
 
-/*
-  button {
-    color: white;
-    font-weight: normal;
-    text-decoration: none;
-    word-break: break-word;
-    font-size: 14px;
-    line-height: 18px;
-    border-top: 8px solid;
-    border-bottom: 8px solid;
-    border-right: 12px solid;
-    border-left: 12px solid;
-    background-color: #2ab27b;
-    border-color: #2ab27b;
-    display: inline-block;
-    letter-spacing: 1px;
-    min-width: 80px;
-    text-align: center;
-    border-radius: 4px;
-    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
-  }
-*/
- 
-  #mediamanager {
+  .mediamanager {
     width: 100%;
     height: calc(100vh - (120px + 151px));
   }
