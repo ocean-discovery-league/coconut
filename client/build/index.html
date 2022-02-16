@@ -14,14 +14,14 @@
 		<link rel="stylesheet" href="/_app/assets/start-61d1577b.css">
 		<link rel="stylesheet" href="/_app/assets/vendor-2c0e3971.css">
 		<link rel="stylesheet" href="/_app/assets/pages/__layout.svelte-c2225ab4.css">
-		<link rel="stylesheet" href="/_app/assets/pages/index.svelte-090f43f9.css">
-		<link rel="modulepreload" href="/_app/start-dd3edcd0.js">
+		<link rel="stylesheet" href="/_app/assets/pages/index.svelte-3d9e940f.css">
+		<link rel="modulepreload" href="/_app/start-53d7f0f4.js">
 		<link rel="modulepreload" href="/_app/chunks/vendor-c6335fe6.js">
 		<link rel="modulepreload" href="/_app/pages/__layout.svelte-16ec172c.js">
-		<link rel="modulepreload" href="/_app/pages/index.svelte-5601b689.js">
+		<link rel="modulepreload" href="/_app/pages/index.svelte-2ae9ca3d.js">
 
 		<script type="module">
-			import { start } from "/_app/start-dd3edcd0.js";
+			import { start } from "/_app/start-53d7f0f4.js";
 			start({
 				target: document.querySelector("#svelte"),
 				paths: {"base":"","assets":""},
@@ -34,7 +34,7 @@
 					error: null,
 					nodes: [
 						import("/_app/pages/__layout.svelte-16ec172c.js"),
-						import("/_app/pages/index.svelte-5601b689.js")
+						import("/_app/pages/index.svelte-2ae9ca3d.js")
 					],
 					url: new URL("http://prerender/"),
 					params: {}
@@ -101,28 +101,28 @@
 </div>
     </div>
 
-  <div class="PageBody-container svelte-kxq08q"><div class="PageBody svelte-kxq08q"><center><div id="connection" class="svelte-17mkyp5"><span style="color:darkgray">Not Connected</span>
+  <div class="PageBody-container svelte-kxq08q"><div class="PageBody svelte-kxq08q"><center><div id="connection" class="svelte-1p53qyo"><span style="color:darkgray">Not Connected</span>
       <br>
        </div>
 
-  <form width="70%" id="connect_wifi_form" enctype="multipart/form-data" method="post" class="svelte-17mkyp5"><table width="400" class="svelte-17mkyp5"><tr><td><br>
-	  <br>
-	  <div><label for="ssid" class="svelte-17mkyp5">Network Name</label><br>
-	    <input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" autocomplete="off" required class="svelte-17mkyp5"></div></td></tr><tr><td height="25"></td></tr><tr><td><div><div id="visibility-container" class="svelte-17mkyp5"><label for="password" class="svelte-17mkyp5">WiFi Password<div class="sublabel svelte-17mkyp5">blank if no password</div></label>
-	      <button id="visibility" type="button" class="svelte-17mkyp5">👁️</button></div>
-	    <input id="password" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" name="password" size="18" class="svelte-17mkyp5"></div></td></tr><tr><td height="40"></td></tr><tr><td><center><div class="button-feedback-container"><button style="--color: #fff;--font-size: 20px;--bg-color: 68, 204, 204;--bg-hover: 68, 204, 204;--bg-active: 68, 204, 204;--radius: .3rem;--ripple: #187D8B;--height: 54px;--width: 200px;--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);--shadow-h: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);--shadow-a: 0 1px 2px 0 rgba(0, 0, 0, 0.05)" class="svelte-10a4q3i"><span class="svelte-10a4q3i">Connect WiFi
-	    </span>	
+  <form width="70%" id="connect_wifi_form" enctype="multipart/form-data" method="post" class="svelte-1p53qyo"><table width="400" class="svelte-1p53qyo"><tr><td><br>
+          <br>
+          <div><label for="ssid" class="svelte-1p53qyo">Network Name</label><br>
+            <input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" autocomplete="off" required class="svelte-1p53qyo"></div></td></tr><tr><td height="25"></td></tr><tr><td><div><div id="visibility-container" class="svelte-1p53qyo"><label for="password" class="svelte-1p53qyo">WiFi Password<div class="sublabel svelte-1p53qyo">blank if no password</div></label>
+              <button id="visibility" type="button" class="svelte-1p53qyo">👁️</button></div>
+            <input id="password" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" name="password" size="18" class="svelte-1p53qyo"></div></td></tr><tr><td height="40"></td></tr><tr><td><center><div class="button-feedback-container"><button style="--color: #fff;--font-size: 20px;--bg-color: 68, 204, 204;--bg-hover: 68, 204, 204;--bg-active: 68, 204, 204;--radius: .3rem;--ripple: #187D8B;--height: 54px;--width: 200px;--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);--shadow-h: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);--shadow-a: 0 1px 2px 0 rgba(0, 0, 0, 0.05)" class="svelte-10a4q3i"><span class="svelte-10a4q3i">Connect WiFi</span>	
 	<svg class="svelte-10a4q3i"></svg>
 </button>
   
-</div></center></td></tr></table></form>
+</div>
+            <div class="connect_status"></div></center></td></tr></table></form>
 
   <br>
   <br>
 
-  <div id="networklist-container" class="svelte-17mkyp5"><div id="networklist" class="svelte-17mkyp5"><center><span style="color:darkgray">Visible Networks</span></center>
+  <div id="networklist-container" class="svelte-1p53qyo"><div id="networklist" class="svelte-1p53qyo"><center><span style="color:darkgray">Visible Networks</span></center>
       <br>
-      <ul width="300" id="networks" class="svelte-17mkyp5"><li>                <span style="color:darkgray">• • •</span></li></ul></div></div>
+      <ul width="300" id="networks" class="svelte-1p53qyo"><li>                <span style="color:darkgray">• • •</span></li></ul></div></div>
 </center></div></div>
 
 </section>
