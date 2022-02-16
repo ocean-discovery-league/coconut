@@ -109,7 +109,7 @@
 
       let h264s = filecounts.h264 || 0;
       if (filecounts.h264) {
-          text += ` ${h264s} h264{h264s===1?'':'s'}`;
+          text += ` ${h264s} h264${h264s===1?'':'s'}`;
       }
 
       return text;
