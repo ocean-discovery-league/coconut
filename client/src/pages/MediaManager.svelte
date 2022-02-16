@@ -189,7 +189,7 @@
           {uploading_summary}
         {:else}
           Uploading...
-        {/if>
+        {/if}
       {:else}
         {#if canceled}
           Uploading canceled
