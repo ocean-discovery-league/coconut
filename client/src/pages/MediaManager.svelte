@@ -109,7 +109,7 @@
 
       let h264s = filecounts.h264 || 0;
       if (filecounts.h264) {
-          text += ` ${h264s} h264${h264s===1?'':'s'}`;
+          text += `, ${h264s} h264${h264s===1?'':'s'}`;
       }
 
       return text;
@@ -130,13 +130,22 @@
 
   function update_upload_started(data) {
       uploading = true;
+      uploading_error = false;
+      uploading_response = false;
+      canceling = false;
+      canceled = false;
       filecounts = data.filecounts;
   }
   
 
   function update_upload_progress(data) {
+      console.log('progress', data);
       if (!uploading) {
           uploading = true;
+          uploading_error = false;
+          uploading_response = false;
+          canceling = false;
+          canceled = false;
       }
       filecounts = data.filecounts;
       uploading_summary = upload_counts_summary_text(data);
