@@ -20,7 +20,7 @@ const TATOR_UPLOAD_SCRIPT =
 
 const shunt = () => {};
 let log = {
-    debug: console.debug,
+    debug: shunt,
     log: console.log,
     warn: console.warn,
     error: console.error,
@@ -221,9 +221,13 @@ class UploadAll extends EventEmitter {
             this.tatorup = spawn(TATOR_UPLOAD_SCRIPT, args);
 
             this.tatorup.stdout.on('data', (data) => {
-                data = data.toString();
-                log.log(data);
-                this.reportUploadSingleFileProgress(data);
+                // hopefully it's always a complete line, and only one line
+                let line = data.toString();
+                line.trim();
+                log.log(line);
+                if (line) {
+                    this.reportUploadSingleFileProgress(line);
+                }
             });
             this.tatorup.stderr.on('data', (data) => log.error(data.toString()));
             this.tatorup.on('error', (err) => {
@@ -253,10 +257,11 @@ class UploadAll extends EventEmitter {
 
 
     reportUploadSingleFileProgress(line) {
-        log.log('reportUploadSingleFileProgress', line);
+        //log.log('reportUploadSingleFileProgress', line);
+
         // we are also going to try and snag the media_id from the
         // end of the current upload for our txt file upload hack
-        if (line && line.includes(':response body:')) {
+        if (line.includes(':response body:')) {
             if (line.includes('Image saved successfully')) {
                 try {
                     line = line.trim();  // remove newlines, linefeeds
@@ -279,6 +284,16 @@ class UploadAll extends EventEmitter {
                 } catch(err) {
                     log.error('error thrown while spotting media id', err);
                 }
+            }
+        }
+
+        if (line.includes(':Upload progress:')) {
+            let text = line.split(':Upload progress:')[1];
+            text = text.trim();
+            let percent;
+            if (text.endsWith('%')) {
+                let percent = Number(text.slice(0, -1));
+                console.log(`percent complete ${percent}%`);
             }
         }
     }

@@ -42,7 +42,7 @@
   async function upload_all(event) {
       if (!uploading) {
           try {
-              console.debug('upload all!');
+              console.log('upload all!');
               uploading = true;
               uploading_error = false;
               uploading_response = false;
@@ -54,7 +54,7 @@
               uploading = false;
               if (response.ok) {
                   let text = await response.text();
-                  console.debug('upload response text', text);
+                  console.log('upload response text', text);
                   update_upload_finished(false, text);
               } else {
                   update_upload_finished(response.statusText);
@@ -96,32 +96,6 @@
       } else {
           filecounts_summary = '• • •';
       }
-  }
-
-
-  function file_counts_summary_text(filecounts) {
-      let txts  = filecounts.txt || 0;
-      let jpgs  = filecounts.jpg || 0;
-      let mp4s  = filecounts.mp4 || 0;
-
-      let text = `${txts} txt${txts===1?'':'s'},
-                  ${jpgs} jpg${jpgs===1?'':'s'},
-                  ${mp4s} mp4${mp4s===1?'':'s'}`;
-
-      let h264s = filecounts.h264 || 0;
-      if (filecounts.h264) {
-          text += `, ${h264s} h264${h264s===1?'':'s'}`;
-      }
-
-      return text;
-  }
-
-
-  function upload_counts_summary_text(data) {
-      console.log('huh?', data);
-      let text = `Uploading ${data.n+1} of ${data.of+1} ${data.ext}{data.of===1?'':'s'}`;
-      console.log('progress text', text);
-      return text;
   }
 
 
@@ -167,6 +141,30 @@
           uploading_error = false;
           uploading_response = message || 'Upload done!';
       }      
+  }
+
+
+  function file_counts_summary_text(filecounts) {
+      let txts  = filecounts.txt || 0;
+      let jpgs  = filecounts.jpg || 0;
+      let mp4s  = filecounts.mp4 || 0;
+
+      let text = `${txts} txt${txts===1?'':'s'},
+                  ${jpgs} jpg${jpgs===1?'':'s'},
+                  ${mp4s} mp4${mp4s===1?'':'s'}`;
+
+      let h264s = filecounts.h264 || 0;
+      if (filecounts.h264) {
+          text += `, ${h264s} h264${h264s===1?'':'s'}`;
+      }
+
+      return text;
+  }
+
+
+  function upload_counts_summary_text(data) {
+      let text = `Uploading ${data.n+1} of ${data.of+1} ${data.ext}${data.of===1?'':'s'}`;
+      return text;
   }
 </script>
 
