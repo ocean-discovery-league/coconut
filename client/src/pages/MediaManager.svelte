@@ -107,7 +107,7 @@
                   ${jpgs} jpg${jpgs===1?'':'s'},
                   ${mp4s} mp4${mp4s===1?'':'s'}`;
 
-      let h264 = filecounts.h264 || 0;
+      let h264s = filecounts.h264 || 0;
       if (filecounts.h264) {
           text += ` ${h264s} h264{h264s===1?'':'s'}`;
       }
