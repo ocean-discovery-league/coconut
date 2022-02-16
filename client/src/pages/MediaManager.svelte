@@ -46,6 +46,7 @@
               uploading = true;
               uploading_error = false;
               uploading_response = false;
+              uploading_summary = false;
               canceling = false;
               canceled = false;
               let response = await fetch(uploadall_request);
@@ -117,7 +118,10 @@
 
 
   function upload_counts_summary_text(data) {
-      return `Uploading ${data.n+1} of ${data.of+1} ${data.ext}{data.of===1?'':'s'}`;
+      console.log('huh?', data);
+      let text = `Uploading ${data.n+1} of ${data.of+1} ${data.ext}{data.of===1?'':'s'}`;
+      console.log('progress text', text);
+      return text;
   }
 
 
@@ -132,6 +136,7 @@
       uploading = true;
       uploading_error = false;
       uploading_response = false;
+      uploading_summary = false;
       canceling = false;
       canceled = false;
       filecounts = data.filecounts;
@@ -144,6 +149,7 @@
           uploading = true;
           uploading_error = false;
           uploading_response = false;
+          uploading_summary = false;
           canceling = false;
           canceled = false;
       }
@@ -179,7 +185,11 @@
     </Button>
     <div class="uploadstatus">
       {#if uploading}
-        Uploading...
+        {#if uploading_summary}
+          {uploading_summary}
+        {:else}
+          Uploading...
+        {/if>
       {:else}
         {#if canceled}
           Uploading canceled
