@@ -38,8 +38,6 @@
           disconnect_request = new Request('http://192.168.10.1/disconnect');
       }
 
-      let wifi_form = document.getElementById('connect_wifi_form');
-      wifi_form.addEventListener('submit', connect_wifi);
       monitorStatus();
       monitorScan();
   });
@@ -104,7 +102,7 @@
 
   function showStatus(status) {
       let state = status.wpa_state;
-      console.log(status);
+      // console.log(status);
       if (state) {
           if (state === 'COMPLETED') {
               let ssid = status.ssid.replace(/\n$/, '');  // remove newline at end of string
@@ -114,7 +112,9 @@
               }
           } else {
               connected_ssid = false;
-              console.log('unknown state =', state);
+              if (!['DISCONNECTED', 'SCANNING'].includes(state)) {
+                  console.log('unknown state =', state);
+              }
           }
       }
   }
@@ -125,7 +125,7 @@
           if (isVisible()) {
               let response = await fetch(scan_request);
               let json = await response.json();
-              console.log(json);
+              //console.log(json);
               if (json && !json.retry && Object.keys(json).length !== 0) {
                   showScan(json);
               }
@@ -179,28 +179,36 @@
       console.log(formdata.get('password'));
 
       connecting = true;
-      let data = {
-          ssid: formdata.get('ssid'),
-          password: formdata.get('password')
-      };
-      let response = await fetch(connect_request, {
-          method: 'POST',
-          body: JSON.stringify(data),
-          headers: {
-              'Content-Type': 'application/json'
-          }
-      });
-      let result = await response.json();
-      console.log('result', result);
+      try {
+          let data = {
+              ssid: formdata.get('ssid'),
+              password: formdata.get('password')
+          };
+          let response = await fetch(connect_request, {
+              method: 'POST',
+              body: JSON.stringify(data),
+              headers: {
+                  'Content-Type': 'application/json'
+              }
+          });
+          let result = await response.text();
+          console.log('result', result);
+      } catch(err) {
+          console.error(err);
+      }
       connecting = false;
   }
 
   async function disconnect_wifi(event) {
       event.preventDefault();
-      let disconnecting = true;
-      await fetch(disconnect_request, {
-          method: 'POST',
-      });
+      disconnecting = true;
+      try {
+          await fetch(disconnect_request, {
+              method: 'POST',
+          });
+      } catch(err) {
+          console.error(err);
+      }
       disconnecting = false;
   }
 
@@ -236,59 +244,60 @@
     {/if}
   </div>
 
-  {#if connected_ssid}
-    <br>
-    <Button nofeedback on:click={disconnect_wifi}>
-      {#if !disconnecting}
-        Disconnect WiFi
-      {:else}
-        Disconnecting...
-      {/if}
-    </Button>
-    <br>
-    <br>
-    <br>
-  {:else}
-  <form width="70%" id="connect_wifi_form" enctype="multipart/form-data" method="post">
-    <table width="400">
-      <tr><td>
-          <br>
-          <br>
-          <div>
-            <label for="ssid">Network Name</label><br>
-            <input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" autocomplete="off" required/>
-          </div>
-      </td></tr><tr><td height="25">
-      </td></tr><tr><td>
-          <div>
-            <div id="visibility-container">
-              <label for="password">WiFi Password<div class="sublabel">blank if no password</div></label>
-              <button
-                id="visibility"
-                type="button"
-                on:click={toggle_password_visibility}
-                >
-                {password_visibility_icon}
-              </button>
-            </div>
-            <input id="password" autocorrect="off" autocapitalize="none" autocomplete="off" type={password_input_type} name="password" size="18"/>
-          </div>
-      </td></tr><tr><td height="40">
-      </td></tr><tr><td>
-          <center>
-            <Button nofeedback>
-              {#if !connecting}
-                Connect WiFi
-              {:else}
-                Connecting...
-              {/if}
-            </Button>
-            <div class="connect_status">{connect_error}</div>
-          </center>
-      </td></tr>
-    </table>
-  </form>
-  {/if}
+  <div class="connect-container">
+    {#if connected_ssid}
+      <br>
+      <br>
+      <Button nofeedback on:click={disconnect_wifi}>
+        {#if !disconnecting}
+          Disconnect WiFi
+        {:else}
+          Disconnecting...
+        {/if}
+      </Button>
+      <br>
+      <br>
+    {:else}
+      <form width="70%" on:submit={connect_wifi} enctype="multipart/form-data" method="post">
+        <table width="400">
+          <tr><td>
+              <br>
+              <div>
+                <label for="ssid">Network Name</label><br>
+                <input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" autocomplete="off" required/>
+              </div>
+          </td></tr><tr><td height="25">
+          </td></tr><tr><td>
+              <div>
+                <div id="visibility-container">
+                  <label for="password">WiFi Password<div class="sublabel">blank if no password</div></label>
+                  <button
+                    id="visibility"
+                    type="button"
+                    on:click={toggle_password_visibility}
+                    >
+                    {password_visibility_icon}
+                  </button>
+                </div>
+                <input id="password" autocorrect="off" autocapitalize="none" autocomplete="off" type={password_input_type} name="password" size="18"/>
+              </div>
+          </td></tr><tr><td height="40">
+          </td></tr><tr><td>
+              <center>
+                <Button nofeedback>
+                  {#if !connecting}
+                    Connect WiFi
+                  {:else}
+                    Connecting...
+                  {/if}
+                </Button>
+                <div class="connect_status">{connect_error}</div>
+              </center>
+          </td></tr>
+        </table>
+      </form>
+    {/if}
+  </div>
 
   <br>
   <br>
@@ -327,6 +336,10 @@
     font-weight: 700;
     color: white;
     margin-bottom: 20px;
+  }
+
+  .connect-container {
+    height: 325px;
   }
 
   table {
