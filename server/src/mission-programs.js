@@ -52,15 +52,15 @@ class MissionPrograms {
 
     async load(name) {
         let mission;
-        let realname;
+        let realname = name;
         let filename = `${this.dir}/${name}.js`;
         // resolve any soft links and use the new filename as the program name so we
         // don't have separate copies of programs under different names causing bugs
         try {
-            let realfilename = await fsP.realname(filename);
-            let realname = path.basename(realfilename, '.js');
+            let realfilename = await fsP.realpath(filename);  // resolve symlinks
+            realname = path.basename(realfilename, '.js');
             if (realname !== name) {
-                console.log('loading symlinked mission program', name, ' as ', realname);
+                console.log('loading symlinked mission program', name, 'as', realname);
             }
             delete require.cache[require.resolve(realfilename)];
             mission = require(realfilename);
@@ -81,14 +81,14 @@ class MissionPrograms {
             let params = {...defaultparams, ...newparams};  // merge the two objects
 
             // bug: this doesn't replace the exported params i don't think
-            // nope! it was fine. bug was mission programs under two names (mission1 vs. ring5)
+            // nope! it was fine. bug was mission programs under two names (mission2 vs. ring5)
             // let defaultparams = mission.params;
             // let params = {...defaultparams, ...newparams};  // merge the two objects
             // mission.params = params;
 
             // still gonna set 'em manually:
             for (let [key,value] of Object.entries(newparams)) {
-                console.log('setting param', key, ' = ', value);
+                console.log('setting param', key, '=', value);
                 if (key in mission.params) {
                     mission.params[key] = value;
                 } else if (!key.endsWith('_EDIT_UNITS')) {
@@ -100,14 +100,16 @@ class MissionPrograms {
             // mission.params = params;
             this.syncDiagramFromMissionParams(mission);
         } catch(err) {
-            if (err.code !== 'ENOENT') {
+            if (err.code === 'ENOENT') {
+		console.log('no params file for this mission found at', paramsfilename);
+	    } else {
                 console.error(`error reading mission params file ${paramsfilename}`, err);
             }
         }
 
         this.missions[realname] = mission;
         if (realname !== name) {
-            this.missions[name] = mission;
+            this.missions[name] = mission;  // stash it under the original name too
         }
         return mission;
     }
