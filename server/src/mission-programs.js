@@ -76,9 +76,28 @@ class MissionPrograms {
         try {
             let json = await fsP.readFile(paramsfilename);
             let newparams = JSON.parse(json);
+
             let defaultparams = mission.params;
             let params = {...defaultparams, ...newparams};  // merge the two objects
-            mission.params = params;
+
+            // bug: this doesn't replace the exported params i don't think
+            // nope! it was fine. bug was mission programs under two names (mission1 vs. ring5)
+            // let defaultparams = mission.params;
+            // let params = {...defaultparams, ...newparams};  // merge the two objects
+            // mission.params = params;
+
+            // still gonna set 'em manually:
+            for (let [key,value] of Object.entries(newparams)) {
+                console.log('setting param', key, ' = ', value);
+                if (key in mission.params) {
+                    mission.params[key] = value;
+                } else if (!key.endsWith('_EDIT_UNITS')) {
+                    // side benefit of doing it manually:
+                    console.error('tried to specify a param not defined by the mission named', name, ':', ey);
+                }
+            }
+
+            // mission.params = params;
             this.syncDiagramFromMissionParams(mission);
         } catch(err) {
             if (err.code !== 'ENOENT') {
