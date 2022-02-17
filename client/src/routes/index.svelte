@@ -1,4 +1,6 @@
 <script>
+  import { onMount, onDestroy } from 'svelte';
+  import { browser } from '$app/env';
   import Page from '$lib/Page.svelte';
   import MediaManager from '$lib/../pages/MediaManager.svelte';
   import MissionID from '$lib/../pages/MissionID.svelte';
@@ -7,8 +9,6 @@
   import PhotoSetup from '$lib/../pages/PhotoSetup.svelte';
   import MissionISetup from '$lib/../pages/MissionISetup.svelte';
   import MissionIISetup from '$lib/../pages/MissionIISetup.svelte';
-  import { onMount, onDestroy } from 'svelte';
-  import { browser } from '$app/env';
 
   // let scrollX;
   // let scrollY;
