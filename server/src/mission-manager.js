@@ -31,10 +31,10 @@ class MissionManager {
     async ringChangeHandler() {
 	    let [new_modenum, new_filename] = this.ringInput.parseStatus();
 	    if ((new_modenum !== this.modenum) || (new_filename !== this.filename)) {
-	        this.stopMission();
+	        await this.stopMission();
 	    }
 	    if (new_filename) {
-	        this.beginMission();
+	        await this.beginMission();
 	    }
     }
 
