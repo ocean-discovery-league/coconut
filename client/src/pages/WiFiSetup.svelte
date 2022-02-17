@@ -3,6 +3,9 @@
   import { dev } from '$app/env'
   import Button from '$lib/Button.svelte';
 
+  let form_ssid;
+  //let form_password; // 'type' attribute cannot be dynamic if input uses two-way binding
+
   let scan_request;
   let status_request;
   let connect_request;
@@ -169,20 +172,18 @@
 
 
   async function connect_wifi(event) {
-      console.log(event);
-      console.log(event.target);
       event.preventDefault();
 
+      // 'type' attribute cannot be dynamic if input uses two-way binding
       let formdata = new FormData(event.target);
-      console.log(formdata);
-      console.log(formdata.get('ssid'));
-      console.log(formdata.get('password'));
+      let password = formdata.get('password');
 
       connecting = true;
       try {
           let data = {
-              ssid: formdata.get('ssid'),
-              password: formdata.get('password')
+              ssid: form_ssid,
+              //password: form_password
+              password: password
           };
           let response = await fetch(connect_request, {
               method: 'POST',
@@ -217,8 +218,7 @@
       // FIXME ^^^ breaks if there's any li element padding
       // or li children go deeper than one level
       let clickssid = network_li.querySelector('.clickssid');
-      let ssid_input = document.getElementById('ssid');
-      ssid_input.value = clickssid.textContent;
+      form_ssid = clickssid.textContent;
   }
 </script>
 
@@ -264,7 +264,7 @@
               <br>
               <div>
                 <label for="ssid">Network Name</label><br>
-                <input id="ssid" autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" autocomplete="off" required/>
+                <input bind:value={form_ssid} autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" autocomplete="off" required/>
               </div>
           </td></tr><tr><td height="25">
           </td></tr><tr><td>
@@ -279,7 +279,7 @@
                     {password_visibility_icon}
                   </button>
                 </div>
-                <input id="password" autocorrect="off" autocapitalize="none" autocomplete="off" type={password_input_type} name="password" size="18"/>
+                <input autocorrect="off" autocapitalize="none" autocomplete="off" type={password_input_type} name="password" size="18"/>
               </div>
           </td></tr><tr><td height="40">
           </td></tr><tr><td>

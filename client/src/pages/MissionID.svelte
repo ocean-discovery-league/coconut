@@ -3,94 +3,92 @@
   import PageBody from '$lib/PageBody.svelte';
   import Button from '$lib/Button.svelte';
 
-  let save_button;
-  let mounted = false;
-
   let title = 'Maka Niu';
-  $: if (mounted) document.title = title;
+  let username;
+  let missionid;
+  let hostname = '• • •';
+  let macaddress = '• • •';
+  let version = '• • •';
+  let python_version = '• • •';
+  let save_button;
+  let missionid_request;
 
-  onMount(() => {
-    mounted = true;
-    const missionid_request = new Request('/missionid');
 
-    let missionid_form = document.getElementById('missionid_form');
-    missionid_form.addEventListener('submit', save_missionid);
-    fillInMissionID();
-
-    async function fillInMissionID() {
+  onMount(async () => {
+      missionid_request = new Request('/missionid');
+  
       let response = await fetch(missionid_request);
-      console.log(response);
-      let json = await response.json();
-      console.log(json);
-      let hostname_banner = document.querySelector('#hostname');
-      let macaddress_banner = document.querySelector('#macaddress');
-      let username_field = document.querySelector('#username');
-      let missionid_field = document.querySelector('#missionid');
-      let version_field = document.querySelector('#version');
-      hostname_banner.innerText = json.hostname || '• • •';
-      macaddress_banner.innerText = json.macaddress || '• • •';
-      version_field.innerText = 'v' + (json.version || '• • •');
+      let data = await response.json();
 
-      username_field.value  = json.username  || '';
-      missionid_field.value = json.missionid || '';
+      username  = data.username  || '';
+      missionid = data.missionid || '';
 
-      title = 'Maka Niu';
-      if (json.hostname) {
-	title = title + ' ' + json.hostname;
+      hostname   = data.hostname || '• • •';
+      macaddress = data.macaddress || '• • •';
+      if (data.version) {
+          version = 'v' + data.version;
       }
-    }
-      
-    async function save_missionid(event) {
-        event.preventDefault();
-        
-        try {
-	    let formdata = new FormData(event.target);
-	    let username  = formdata.get('username');
-	    let missionid = formdata.get('missionid');
-	    console.log(formdata);
-	    console.log(username);
-	    console.log(missionid);
+      python_version = data.python_version || '• • •';
 
-	    let json = { username, missionid };
-	    let response = await fetch(missionid_request, {
-	        method: 'POST',
-	        body: JSON.stringify(json),
-	        headers: {
-		    'Content-Type': 'application/json'
-	        }
-	    });
-
-	    if (response.ok) {
-	      save_button.feedback(false, 'Saved!');
-	    } else {
-	      save_button.feedback(response.statusText);
-	    }
-        } catch(err) {
-	  save_button.feedback(err);
-        }
-    }
+      if (data.hostname) {
+	  title = title + ' ' + data.hostname;
+      }
   });
+  
+
+  async function save_missionid(event) {
+      event.preventDefault();
+      
+      try {
+	  console.log(username);
+	  console.log(missionid);
+
+	  let data = { username, missionid };
+          let json = JSON.stringify(data);
+	  let response = await fetch(missionid_request, {
+	      method: 'POST',
+	      body: json,
+	      headers: {
+		  'Content-Type': 'application/json'
+	      }
+	  });
+
+	  if (response.ok) {
+	      save_button.feedback(false, 'Saved!');
+	  } else {
+	      save_button.feedback(response.statusText);
+	  }
+      } catch(err) {
+	  save_button.feedback(err);
+      }
+  }
 </script>
 
 
-<PageBody slot="PageBody">
-  <span id="hostname">&nbsp;</span><br><span id="macaddress">&nbsp;</span>
-  <div id="version">• • •</div>
+<svelte:head>
+  <title>{title}</title>
+</svelte:head>
 
-  <form width="70%" id="missionid_form" enctype="multipart/form-data" method="post" autocomplete="off">
+<PageBody slot="PageBody">
+  <div>{hostname}</div>
+  <div class="dark">{macaddress}</div>
+  <div class="dark">{version}</div>
+  <div class="dark">{python_version}</div>
+
+  <form width="70%" on:submit={save_missionid} enctype="multipart/form-data" method="post" autocomplete="off">
     <table width="400">
       <tr><td>
 	  <div>
 	    <label for="username">User Name</label>
 	    <br>
-	    <input id="username" name="username" autocorrect="off" autocapitalize="none" type="text" size="18" autocomplete="off"/>
+	    <input bind:value={username} name="username" autocorrect="off" autocapitalize="none" type="text" size="18" autocomplete="off"/>
 	  </div>
       </td></tr><tr><td height="25">
       </td></tr><tr><td>
 	  <div>
 	    <label for="missionid">Mission ID</label>
 	    <br>
-	    <input id="missionid" name="missionid" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" size="18"/>
+	    <input bind:value={missionid} name="missionid" autocorrect="off" autocapitalize="none" autocomplete="off" type="text" size="18"/>
 	  </div>
       </td></tr><tr><td height="40">
       </td></tr><tr><td>
@@ -104,7 +102,7 @@
 
 
 <style>
-  #macaddress, #version {
+  .dark {
     color: darkgrey;
   }
 
@@ -122,8 +120,8 @@
   }
 
   label {
-    font-size:20px;
-    font-weight:900;
+    font-size: 20px;
+    font-weight: 900;
   }
 
   input {
