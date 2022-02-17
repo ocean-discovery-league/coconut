@@ -231,7 +231,7 @@
       &nbsp;
     {:else}
       <div style="position:relative">
-        <span style="color:gray">connected to </span>{connected_ssid}
+        <span style="color:darkgray">connected to </span>{connected_ssid}
         {#if connected_rssi}
           &nbsp;<span style="position:absolute;color:#AAAAAA">{connected_rssi}</span>
         {/if}

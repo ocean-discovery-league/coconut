@@ -8,8 +8,8 @@
   let missionid;
   let hostname = '• • •';
   let macaddress = '• • •';
-  let version = '• • •';
   let python_version = '• • •';
+  let version = '• • •';
   let save_button;
   let missionid_request;
 
@@ -23,12 +23,12 @@
       username  = data.username  || '';
       missionid = data.missionid || '';
 
-      hostname   = data.hostname || '• • •';
-      macaddress = data.macaddress || '• • •';
+      hostname       = data.hostname || '• • •';
+      macaddress     = data.macaddress || '• • •';
+      python_version = data.python_version || '• • •';
       if (data.version) {
           version = 'v' + data.version;
       }
-      python_version = data.python_version || '• • •';
 
       if (data.hostname) {
 	  title = title + ' ' + data.hostname;
@@ -72,8 +72,8 @@
 <PageBody slot="PageBody">
   <div>{hostname}</div>
   <div class="dark">{macaddress}</div>
-  <div class="dark">{version}</div>
   <div class="dark">{python_version}</div>
+  <div class="dark">{version}</div>
 
   <form width="70%" on:submit={save_missionid} enctype="multipart/form-data" method="post" autocomplete="off">
     <table width="400">
