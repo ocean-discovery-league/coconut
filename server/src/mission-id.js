@@ -90,6 +90,7 @@ class MissionID {
         let python_version;
         try {
             python_version = await fsP.readFile(PYTHON_DAEMON_VERSION_FILE);
+            python_version = python_version.toString();
             python_version = python_version.trim();
         } catch(err) {
             if (err.code === 'ENOENT') {
