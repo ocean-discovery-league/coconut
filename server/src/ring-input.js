@@ -22,56 +22,56 @@ log = console;  // FIXME
 
 class RingInput extends EventEmitter {
     async init() {
-    fs.watch(STATUS_FILENAME, { persistent: false, encoding: 'utf8'}, (t, f) => this.onStatusChange(t, f));
-    this.last_status = await this.readStatus(true);
+        fs.watch(STATUS_FILENAME, { persistent: false, encoding: 'utf8'}, (t, f) => this.onStatusChange(t, f));
+        this.last_status = await this.readStatus(true);
     }
 
 
     async onStatusChange(eventType, filename) {
-    log.debug('ring status file change event', eventType, filename);
-    let status = await this.readStatus();
-    if (status !== this.last_status) {
-        this.last_status = status;
-        this.emit('change', this);
-    }
+        log.debug('ring status file change event', eventType, filename);
+        let status = await this.readStatus();
+        if (status !== this.last_status) {
+            this.last_status = status;
+            this.emit('change', this);
+        }
     }
 
 
     async readStatus() {
-    log.debug('reading ring status...');
-    let status;
-    status = await fsP.readFile(STATUS_FILENAME, 'utf8');
-    log.debug('ring position:', status);
-    return status;
+        log.debug('reading ring status...');
+        let status;
+        status = await fsP.readFile(STATUS_FILENAME, 'utf8');
+        log.debug('ring position:', status);
+        return status;
     }
 
 
     parseStatus() {
-    let modenum;
-    let filename;
-    if (this.last_status) {
-        if (this.last_status.includes(' ')) {
-        [, modenum, filename] = this.last_status.split(/([^ ]+) (.*)/);
-        } else {
-        modenum = this.last_status;
+        let modenum;
+        let filename;
+        if (this.last_status) {
+            if (this.last_status.includes(' ')) {
+                [, modenum, filename] = this.last_status.split(/([^ ]+) (.*)/);
+            } else {
+                modenum = this.last_status;
+            }
         }
-    }
-    return [modenum, filename];
+        return [modenum, filename];
     }
 
 
     getModenum() {
-    let [modenum, filename] = this.parseStatus();
-    return modenum;
+        let [modenum, filename] = this.parseStatus();
+        return modenum;
     }
 
 
     getSensorLogFilename() {
-    let [modenum, filename] = this.parseStatus();
-    if (filename && !filename.includes('/')) {
-        filename = MEDIA_DIR + '/' + filename;
-    }
-    return filename;
+        let [modenum, filename] = this.parseStatus();
+        if (filename && !filename.includes('/')) {
+            filename = MEDIA_DIR + '/' + filename;
+        }
+        return filename;
     }
 }
 
@@ -82,20 +82,20 @@ async function tests() {
     await ringInput.init();
 
     let report = function(ring, tagline) {
-    let modenum = ring.getModenum();
-    let filename = ring.getSensorLogFilename();
-    log.log(`${tagline}: ${ring.last_status}`);
-    log.log(`  mode num: ${modenum}`);
-    if (filename) {
-        log.log(`  sensor log: ${filename}`);
-    } else {
-        log.log('  no sensor log');
-    }
+        let modenum = ring.getModenum();
+        let filename = ring.getSensorLogFilename();
+        log.log(`${tagline}: ${ring.last_status}`);
+        log.log(`  mode num: ${modenum}`);
+        if (filename) {
+            log.log(`  sensor log: ${filename}`);
+        } else {
+            log.log('  no sensor log');
+        }
     };
 
     report(ringInput, 'current ring status');
     ringInput.on('change', (ring) => {
-    report(ring, 'ring changed');
+        report(ring, 'ring changed');
     });
     log.log('to test: spin that ring! you have 20 seconds');
     setTimeout(() => log.log('exiting'), 20 * 1000);
