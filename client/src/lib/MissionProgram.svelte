@@ -2,14 +2,14 @@
   import { onMount, onDestroy } from 'svelte';
   import MissionDiagram from '$lib/MissionDiagram.svelte';
   import CloseButton from '$lib/CloseButton.svelte';
-  import RangeSlider from 'svelte-range-slider-pips';
+  import SteppedLogRangeSlider from '$lib/SteppedLogRangeSlider.svelte';
   import { getSocketIO } from '$lib/utils';
 
   export let programid;
   export let height = '790px';
 
   let editing;
-  let sliders = [0];
+  let sliderValue = 0;
   let units_label = '';
   let diagram_div_id = programid + '-diagram';
   let missiondiagram;
@@ -31,7 +31,7 @@
     let node = currentSelection.data;
     let diagram = currentSelection.diagram;
     let new_value = Math.round(editing.value * editing.scale);
-    sliders[0] = editing.value;
+    //sliders[0] = editing.value;
     socket.emit('updateparam', { programid, name: currentSelection.data.param, value: new_value });
     if (node && node.param && diagram) {
       let label = node.label || '#';
@@ -59,10 +59,10 @@
   }
 
   function inputChangedHandler(event) {
-    sliders[0] = editing.value;
+    sliderValue = editing.value;
   }
 
-  function rangeChangedHandler(event) {
+  function sliderChangedHandler(event) {
     editing.value = event.detail.value
   }
 
@@ -99,15 +99,14 @@
     if (node.editing) {
       editing = { ...editing_defaults, ...node.editing, ...units };
     } else {
-      editing = { ...editing_defaults, ...units };
+      editing = { ...editing_defaults, ...node, ...units };
     }
 
     let fixed = (units.step < 1) ? 1 : 0;
     editing.value = (node.value / editing.scale).toFixed(fixed).replace(/\.0+$/,'');
-    // min = Number((editing.range.low / editing.scale).toFixed(fixed));
-    // max = Number((editing.range.high / editing.scale).toFixed(fixed));
-    min = Number((units.range.low).toFixed(fixed));
-    max = Number((units.range.high).toFixed(fixed));
+    sliderValue = editing.value;
+    min = Number((editing.range.low / editing.scale).toFixed(fixed));
+    max = Number((editing.range.high / editing.scale).toFixed(fixed));
 
     units_label = node.label || '';
     units_label = units_label.replace(/{s}/g, (editing.value === 1) ? '':'s');
@@ -164,7 +163,7 @@
     <br>
     <div class="sliderContainer">
       {#if editing}
-	<input type='text' size='6' bind:value={editing.value} on:change={inputChangedHandler}/>
+	<input type='text' size='6' bind:value={editing.value} on:input={inputChangedHandler}/>
 	{#if !editing.options}
 	  <span class='units'>{units_label}</span>
 	{:else}
@@ -174,8 +173,12 @@
 	    {/each}
 	  </select>
 	{/if}
-	<RangeSlider bind:values={sliders} on:change={rangeChangedHandler} step={editing.step} {min} {max}
-	  pips first='label' last='label' rest={false}/>
+	<SteppedLogRangeSlider
+	  value={sliderValue}
+	  on:change={sliderChangedHandler}
+	  step={editing.step}
+	  {min} {max}
+	/>
       {/if}
       <CloseButton on:click={closeHandler}/>
     </div>

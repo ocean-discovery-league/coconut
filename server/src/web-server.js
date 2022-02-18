@@ -6,6 +6,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
 const socketio = require('socket.io');
+const cors = require('cors');
 const UploadAll = require('./upload-all.js');
 const MissionID = require('./mission-id.js');
 const WiFi = require('./wifi.js');
@@ -14,7 +15,7 @@ const PORT = 6252;
 //const BIND = '127.0.0.1';
 const BIND = '0.0.0.0';
 const CLIENT_DIR = __dirname + '/../../client/build';
-const STATIC_DIR = __dirname + '/../../static';
+const STATIC_DIR = __dirname + '/../static';
 
 let log = console;
 
@@ -27,6 +28,7 @@ class WebServer {
             next();
         });
 
+	app.use(cors({origin: '*'}));
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
 

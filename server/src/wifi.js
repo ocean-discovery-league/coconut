@@ -34,9 +34,6 @@ class WiFi {
         this.routes(this.router);
         // this.app.use(this.router);
 
-        // this.staticDir = path.join(STATIC_DIR);
-        // this.app.use(serveStatic(this.staticDir));  // html and friends
-
         // let httpOptions = {};
         // this.server = http.createServer(httpOptions, this.app);
 
@@ -95,6 +92,20 @@ class WiFi {
             res.setHeader('Content-Type', 'application/json');
             res.end(json);
         });
+
+        router.post('/disconnect', async (req, res) => {
+            let json = '{}';
+            try {
+                log.log('disconnect');
+                let data = await this.disconnectWiFi();
+                json = JSON.stringify(data);
+                log.log('result', data);
+            } catch(err) {
+                log.error(err);
+            }
+            res.setHeader('Content-Type', 'application/json');
+            res.end(json);
+        });
     }
 
 
@@ -123,7 +134,39 @@ class WiFi {
 	    let result = await nmcli.connect(ssid, password);
 	    log.log('result', result);
 	} else {
-	    this.wireless.connect(ssid, password);  // TODO this isn't right
+	    await this.disableAll();
+	    await this.wireless.connect(ssid, password);
+	    await this.wireless.saveConfiguration();
+	}
+    }
+
+
+    async disconnectWiFi() {
+	if (USE_NM) {
+	    let result = await nmcli.disconnect();
+	    log.log('result', result);
+	} else {
+	    await this.disableAll();
+	    await this.wireless.disconnect();
+	    await this.wireless.saveConfiguration();
+	}
+    }
+
+
+    async disableAll() {
+	if (USE_NM) {
+	    // FIXME only if we ever go back to using NM again
+	} else {
+	    let networks = await this.wireless.listNetworks();
+	    for (let network of networks) {
+		if (!network.ssid) {
+		    console.log(`removing network without ssid ${network.id}`);
+		    await this.wireless.removeNetwork(network.id);
+		} else {
+		    console.log(`disabling network ${network.id}`);
+		    await this.wireless.disableNetwork(network.id);
+		}
+	    }
 	}
     }
 }

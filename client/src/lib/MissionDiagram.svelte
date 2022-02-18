@@ -187,7 +187,7 @@
                     {
                       isInitial: false,  // don't even do initial layout
                       isOngoing: false,  // don't invalidate layout when nodes or links are added or removed
-                      direction: 0,
+                      direction: 90,
                       columnSpacing: 10,
                       layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
                     }),
@@ -242,7 +242,7 @@
          ),  // end Horizontal Panel
         $(go.Panel, "Auto",  // the lane consisting of a background Shape and a Placeholder representing the subgraph
           $(go.Shape, "Rectangle",  // this is the resized object
-            { name: "SHAPE", fill: "white" },
+            { name: "SHAPE", fill: "white", strokeWidth: 0 },
             new go.Binding("fill", "color"),
             new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify)),
           $(go.Placeholder,
@@ -293,10 +293,10 @@
           layout: $(PoolLayout, { spacing: new go.Size(0, 0) })  // no space between lanes
         },
         $(go.Shape,
-          { fill: "white" },
+          { fill: "rgba(0,0,0,0)", strokeWidth: 0, minSize: new go.Size(530, 10) },
           new go.Binding("fill", "color")),
         $(go.Panel, "Table",
-          { defaultColumnSeparatorStroke: "#D2E0E3" },
+          //{ defaultColumnSeparatorStroke: "#D2E0E3" },
           $(go.Panel, "Horizontal",
             { column: 0, angle: 270 },
             // $(go.TextBlock,
@@ -312,8 +312,12 @@
       $(go.Link,
         { routing: go.Link.AvoidsNodes, corner: 5 },
         { relinkableFrom: true, relinkableTo: true },
-        $(go.Shape, { stroke: "#D3E0E3", strokeWidth: 2 }),
-        $(go.Shape, { toArrow: "Standard", stroke: "#D3E0E3", fill: "#D3E0E3"})
+	new go.Binding("fromSpot", "fromSpot", go.Spot.parse),
+	new go.Binding("toSpot", "toSpot", go.Spot.parse),
+	new go.Binding("fromEndSegmentLength"),
+	new go.Binding("toEndSegmentLength"),
+        $(go.Shape, { stroke: "#69F4E4", strokeWidth: 4 }),
+        $(go.Shape, { toArrow: "Triangle", stroke: "#69F4E4", fill: "#69F4E4", strokeWidth: 4})
        );
 
     diagram.nodeTemplate =
@@ -324,12 +328,12 @@
             height: 90,
             width: 220,
             strokeWidth: 0,
-            fill: "#D2E0E3",  // default Shape.fill value
+            fill: "#69F4E4",  // default Shape.fill value
             portId: "", cursor: "pointer", fromLinkable: true, toLinkable: true,
           },
           new go.Binding("fill", "color")),  // binding to get fill from nodedata.color
         $(go.TextBlock,
-          { margin: new go.Margin(8, 12, 8, 12), font: "24px Helvetica,sans-serif" },
+          { margin: new go.Margin(8, 0, 0, 0), font: "24px Helvetica,sans-serif" },
           new go.Binding("text", "", formatNodeTextLabel)),  // binding to get TextBlock.text from node.value
         {
           //dragComputation: stayInGroup, // limit dragging of Nodes to stay within the containin
@@ -489,7 +493,7 @@
     }
 
 
-    doLayout (coll) {
+    doLayout(coll) {
       if (this.diagram === null) return;
       this.diagram.startTransaction("PoolLayout");
       var pool = this.group;

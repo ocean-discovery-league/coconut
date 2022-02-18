@@ -1,13 +1,14 @@
 <script>
-  import Page from '$lib/Page.svelte';
-  import MediaManager from '$lib/pages/MediaManager.svelte';
-  import MissionID from '$lib/pages/MissionID.svelte';
-  import WiFiSetup from '$lib/pages/WiFiSetup.svelte';
-  import VideoSetup from '$lib/pages/VideoSetup.svelte';
-  import PhotoSetup from '$lib/pages/PhotoSetup.svelte';
-  import MissionISetup from '$lib/pages/MissionISetup.svelte';
-  import MissionIISetup from '$lib/pages/MissionIISetup.svelte';
   import { onMount, onDestroy } from 'svelte';
+  import { browser } from '$app/env';
+  import Page from '$lib/Page.svelte';
+  import MediaManager from '$lib/../pages/MediaManager.svelte';
+  import MissionID from '$lib/../pages/MissionID.svelte';
+  import WiFiSetup from '$lib/../pages/WiFiSetup.svelte';
+  import VideoSetup from '$lib/../pages/VideoSetup.svelte';
+  import PhotoSetup from '$lib/../pages/PhotoSetup.svelte';
+  import MissionISetup from '$lib/../pages/MissionISetup.svelte';
+  import MissionIISetup from '$lib/../pages/MissionIISetup.svelte';
 
   // let scrollX;
   // let scrollY;
@@ -24,15 +25,85 @@
   // }
   
   onMount(() => {
-    isScrollingInterval = setInterval(isScrolling, 100);
+    //isScrollingInterval = setInterval(isScrolling, 100);
+
+    if (window.location.hash.substr(1)) {
+      parseHash();
+      if (hashParams.page) {
+	let n = Number(hashParams.page);
+	let sections = document.querySelectorAll('section');
+	if (sections[n-1]) {
+	  sections[n-1].scrollIntoView(true);
+	  //sections[n-1].focus();
+	}
+      }
+    } else {
+      window.location.hash = "page=2";
+      let n = 2;
+      let sections = document.querySelectorAll('section');
+      if (sections[n-1]) {
+	sections[n-1].scrollIntoView(true);
+	//sections[n-1].focus();
+      }
+    }
+
+    document.onkeydown = handle_key_press;
+    console.log(document.onkeypress);
   });
 
-  onDestroy( () => {
+  onDestroy(() => { 
     if (isScrollingInterval) {
       clearInterval(isScrollingInterval);
       isScrollingInterval = false;
     }
+    if (browser) {
+      document.onkeydown = undefined;
+    }
   });
+
+  let hashParams = {};
+  function parseHash() {
+    let hash = window.location.hash.substr(1);
+    hashParams = hash.split('&').reduce(function (result, item) {
+      let parts = item.split('=');
+      if (typeof parts[1] === 'undefined') {
+	parts[1] = true;
+      }
+      result[parts[0]] = parts[1];
+      return result;
+    }, {});
+  }
+
+  function handle_key_press(event) {
+    let keycode = typeof event !== 'undefined' ? event.keyCode : event.which;
+    //console.log(keycode)
+    if (keycode === 37) {
+      scroll_right();
+    }
+    if (keycode === 39) {
+      scroll_left();
+    }
+  }
+
+  function scroll_right() {
+    console.log('right');
+    if (!sectionholder) {
+      sectionholder = document.querySelector('#sectionholder');
+    }
+    //sectionholder.scrollLeft -= window.innerWidth;
+    sectionholder.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
+    // note: when you wanna make it scroll smoothly in safari too see
+    // https://stackoverflow.com/questions/56011205/is-there-a-safari-equivalent-for-scroll-behavior-smooth
+  }
+
+  function scroll_left() {
+    console.log('left');
+    if (!sectionholder) {
+      sectionholder = document.querySelector('#sectionholder');
+    }
+    //sectionholder.scrollLeft += window.innerWidth;
+    sectionholder.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+  }
 
   let sectionholder;
   let scrollLeft;
@@ -48,7 +119,6 @@
       //sectionholder.scrollTop = 0;
     }
   }
-
 </script>
 
 <svelte:head>
@@ -59,38 +129,57 @@
 
 <div id="sectionholder">
 
-  <Page id="media_manager">
+  <Page title="Media Manager">
     <MediaManager/>
   </Page>
 
 
-  <Page id="username_section">
+  <Page title="Mission ID">
     <MissionID/>
   </Page>
 
 
-  <Page id="wifi_section">
+  <Page title="WiFi Setup" id="wifi_setup">
     <WiFiSetup/>
   </Page>
 
 
-  <Page id="video_setup_section">
+  <Page title="Video Setup">
     <VideoSetup/>
   </Page>
 
 
-  <Page id="photo_setup_section">
+  <Page title="Photo Setup">
     <PhotoSetup/>
   </Page>
 
 
-  <Page id="mission-1-setup">
+  <Page title="Mission &nbsp;I">
     <MissionISetup/>
   </Page>
 
 
-  <Page id="mission-2-setup">
+  <Page title="Mission &nbsp;II">
     <MissionIISetup/>
   </Page>
 
 </div>
+
+
+<style>
+  #sectionholder {
+    font-family: sans-serif;
+    scroll-snap-type: x mandatory;	
+    overscroll-behaviour: contain;
+    /*scroll-behavior: smooth;*/
+    display: flex;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: scroll;
+    height: 100vh;
+  }
+  #sectionholder::-webkit-scrollbar {
+    display: none;
+    height: 0 !important;
+    width: 0 !important;
+  }
+</style>
