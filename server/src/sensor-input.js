@@ -90,6 +90,7 @@ class SensorInput {
 
 
     processLine(line) {
+        line = String(line);
 	if (line && line.startsWith('DEID') || line.startsWith('MACA')) {
 	    return;
 	}
