@@ -22,38 +22,39 @@ function mission1(current_phase, cycle_num, elapsed, action_elapsed, monoclock, 
     let new_action;
     let new_phase;
     let options = {};
-    
+
     ///
     /// Phase 1 - wait until we get deep enough
     ///
     if (current_phase === 1) {
-	if (sensors.KELL && (sensors.KELL.getDepthInMeters() < params.DEPTH_START_METERS)) {
-	    new_action = 'WAIT';
-	} else {
-	    new_phase = current_phase + 1;
-	}
+        if (!sensors.KELL) {
+            new_action = 'WAIT';
+        } else if (sensors.KELL.getDepthInMeters() < params.DEPTH_START_METERS) {
+            new_action = 'WAIT';
+        } else {
+            new_phase = current_phase + 1;
+        }
     }
 
     ///
     /// Phase 2 - cycle between recording and pausing
     ///
     if (current_phase === 2) {
+        if (action_elapsed < (params.RECORD_CYCLE_MINS * MS_PER_MINUTE)) {
+            new_action = 'RECORD_VIDEO';
+        } else if (action_elapsed < ((params.PAUSE_CYCLE_MINS + params.RECORD_CYCLE_MINS) * MS_PER_MINUTE)) {
+            if (params.PAUSE_CYCLE_MINS > params.RECORD_CYCLE_MINUTES) {
+                new_action = 'PAUSE_AND_BOX_VIDEO';
+            } else {
+                new_action = 'PAUSE_VIDEO';
+            }
+        } else {
+            new_action = 'ACTION_CLOCK_RESET';  // start cycle again
+        }
 
-	if (action_elapsed < (params.RECORD_CYCLE_MINS * MS_PER_MINUTE)) {
-	    new_action = 'RECORD_VIDEO';
-	} else if (action_elapsed < ((params.PAUSE_CYCLE_MINS + params.RECORD_CYCLE_MINS) * MS_PER_MINUTE)) {
-	    if (params.PAUSE_CYCLE_MINS > params.RECORD_CYCLE_MINUTES) {
-		new_action = 'PAUSE_AND_BOX_VIDEO';
-	    } else {
-		new_action = 'PAUSE_VIDEO';
-	    }
-	} else {
-	    new_action = 'ACTION_CLOCK_RESET';  // start cycle again
-	}
-
-	if (sensors.KELL && (sensors.KELL.getDepthInMeters() < params.DEPTH_END_MISSION_METERS)) {
-	    new_phase = -1;  // end mission
-	}
+        if (sensors.KELL && (sensors.KELL.getDepthInMeters() < params.DEPTH_END_MISSION_METERS)) {
+            new_phase = -1;  // end mission
+        }
     }
 
     return [new_action, new_phase, options];
@@ -70,70 +71,70 @@ const diagram = [
         { key: "Action1-1", text: "depth", isGroup: true, group: "Phase1", color: "#69F4E4" },
         { key: "Block1-1-1", text: "Start", group: "Action1-1", color: "#F4E469" },
         { key: "Block1-1-2", text: "{}", group: "Action1-1", color: "#44CCCC",
-	  param: "DEPTH_START_METERS",
-	  value: 2,
-	  type: "interval",
-	  units: "meters",
-	  label: "meter{s}",
-	  abbr: "m",
-	  template: "When depth > {x}{abbr}",
-	  default: 2,
-	  range: {
-	    low: 1,
-	    high: 1500
-	  }
-	},
+          param: "DEPTH_START_METERS",
+          value: 2,
+          type: "interval",
+          units: "meters",
+          label: "meter{s}",
+          abbr: "m",
+          template: "When depth > {x}{abbr}",
+          default: 2,
+          range: {
+            low: 1,
+            high: 1500
+          }
+        },
 
       { key: "Phase2", text: "Phase 2", isGroup: true, category: "Pool" },
         { key: "Action2-1", text: "record", isGroup: true, group: "Phase2", color: "#69F4E4" },
         //{ key: "Block2-1-1", text: "If depth > 1.5m", group: "Action2-1", color: "#D2E0E3" },
         { key: "Block2-1-2", text: "Record video", group: "Action2-1", color: "#187D8B" },
         { key: "Block2-1-3", text: "{}", group: "Action2-1", color: "#44CCCC",
-	  param: "RECORD_CYCLE_MINS",
-	  value: 5,
-	  type: "interval",
-	  units: "minutes",
-	  label: "minute{s}",
-	  template: "For {x} minute{s}",
-	  default: 5,
-	  range: {
-	    low: 1,
-	    high: 120
-	  }
-	},
+          param: "RECORD_CYCLE_MINS",
+          value: 5,
+          type: "interval",
+          units: "minutes",
+          label: "minute{s}",
+          template: "For {x} minute{s}",
+          default: 5,
+          range: {
+            low: 1,
+            high: 120
+          }
+        },
         { key: "Action2-2", text: "next", isGroup: true, group: "Phase2", color: "#69F4E4" },
         //{ key: "Block2-2-1", text: "If depth > 1.5m", group: "Action2-2", color: "#D2E0E3" },
         { key: "Block2-2-2", text: "Pause video", group: "Action2-2", color: "#187D8B" },
         { key: "Block2-2-3", text: "{}", group: "Action2-2", color: "#44CCCC",
-	  param: "PAUSE_CYCLE_MINS",
-	  value: 15,
-	  type: "interval",
-	  units: "minutes",
-	  label: "minute{s}",
-	  template: "For {x} minute{s}",
-	  default: 15,
-	  range: {
-	    low: 1,
-	    high: 120
-	  }
-	},
+          param: "PAUSE_CYCLE_MINS",
+          value: 15,
+          type: "interval",
+          units: "minutes",
+          label: "minute{s}",
+          template: "For {x} minute{s}",
+          default: 15,
+          range: {
+            low: 1,
+            high: 120
+          }
+        },
         { key: "Phase3", text: "End", isGroup: true, category: "Pool" },
         { key: "Action3-1", text: "end", isGroup: true, group: "Phase3", color: "#69F4E4" },
         { key: "Block3-1-1", text: "End", group: "Action3-1", color: "#FF9A00" },
         { key: "Block3-1-2", text: "{}", group: "Action3-1", color: "#44CCCC",
-	  param: "DEPTH_END_MISSION_METERS",
-	  value: 1,
-	  type: "interval",
-	  units: "meters",
-	  label: "meters",
-	  abbr: "m",
-	  template: "If depth < {x}{abbr}",
-	  default: 1.5,
-	  range: {
-	    low: 1,
-	    high: 1500
-	  }
-	},
+          param: "DEPTH_END_MISSION_METERS",
+          value: 1,
+          type: "interval",
+          units: "meters",
+          label: "meters",
+          abbr: "m",
+          template: "If depth < {x}{abbr}",
+          default: 1.5,
+          range: {
+            low: 1,
+            high: 1500
+          }
+        },
     ],
     [ // link data
         // { from: "Block0-1-1", to: "Block0-1-2" },
@@ -148,7 +149,7 @@ const diagram = [
         // //{ from: "Block2-1-1", to: "Block2-1-2" },
         // { from: "Block2-1-2", to: "Block2-1-3" },
 
-	// //{ from: "Block2-2-1", to: "Block2-2-2" },
+        // //{ from: "Block2-2-1", to: "Block2-2-2" },
         // { from: "Block2-2-2", to: "Block2-2-3" },
 
         // { from: "Block2-1-2", to: "Block2-2-2" },
