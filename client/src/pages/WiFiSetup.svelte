@@ -244,16 +244,8 @@
     {/if}
   </div>
 
-      <Button nofeedback on:click={disconnect_wifi}>
-        {#if !disconnecting}
-          Disconnect WiFi
-        {:else}
-          Disconnecting...
-        {/if}
-      </Button>
-
   <div class="connect-container">
-    {#if false}
+    {#if connected_ssid}
       <br>
       <br>
       <Button nofeedback on:click={disconnect_wifi}>

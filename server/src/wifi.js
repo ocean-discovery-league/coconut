@@ -395,7 +395,7 @@ class WiFi {
 	    let result = await nmcli.connect(ssid, password);
 	    log.log('result', result);
 	} else {
-	    //await this.disableAll();
+	    await this.disableAll();
 	    await this.wireless.connect(ssid, password);
 	    await this.wireless.saveConfiguration();
 	}
@@ -407,7 +407,7 @@ class WiFi {
 	    let result = await nmcli.disconnect();
 	    log.log('result', result);
 	} else {
-	    //await this.disableAll();
+	    await this.disableAll();
 	    await this.wireless.disconnect();
 	    await this.wireless.saveConfiguration();
 	}
