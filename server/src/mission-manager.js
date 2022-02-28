@@ -100,8 +100,9 @@ class MissionManager {
 async function tests() {
     log = console;
     let name = process.argv[2] || 'mission1';
-    let filename = '../test/MKN0002_M1_2021_02_22_17_03_57.423.txt';
+    let filename = process.argv[3] || '../test/MKN0002_M1_2021_02_22_17_03_57.423.txt';
     const MissionPrograms = require('./mission-programs');
+    let missionPrograms = new MissionPrograms();
     await missionPrograms.init();
 
     if (await missionPrograms.load(name)) {
