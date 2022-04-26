@@ -8,6 +8,7 @@
   let iframe_src;
   let uploadall_request;
   let uploadallcancel_request;
+  let upload_progress = '25%';
 
   onMount(() => {
       iframe_src = window.location.protocol + '//' + window.location.hostname + '/html/preview.php';
@@ -164,9 +165,31 @@
 
   function upload_counts_summary_text(data) {
       let text = `Uploading ${data.n+1} of ${data.of+1} ${data.ext}${data.of===1?'':'s'}`;
+      upload_progress = '' + Math.floor( 100 * ((of+1) / (n+1)) ) + '%';
       return text;
   }
 </script>
+
+
+<style>
+  #uploadprogressbar {
+    display: inline-block;
+  width: 200px;
+    height: 14px;
+    display: inline-block;
+    height: 10px;
+    border: 2px solid white;
+    border-radius: 2px;
+  }
+  #uploadprogressfiller {
+  display: inline-block;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background-color: white;
+  }
+</style>
+
 
 <center>
   <div class="upload-container">
@@ -185,6 +208,7 @@
       {#if uploading}
         {#if uploading_summary}
           {uploading_summary}
+          <div id="uploadprogressbar"><div id="progressbarfiller" style="width: {upload_progress}"></div></div>
         {:else}
           Uploading...
         {/if}

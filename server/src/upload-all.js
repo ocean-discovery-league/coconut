@@ -121,13 +121,13 @@ class UploadAll extends EventEmitter {
         let tator_file_list = await this.listTatorFiles();
         log.info(`current tator media list has ${tator_file_list.length} items`);
 
-        let duplicate_count = 0;
+        this.duplicate_count = 0;
         let file_sizes = {};
         for (let { ext, type_id, attach } of file_ext_type_ids) {
             if (ext in this.upload_filelists) {
                 let filelist = this.upload_filelists[ext];
                 filelist = filelist.filter( filename => !tator_file_list.includes(filename) );
-                duplicate_count += this.upload_filelists[ext].length - filelist.length;
+                this.duplicate_count += this.upload_filelists[ext].length - filelist.length;
                 this.upload_filelists[ext] = filelist;
 
                 log.info(`stating ${ext} files`);
@@ -143,13 +143,14 @@ class UploadAll extends EventEmitter {
                 }
             }
         }
-        log.info(`skipping ${duplicate_count} files that have already been uploaded`);
+        log.info(`skipping ${this.duplicate_count} files that have already been uploaded`);
 
-        let total_size = 0;
+        this.total_upload_bytes = 0;
+        this.uploaded_bytes = 0;
         for (let k in file_sizes) {
-            total_size += file_sizes[k];
+            this.total_upload_bytes += file_sizes[k];
         }
-        log.info(`uploading ${total_size} bytes from ${Object.keys(file_sizes).length} files`);
+        log.info(`uploading ${this.total_upload_bytes} bytes from ${Object.keys(file_sizes).length} files`);
 
         let media_id;
         for (let { ext, type_id, attach } of file_ext_type_ids) {
