@@ -185,7 +185,7 @@
   function upload_counts_summary_text(data) {
       let text = '';
       if (data.of > 0) {
-          let text = `Uploading ${data.n+1} of ${data.of} ${data.ext}${data.of===1?'':'s'}`;
+          text = `Uploading ${data.n+1} of ${data.of} ${data.ext}${data.of===1?'':'s'}`;
           upload_progress = '' + Math.floor( 100 * ((data.n) / (data.of)) ) + '%';
           console.log(upload_progress);
       }
