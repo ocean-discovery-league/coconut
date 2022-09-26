@@ -184,7 +184,7 @@
 
   function upload_counts_summary_text(data) {
       let text = `Uploading ${data.n+1} of ${data.of+1} ${data.ext}${data.of===1?'':'s'}`;
-      upload_progress = '' + Math.floor( 100 * ((of+1) / (n+1)) ) + '%';
+      upload_progress = '' + Math.floor( 100 * ((data.of+1) / (data.n+1)) ) + '%';
       return text;
   }
 </script>
@@ -242,19 +242,22 @@
 <style>
   #uploadprogressbar {
     display: inline-block;
+    position: relative;
+    top: 6px;
     width: 200px;
     height: 14px;
-    display: inline-block;
-    height: 10px;
+    text-align: left;
     border: 2px solid white;
     border-radius: 2px;
   }
   #uploadprogressbarfiller {
-  display: inline-block;
-  left: 0;
-  width: 0%;
-  height: 100%;
-  background-color: white;
+    display: inline-block;
+    position: relative;
+    top: -7px;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: white;
   }
   .upload-container {
     height: 260px;
