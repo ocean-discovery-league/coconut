@@ -249,7 +249,7 @@
     border: 2px solid white;
     border-radius: 2px;
   }
-  #uploadprogressfiller {
+  #uploadprogressbarfiller {
   display: inline-block;
   left: 0;
   width: 0%;
