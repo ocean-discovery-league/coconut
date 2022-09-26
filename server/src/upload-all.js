@@ -320,14 +320,16 @@ class UploadAll extends EventEmitter {
 
     reportUploadProgress(n, filelist, filelists) {
         if (n !== undefined) {
-            let of = filelist.length-1;
+            let of = filelist.length;
             let ext = path.extname(filelist[0]);
             if (ext.startsWith('.')) {
                 ext = ext.substring(1);
             }
             this.lastProgressUpdate = { n, of, ext, filecounts: this.upload_filecounts };
         }
-        this.io.emit('uploadprogress', this.lastProgressUpdate);
+        if (this.lastProgressUpdate) {
+            this.io.emit('uploadprogress', this.lastProgressUpdate);
+        }
     }
 
 
