@@ -134,7 +134,7 @@ class DownloadAll extends EventEmitter {
 
         let dirname = (new Date(Date.now())).toISOString();
         dirname = dirname.split('.')[0];
-        dirname = dirname.replaceAll(/[-:]/g, '');
+        dirname = dirname.replace(/[-:]/g, '');
         dirname = dirname.replace('T', '_');
         dirname = os.hostname + '_' + dirname + '_' + select;
         let filename = `${dirname}.${ext}`;
