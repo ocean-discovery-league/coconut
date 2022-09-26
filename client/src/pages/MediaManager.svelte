@@ -247,7 +247,7 @@
   #uploadprogressbar {
     display: inline-block;
     position: relative;
-    top: 6px;
+    top: 1px;
     width: 200px;
     height: 14px;
     text-align: left;
@@ -258,10 +258,10 @@
   #uploadprogressbarfiller {
     display: inline-block;
     position: relative;
-    top: -7px;
+    top: -10px;
     left: 0;
     width: 0%;
-    height: 100%;
+    height: 20px;
     background-color: white;
   }
   .upload-container {
