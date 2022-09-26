@@ -10,7 +10,7 @@
   let download_logs_url;
   let uploadall_request;
   let uploadallcancel_request;
-  let upload_progress = '25%';
+  let upload_progress = '0%';
 
   onMount(() => {
       let root = '';
@@ -184,7 +184,8 @@
 
   function upload_counts_summary_text(data) {
       let text = `Uploading ${data.n+1} of ${data.of+1} ${data.ext}${data.of===1?'':'s'}`;
-      upload_progress = '' + Math.floor( 100 * ((data.of+1) / (data.n+1)) ) + '%';
+      upload_progress = '' + Math.floor( 100 * ((data.n) / (data.of+1)) ) + '%';
+      log.log(upload_progress);
       return text;
   }
 </script>
@@ -249,6 +250,7 @@
     text-align: left;
     border: 2px solid white;
     border-radius: 2px;
+    /* overflow: hidden; */
   }
   #uploadprogressbarfiller {
     display: inline-block;
