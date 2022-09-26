@@ -20,9 +20,8 @@
           iframe_root = root;
       }
       iframe_src = iframe_root + '/html/preview.php';
-      download_all_url         = root + '/download/all';
-      download_logs_url         = root + '/download/logs';
-      downloadall_request     = new Request(downloadall_url, {method: 'GET'});
+      download_all_url        = root + '/download/all';
+      download_logs_url       = root + '/download/logs';
       uploadall_request       = new Request(root + '/uploadall', {method: 'POST'});
       uploadallcancel_request = new Request(root + '/uploadall_cancel', {method: 'POST'});
 
@@ -216,7 +215,7 @@
       {#if uploading}
         {#if uploading_summary}
           {uploading_summary}
-          <div id="uploadprogressbar"><div id="progressbarfiller" style="width: {upload_progress}"></div></div>
+          <div id="uploadprogressbar"><div id="uploadprogressbarfiller" style="width: {upload_progress}"></div></div>
         {:else}
           Uploading...
         {/if}
@@ -243,7 +242,7 @@
 <style>
   #uploadprogressbar {
     display: inline-block;
-  width: 200px;
+    width: 200px;
     height: 14px;
     display: inline-block;
     height: 10px;
