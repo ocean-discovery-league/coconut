@@ -9,6 +9,7 @@
     "build": "(cd client; yarn build); git commit client/build; yarn version"
   },
   "dependencies": {
+    "archiver": "^5.3.1",
     "body-parser": "^1.19.0",
     "byline": "^5.0.0",
     "cors": "^2.8.5",

@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
 const socketio = require('socket.io');
 const cors = require('cors');
+const DownloadAll = require('./download-all.js');
 const UploadAll = require('./upload-all.js');
 const MissionID = require('./mission-id.js');
 const WiFi = require('./wifi.js');
@@ -50,6 +51,9 @@ class WebServer {
         });
 
         missionPrograms.addRoutes(app, io);
+
+        let downloadAll = new DownloadAll();
+        downloadAll.init(app, io);
 
         let uploadAll = new UploadAll();
         uploadAll.init(app, io);
