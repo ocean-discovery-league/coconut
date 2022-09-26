@@ -6,23 +6,26 @@
 
   let socket;
   let iframe_src;
+  let download_all_url;
+  let download_logs_url;
   let uploadall_request;
   let uploadallcancel_request;
   let upload_progress = '25%';
 
   onMount(() => {
-      iframe_src = window.location.protocol + '//' + window.location.hostname + '/html/preview.php';
-      uploadall_request       = new Request('/uploadall', {method: 'POST'});
-      uploadallcancel_request = new Request('/uploadall_cancel', {method: 'POST'});
-
-      if (dev) {
-          // for dev on mac
-          let root = 'http://192.168.10.1';
-          iframe_src  = root + '/html/preview.php';
-          // uploadall_request       = new Request(root + '/uploadall', {method: 'POST'});
-          // uploadallcancel_request = new Request(root + '/uploadall_cancel', {method: 'POST'});
+      let root = '';
+      let iframe_root = window.location.protocol + '//' + window.location.hostname;
+      if (dev) {  // for dev on mac
+          root = 'http://192.168.10.1';
+          iframe_root = root;
       }
-      
+      iframe_src = iframe_root + '/html/preview.php';
+      download_all_url         = root + '/download/all';
+      download_logs_url         = root + '/download/logs';
+      downloadall_request     = new Request(downloadall_url, {method: 'GET'});
+      uploadall_request       = new Request(root + '/uploadall', {method: 'POST'});
+      uploadallcancel_request = new Request(root + '/uploadall_cancel', {method: 'POST'});
+
       socket = getSocketIO();
       socket.on('filecounts',     (data) => update_file_counts(data));
       socket.on('uploadstarted',  (data) => update_upload_started(data));
@@ -39,6 +42,23 @@
   let filecounts;
   let filecounts_summary;
   let uploading_summary = '';
+
+  async function download_a_url(url) {
+      console.log('downloading', url);
+      //window.location = download_logs_url;
+      // let a = document.createElement('a');
+      // a.download = true;
+      // a.href = download_logs_url;
+      // a.click();
+      let iframe = document.createElement('iframe');
+      iframe.src = url;
+      // let html = '<'+'html>'+'<'+'body></body>'+'<'+'script>window.location="'
+      //     + download_logs_url
+      //     + '";<'+'/script>'+'<'+'/body>'+'<'+'/html>';
+      // iframe.srcdoc = html;
+      document.body.append(iframe);
+  }
+
 
   async function upload_all(event) {
       if (!uploading) {
@@ -171,37 +191,25 @@
 </script>
 
 
-<style>
-  #uploadprogressbar {
-    display: inline-block;
-  width: 200px;
-    height: 14px;
-    display: inline-block;
-    height: 10px;
-    border: 2px solid white;
-    border-radius: 2px;
-  }
-  #uploadprogressfiller {
-  display: inline-block;
-  left: 0;
-  width: 0%;
-  height: 100%;
-  background-color: white;
-  }
-</style>
-
-
 <center>
   <div class="upload-container">
+    <Button width=280 height=36 fontsize='16px' nofeedback on:click={() => {download_a_url(download_all_url)}}>
+        Download All Files
+    </Button>
+    <div style='height:24px'></div>
+    <Button width=280 height=36 fontsize='16px' nofeedback on:click={() => {download_a_url(download_logs_url)}}>
+        Download Sensor Logs
+    </Button>
+    <div style='height:24px'></div>
     <Button width=280 height=36 fontsize='16px' nofeedback on:click={upload_all}>
-      {#if uploading}
+      {#if !uploading}
+        Upload All Files To Tator.io
+      {:else}
         {#if canceling}
           Canceling...
         {:else}
           Cancel Upload
         {/if}
-      {:else}
-        Upload All Files To Tator.io
       {/if}
     </Button>
     <div class="uploadstatus">
@@ -233,8 +241,24 @@
 
 
 <style>
+  #uploadprogressbar {
+    display: inline-block;
+  width: 200px;
+    height: 14px;
+    display: inline-block;
+    height: 10px;
+    border: 2px solid white;
+    border-radius: 2px;
+  }
+  #uploadprogressfiller {
+  display: inline-block;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background-color: white;
+  }
   .upload-container {
-    height: 140px;
+    height: 260px;
     color: white;
     font-size: 20px;
     line-height: 22px;
@@ -252,7 +276,7 @@
 
   .mediamanager {
     width: 100%;
-    height: calc(100vh - (120px + 151px));
+    height: calc(100vh - (240px + 160px));
   }
 
   .error {
