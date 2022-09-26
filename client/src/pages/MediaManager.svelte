@@ -253,15 +253,15 @@
     text-align: left;
     border: 2px solid white;
     border-radius: 2px;
-    /* overflow: hidden; */
+    overflow: hidden;
   }
   #uploadprogressbarfiller {
     display: inline-block;
     position: relative;
-    top: -7px;
+    top: -10px;
     left: 0;
     width: 0%;
-    height: 100%;
+    height: 110%;
     background-color: white;
   }
   .upload-container {
