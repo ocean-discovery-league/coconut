@@ -16,12 +16,13 @@ const MEDIA_DIR =
 const TATOR_UPLOAD_SCRIPT =
       (os.platform() === 'darwin')
       ? (__dirname + '/../test/FakeTatorUpload.py')
-      : '/home/pi/git/maka-niu/code/TatorUpload.py';
+      : (__dirname + '/../../scripts/TatorUpload.py');
 
 const shunt = () => {};
 let log = {
     debug: shunt,
     log: console.log,
+    info: console.log,
     warn: console.warn,
     error: console.error,
 };
@@ -114,13 +115,54 @@ class UploadAll extends EventEmitter {
         }
         log.log('this.uploads_total_file_count', this.uploads_total_file_count);
 
-        // quick and dirty hack to just have something stable to attach txt files to
-        let media_id = await this.createMediaId();
+        // if (this.uploads_total_file_count === 0) {
+        // }
 
+        log.info('fetching list of existing tator media files');
+        let tator_file_list = await this.listTatorFiles();
+        log.info(`current tator media list has ${tator_file_list.length} items`);
+
+        this.duplicate_count = 0;
+        let file_sizes = {};
+        for (let { ext, type_id, attach } of file_ext_type_ids) {
+            if (ext in this.upload_filelists) {
+                let filelist = this.upload_filelists[ext];
+                filelist = filelist.filter( filename => !tator_file_list.includes(filename) );
+                this.duplicate_count += this.upload_filelists[ext].length - filelist.length;
+                this.upload_filelists[ext] = filelist;
+
+                log.info(`stating ${ext} files`);
+                for (let filename of filelist) {
+                    let size = 0;
+                    try {
+                        let stat = await fsP.stat(`${MEDIA_DIR}/${filename}`);
+                        size = stat.size;
+                    } catch(err) {
+                        log.error(`could not stat upload size for ${filename}`, err);
+                    }
+                    file_sizes[filename] = size;
+                }
+            }
+        }
+        log.info(`skipping ${this.duplicate_count} files that have already been uploaded`);
+
+        this.total_upload_bytes = 0;
+        this.uploaded_bytes = 0;
+        for (let k in file_sizes) {
+            this.total_upload_bytes += file_sizes[k];
+        }
+        log.info(`uploading ${this.total_upload_bytes} bytes from ${Object.keys(file_sizes).length} files`);
+
+        let media_id;
         for (let { ext, type_id, attach } of file_ext_type_ids) {
             if (ext in this.upload_filelists) {
                 log.log(`uploading ${this.upload_filelists[ext].length} ${ext}s with type_id ${type_id}`);
                 if (attach) {
+                    if (!media_id) {
+                        // quick and dirty hack to just have something stable to attach txt files to
+                        log.info('uploading placard image for attaching files to');
+                        media_id = await this.createMediaId();
+                    }
                     await this.uploadList(this.upload_filelists[ext], type_id, media_id);
                 } else {
                     await this.uploadList(this.upload_filelists[ext], type_id);
@@ -212,6 +254,7 @@ class UploadAll extends EventEmitter {
     async uploadOneFile(filename, type_id, media_id=false) {
         return new Promise( (resolve, reject) => {
             let args = [
+                '--nodupecheck',
                 '--type_id', type_id,
                 '--media_path', filename];
             if (media_id) {
@@ -243,16 +286,50 @@ class UploadAll extends EventEmitter {
     }
 
 
+    async listTatorFiles() {
+        return new Promise( (resolve, reject) => {
+            let args = ['--list'];
+
+            this.tatorup = spawn(TATOR_UPLOAD_SCRIPT, args);
+
+            let json = '';
+            this.tatorup.stdout.on('data', (data) => {
+                // hopefully it's always a complete line, and only one line
+                let line = data.toString();
+                json += line;
+            });
+            this.tatorup.stderr.on('data', (data) => log.error(data.toString()));
+            this.tatorup.on('error', (err) => {
+                log.error(`error running tator upload script ${TATOR_UPLOAD_SCRIPT}`, err);
+                this.tatorup = false;
+                reject(err);
+            });
+            this.tatorup.on('close', (code) => {
+                this.tatorup = false;
+                let list = [];
+                try {
+                    list = JSON.parse(json);
+                } catch(err) {
+                    log.error(`error parsing json for media list from ${TATOR_UPLOAD_SCRIPT}`, err);
+                }
+                resolve(list);  // json parsing errors cause an empty list to be returned
+            });
+        });
+    }
+
+
     reportUploadProgress(n, filelist, filelists) {
         if (n !== undefined) {
-            let of = filelist.length-1;
+            let of = filelist.length;
             let ext = path.extname(filelist[0]);
             if (ext.startsWith('.')) {
                 ext = ext.substring(1);
             }
             this.lastProgressUpdate = { n, of, ext, filecounts: this.upload_filecounts };
         }
-        this.io.emit('uploadprogress', this.lastProgressUpdate);
+        if (this.lastProgressUpdate) {
+            this.io.emit('uploadprogress', this.lastProgressUpdate);
+        }
     }
 
 
@@ -303,7 +380,8 @@ class UploadAll extends EventEmitter {
 async function tests() {
     Object.assign(log, console);
     let uploadAll = new UploadAll();
-    await uploadAll.init(null, null);
+    let fakeio = { on: () => {}, emit: () => {} };
+    await uploadAll.init(null, fakeio);
     console.time('filelists');
     let filelists = await uploadAll.getFileLists();
     console.timeEnd('filelists');
@@ -311,6 +389,10 @@ async function tests() {
     for (let ext of Object.keys(filelists).sort()) {
         console.log(`  ${ext} ${filelists[ext].length}`);
     }
+
+    //let media_list = await uploadAll.listTatorFiles();
+    //console.log(`current tator media list has ${media_list.length} items`);
+    //console.log(JSON.stringify(media_list, null, 4));
 
     await uploadAll.uploadAll();
 

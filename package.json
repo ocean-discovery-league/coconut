@@ -1,14 +1,15 @@
 {
   "name": "coconut",
-  "version": "0.4.12-beta",
+  "version": "0.4.24-beta",
   "description": "",
   "main": "coconut.js",
   "scripts": {
     "start": "./run.sh",
     "dev": "cd client; yarn dev",
-    "build": "(cd client; yarn build); git commit client/build; yarn version"
+    "build": "(cd client; yarn build); git add client/build; yarn version"
   },
   "dependencies": {
+    "archiver": "^5.3.1",
     "body-parser": "^1.19.0",
     "byline": "^5.0.0",
     "cors": "^2.8.5",
