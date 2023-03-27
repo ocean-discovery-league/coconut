@@ -61,6 +61,39 @@ class WebServer {
         let missionID = new MissionID();
         await missionID.init(app, io);
 
+	app.get('/cam.jpg', async (req, res) => {
+	    res.setHeader('Content-Type', 'image/jpeg');
+	    res.setHeader('Cache-Control', 'private, no-cache, no-store, max-age=0');
+	    res.setHeader('Pragma', 'no-cache');
+	    let boundry = '--oneframeatatime';
+	    res.setHeader('Content-Type', `multipart/x-mixed-replace; boundary="${boundry}"`);
+	    res.setHeader('Connection', 'close');
+	    let fs = require('fs');
+	    let fsP = require('fs').promises;
+	    let CAM_FILENAME = '/dev/shm/mjpeg/cam.jpg';
+	    async function send_image() {
+		let imagedata = await fsP.readFile(CAM_FILENAME);
+		//res.write(imagedata);
+		
+		//res.write('--' + multipart + '\r\n', 'ascii');
+		res.write(boundry+'\r\n');
+		res.write('Content-Type: image/jpeg\r\n');
+		res.write('Content-Length: ' + imagedata.length + '\r\n');
+		res.write('\r\n');
+		res.write(imagedata);
+		res.write('\r\n');
+
+		setTimeout(send_image, 1000/25);
+	    }
+	    send_image();
+            //fs.watch(CAM_FILENAME, { persistent: false, encoding: 'utf8'}, async (t, f) => {
+	    //	console.log('t', t);
+	    //	imagedata = await fsP.readFile(CAM_FILENAME);
+	    //	res.write(imagedata);
+	    //});
+	    //res.end();
+	});
+
       if (os.platform() === 'darwin') {
 	  const { createProxyMiddleware } = require('http-proxy-middleware');
           app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
