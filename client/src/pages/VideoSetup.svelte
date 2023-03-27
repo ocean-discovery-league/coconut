@@ -4,8 +4,8 @@
 
   onMount(() => {
       let socket = getSocketIO();
-      socket.on('cam.jpg', (image) => {
-	  let url = 'data:image/jpeg;base64,' + btoa(data.buffer);
+      socket.on('cam.jpg', (imagedata) => {
+	  let url = 'data:image/jpeg;base64,' + btoa(imagedata);
 	  console.log('url', url);
 	  document.querySelector('#camview').src = url;
       });
