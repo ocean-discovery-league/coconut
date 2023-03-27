@@ -3,7 +3,7 @@
   import { getSocketIO } from '$lib/utils';
 
   onMount(() => {
-      socket = getSocketIO();
+      let socket = getSocketIO();
       socket.on('cam.jpg', (image) => {
 	  let url = 'data:image/jpeg;base64,' + btoa(data.buffer);
 	  console.log('url', url);
