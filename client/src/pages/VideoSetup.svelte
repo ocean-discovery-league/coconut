@@ -9,7 +9,7 @@
 	  console.log('url', url);
 	  document.querySelector('#camview').src = url;
       });
-  }
+  });
 </script>
 
 <!--
@@ -24,6 +24,6 @@
     <br>
     <br>
 
-    <img id="camview'>
+    <img id="camview" width="512" height="288">
     
     <h2 style="font-size:22px">All settings are currently automatic</h2>
