@@ -61,6 +61,17 @@ class WebServer {
         let missionID = new MissionID();
         await missionID.init(app, io);
 
+	let fs = require('fs');
+	let fsP = require('fs').promises;
+	let CAM_FILENAME = '/dev/shm/mjpeg/cam.jpg';
+	async function send_image_via_socket() {
+	    let imagedata = await fsP.readFile(CAM_FILENAME);
+	    io.emit('cam.jpg', imagedata);
+	    setTimeout(send_image_via_socket, 1000/25);
+	    console.log('send_image_via_socket');
+	}
+	send_image_via_socket();
+
 	app.get('/cam.jpg', async (req, res) => {
 	    res.setHeader('Content-Type', 'image/jpeg');
 	    res.setHeader('Cache-Control', 'private, no-cache, no-store, max-age=0');
@@ -68,9 +79,6 @@ class WebServer {
 	    let boundry = '--oneframeatatime';
 	    res.setHeader('Content-Type', `multipart/x-mixed-replace; boundary="${boundry}"`);
 	    res.setHeader('Connection', 'close');
-	    let fs = require('fs');
-	    let fsP = require('fs').promises;
-	    let CAM_FILENAME = '/dev/shm/mjpeg/cam.jpg';
 	    async function send_image() {
 		let imagedata = await fsP.readFile(CAM_FILENAME);
 		//res.write(imagedata);
