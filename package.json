@@ -14,11 +14,15 @@
     "byline": "^5.0.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "node-ble": "^1.9.0",
     "socket.io": "^4.0.1",
     "tail": "^2.2.0",
     "wirelesser": "^2.2.0"
   },
   "optionalDependencies": {
     "http-proxy-middleware": "^2.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
