@@ -29,7 +29,7 @@ class WebServer {
             next();
         });
 
-	app.use(cors({origin: '*'}));
+        app.use(cors({origin: '*'}));
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -62,12 +62,12 @@ class WebServer {
         await missionID.init(app, io);
 
       if (os.platform() === 'darwin') {
-	  const { createProxyMiddleware } = require('http-proxy-middleware');
+          const { createProxyMiddleware } = require('http-proxy-middleware');
           app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
-	  app.use(serveStatic(STATIC_DIR));
-	} else {
+          app.use(serveStatic(STATIC_DIR));
+        } else {
           app.use(serveStatic(CLIENT_DIR));
-	}
+        }
     }
 }
 
