@@ -17,7 +17,7 @@ const ROVER_INTERFACE = 'tun0';
 //const USE_NM = (os.arch() === 'x64');  // assuming x86 = Ubuntu, otherwise Rasbian
 const USE_NM = false;  // dear god, i hope we are rid of NetworkManager -jon
 const HAS_ROS = (os.arch() === 'x64');
-const SERVER_TEST_ADDRESS = 'prg-webhost.media.mit.edu';
+const SERVER_TEST_ADDRESS = 'rover.irontech.org';
 const SERVER_TEST_PORT = 80;
 const DHCP_LEASES_FILE = '/var/lib/misc/dnsmasq.leases';
 const SSH_TCP_PORT = 22;
