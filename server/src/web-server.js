@@ -64,6 +64,9 @@ class WebServer {
 	let fs = require('fs');
 	let fsP = require('fs').promises;
 	let CAM_FILENAME = '/dev/shm/mjpeg/cam.jpg';
+        if (os.platform() === 'darwin') {
+            CAM_FILENAME = 'client/static/favicon.png';
+        }
 	async function send_image_via_socket() {
 	    let imagedata = await fsP.readFile(CAM_FILENAME);
 	    io.emit('cam.jpg', imagedata);
