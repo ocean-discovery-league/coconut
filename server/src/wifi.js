@@ -30,7 +30,7 @@ const timeoutP = function(ms) {
     return new Promise( (resolve) => setTimeout(resolve, ms) );
 }
 
-let log = console;
+const log = console;
 
 
 class WiFi {

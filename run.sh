@@ -6,7 +6,7 @@ cd $DIR || (echo "error!"; exit 1)
 
 source ./activate
 
-INTERFACE='wlan0'
+INTERFACE="wlan0"
 
 echo "starting coconut daemon"
-exec node ./server/src/coconut.js $INTERFACE
+exec node ./server/src/coconut.js "$INTERFACE"

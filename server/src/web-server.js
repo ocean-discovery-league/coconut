@@ -11,6 +11,7 @@ const DownloadAll = require('./download-all.js');
 const UploadAll = require('./upload-all.js');
 const MissionID = require('./mission-id.js');
 const WiFi = require('./wifi.js');
+const Bluetooth = require('./Bluetooth.js');
 
 const PORT = 6252;
 //const BIND = '127.0.0.1';
@@ -47,6 +48,15 @@ class WebServer {
                 log.error(err);
             } else {
                 log.log('wifi listening');
+            }
+        });
+
+        let bluetooth = new Bluetooth();
+        bluetooth.init(app, (err) => {
+            if (err) {
+                log.error(err);
+            } else {
+                log.log('bluetooth listening');
             }
         });
 
