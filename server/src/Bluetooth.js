@@ -1,11 +1,11 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-const Bluez = require('bluez');
 require('polyfill-object.fromentries');  // node 10 does not have fromentries
 const asyncHandler = require('express-async-handler');
 require('express-async-error');
 
+const Bluez = require('./bluez-or-fake.js');
 // https://raspberrytips.com/mac-address-on-raspberry-pi
 //const PI_ADDRESS_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01'];
 const PI_ADDRESS_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01', '84:7B:57', 'F8:4D:89'];  // + intel NUC and mac for debugging
