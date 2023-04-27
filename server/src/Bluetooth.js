@@ -1,17 +1,17 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-//const { createBluetooth } = require('node-ble');
 const Bluez = require('bluez');
 require('polyfill-object.fromentries');  // node 10 does not have fromentries
 const asyncHandler = require('express-async-handler');
 require('express-async-error');
 
 // https://raspberrytips.com/mac-address-on-raspberry-pi
-//const PI_MAC_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01'];
-const PI_MAC_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01', '84:7B:57', 'F8:4D:89'];  // + intel NUC and mac for debugging
-const DEVICE_CHECK_INTERVAL_MS = 1000;
-const PROPS_JSON_WHITELIST = ['mac_address', 'Address', 'AddressType', 'Name', 'Alias', 'Connected', 'Paired', 'RSSI', 'Blocked', 'Trusted', 'LegacyPairing', 'Adapter', 'TxPower'];
+//const PI_ADDRESS_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01'];
+const PI_ADDRESS_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01', '84:7B:57', 'F8:4D:89'];  // + intel NUC and mac for debugging
+//const PROPS_JSON_WHITELIST = ['Address', 'AddressType', 'Name', 'Alias', 'Connected', 'Paired', 'RSSI', 'Blocked', 'Trusted', 'LegacyPairing', 'Adapter', 'TxPower'];
+const PROPS_CHANGED_BLACKLIST = ['ManufacturerData'];
+const REQUEST_DISCOVERY_TIMEOUT_MS = 20 * 1000;  // 20 seconds, client configured to refresh request every 5 seconds
 
 const log = console;
 
@@ -24,340 +24,323 @@ const log = console;
 // node-bluez needs sudo apt install libdbus-1-dev
 
 class Bluetooth extends EventEmitter {
-    async init(app) {
-	// let { bluetooth, destroy } = createBluetooth();
-	//this.bluetooth = bluetooth;
-	//this.destroy = destroy;
-	//this.adapter = await bluetooth.defaultAdapter();
-	this.bluetooth = new Bluez();
-	await this.bluetooth.init();
-	// Register Agent that accepts everything and uses key 1234
-	await this.bluetooth.registerStaticKeyAgent('1234', true);
+    async init(app, io) {
+	this.bluez = new Bluez();
+	await this.bluez.init();
+
+	// Register Agent that accepts everything when pairing and uses key 1234
+	await this.bluez.registerStaticKeyAgent('1234', true);
+
 	// listen on first bluetooth adapter
-	this.adapter = await this.bluetooth.getAdapter();
-	this.devices = new Map();
-	this.device_objects_cache = new Map();
+	this.adapter = await this.bluez.getAdapter();
+
+	this.devicesMap = new Map();
 	this.filter_pi_only = false;
 	this.operation_pending = false;
+	this.discovery_timeout = null;
 	if (app) {
-            this.router = app;
-            this.routes(this.router);
+            this.addRoutes(app);
 	}
-        await this.startDiscovery();  // FIXME
+        if (io) {
+            this.io = io;
+            this.addSocketIOHandlers(io);
+        }
+
+        this.bluez.on('device', (...args) => this.handleDeviceEvent(...args));
+        this.bluez.on('interface-removed', (...args) => console.error('we got an interface-removed event on a device??', ...args));
+	this.startDiscovery();  // FIXME
     }
 
 
-    routes(router) {
-        router.get('/btstatus', asyncHandler(async (req, res) => {
-            //let data = await this.getStatus();
-	    let data = {};
-            let json = JSON.stringify(data);
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
-        }));
-
-        router.get('/btscan', asyncHandler(async (req, res) => {
-	    //let devices = Object.fromEntries(this.devices);  // FFFFFFFFFFFFFFF! -jon
-	    let devices = {};
-	    for (let [key, value] of this.devices) {
-		devices[key] = value;
-	    }
-
-	    let filtered_devices = {};
-	    for (let [mac_address, props] of Object.entries(devices)) {
-		let device = {};
-
-		// if (props.Name === 'LIT0001') {
-		//     let json = JSON.stringify(props);
-		//     if (!this.last_props || this.last_props !== json) {
-		// 	console.log(props);
-		// 	this.last_props = json;
-		//     }
-		// }
-
-		for (let prop in props) {
-		    if (PROPS_JSON_WHITELIST.includes(prop)) {
-			device[prop] = props[prop];
-		    }
-		}
-		filtered_devices[mac_address] = device;
-	    }
-            let json = JSON.stringify(filtered_devices);
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
-        }));
-
-        router.get('/btsignal', asyncHandler(async (req, res) => {
-            //let data = await this.wireless.exec('signal_poll');
-            let json = JSON.stringify(data);
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
-        }));
-
-        router.post('/btconnect', asyncHandler(async (req, res) => {
-            log.log('/btconnect', req.body);
-            let data = await this.connectBTDevice(req.body.mac_address);
-            let json = JSON.stringify(data);
-            log.log('result', data);
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
-        }));
-
-        router.post('/btdisconnect', asyncHandler(async (req, res) => {
-            log.log('/btdisconnect');
-            let data = await this.disconnectBTDevice(req.body.mac_address);
-            let json = JSON.stringify(data);
-            log.log('result', data);
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
-        }));
-
-        router.post('/btpair', asyncHandler(async (req, res) => {
+    addRoutes(app) {
+        app.post('/btpair', asyncHandler(async (req, res) => {
             log.log('/btpair', req.body);
-            let data = await this.pairBTDevice(req.body.mac_address);
-            let json = JSON.stringify(data);
+            let data = await this.pairBTDevice(req.body.address);
             log.log('result', data);
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
+            res.json(data);
         }));
 
-        router.post('/btunpair', asyncHandler(async (req, res) => {
-            log.log('/btunpair');
-            let data = await this.unpairBTDevice(req.body.mac_address);
-            let json = JSON.stringify(data);
+        app.post('/btunpair', asyncHandler(async (req, res) => {
+            log.log('/btunpair', req.body);
+            let data = await this.unpairBTDevice(req.body.address);
             log.log('result', data);
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
+            res.json(data);
+        }));
+
+        app.post('/btconnect', asyncHandler(async (req, res) => {
+            log.log('/btconnect', req.body);
+            let data = await this.connectBTDevice(req.body.address);
+            log.log('result', data);
+            res.json(data);
+        }));
+
+        app.post('/btdisconnect', asyncHandler(async (req, res) => {
+            log.log('/btdisconnect', req.body);
+            let data = await this.disconnectBTDevice(req.body.address);
+            log.log('result', data);
+            res.json(data);
         }));
     }
 
+
+    addSocketIOHandlers(io) {
+        io.on('connection', (socket) => {
+	    console.log('connection');
+            this.emitDevices(socket);
+        });
+
+        io.on('btrequestscan', () => {
+	    log.log('btrequestscan');
+            this.requestScan();
+        });
+
+        // io.on('btstopdiscovery', () => {
+	//     console.log('btstopdiscovery');
+        //     this.stopDiscovery();
+        // });
+    }
+
+
+    async requestScan() {
+	// ask for a discovery scan to be done
+	// enables discovery for 20 seconds, if not already running
+	// or renews the 20 second timer
+	// client should be configured to refresh request every 5 seconds
+	console.log('requestScan');
+	if (!this.discovery_timeout) {
+	    console.log('starting discovery scan');
+	    await this.startDiscovery();
+	    await this.emitDevices();
+	} else {
+	    cancelDiscoveryTimeout(this.discovery_timeout);
+	}
+	this.discovery_timeout = setTimeout( () => this.requestDiscoveyExpired(), REQUEST_DISCOVERY_TIMEOUT_MS);
+    }
+
+
+    cancelDiscoveryTimeout() {
+	if (this.discovery_timeout) {
+	    cancelTimeout(this.discovery_timeout);
+	    this.discovery_timeout = null;
+	}
+    }
+
+
+    async requestDiscoveryExpired() {
+	this.discovery_timeout = null;
+	await this.stopDiscovery();
+    }
+	
 
     async startDiscovery() {
-	// if (! await this.adapter.isDiscovering()) {
-	//     await this.adapter.startDiscovery();
-	// }
-	if (! await this.adapter.Discovering()) {
+	if (!await this.adapter.Discovering()) {
+	    console.log('starting bt discovery');
 	    await this.adapter.StartDiscovery();
+	    await this.getAllDevices();
+            await this.emitDevices();
 	}
-	clearTimeout(this.timeout);
-	this.timeout = setTimeout( () => this.checkDevices(), DEVICE_CHECK_INTERVAL_MS);
     }
 
 	
     async stopDiscovery() {
-	if (await this.adapter.isDiscovering()) {
-	    await this.adapter.stopDiscovery();
+	if (await this.adapter.Discovering()) {
+	    console.log('stopping bt discovery');
+	    await this.adapter.StopDiscovery();
+	    this.cancelDiscoveryTimeout();
 	}
-	clearTimeout(this.timeout);
-	this.timeout = undefined;
     }
 
     
-    async checkDevices() {
-	// let mac_addresses = await this.adapter.devices();
-	// mac_addresses = this.filterAddresses(mac_addresses);
-	// let devices_scan = new Map();
-	// for (let mac_address of mac_addresses) {
-	//     let props = await this.getProps(mac_address);
-	//     if (!props) {
-	// 	continue;
-	//     }
-	//     devices_scan.set(mac_address, props);
-	// }
+    async handleDeviceEvent(address, props) {
+	this.logNewDevice(props);
 
-	let allDeviceProps = await this.bluetooth.getAllDevicesProps();
-	let devices_scan = new Map();
-	for (let props of allDeviceProps) {
-	    if (this.filter_pi_only) {
-		let mac_address = props.Address;
-		let prefix = mac_address.split(':', 4).slice(0, 3).join(':');
-		prefix = prefix.toLowerCase();
-		let accept = false;
-		for (let pi_mac_prefix of PI_MAC_PREFIXES) {
-		    pi_mac_prefix = pi_mac_prefix.toLowerCase();
-		    if (prefix === pi_mac_prefix) {
-			accept = true;
-			break;
-		    }
-		}
-		if (!accept) {
-		    continue;
-		}
-	    }
+        if (this.devicesMap.has(address)) {
+            log.warn('hmmm. device object already exists in map?');
+        }
+        
+	let device = await this.getDevice(address, false).catch(console.error);
+	if (!device) {
+            log.error(`could not get device for ${address}!`);
+            return;
+        }
 
-	    devices_scan.set(props.Address, props);
-	}
-	
-	this.devices = devices_scan;
-	this.emit('devices', this.devices);
-	this.timeout = setTimeout( () => this.checkDevices(), DEVICE_CHECK_INTERVAL_MS);
+        this.emit('device', address, props);
+        await this.emitDevices();
     }
 
 
-    async getDeviceObject(mac_address) {
-	let device_object;
+    async handlePropertiesChangedEvent(address, props, invalidated) {
+	let filtered_props = {};
+	for (let prop in props) {
+	    if (PROPS_CHANGED_BLACKLIST.includes(prop)) {
+		continue;
+	    }
+	    filtered_props[prop] = props[prop];
+	}
+	if (Object.keys(filtered_props).length === 0) {
+	    return;
+	}
+	props = filtered_props;
+	    
+        log.debug('[CHG] Device:', address, props, invalidated);
+        await this.emitDevices();
+    }
+
+
+    async emitDevices(socket=null) {
+        if (!socket) {  // don't emit locally if we are just bootstrapping a new socket connection
+            this.emit('devices', this.devices);
+        }
+        if (this.io) {
+            let devices = await this.prepDevicesForJSON(this.devicesMap);
+	    //console.log('emit btdevices', { devices });
+            if (socket) {  // emit just to the new socket connection
+		console.log('btdevices to new socket');
+                socket.emit('btdevices', devices);
+            } else {  // emit to all socket connections
+		console.log('btdevices to all sockets');
+                this.io.emit('btdevices', devices);
+            }
+        }
+    }
+
+
+    async prepDevicesForJSON(devicesMap) {
+	//let prepped_devices = Object.fromEntries(devicesMap);  // FFFFFFFFFFFFFFF! -jon
+	let prepped_devices = {};
+	for (let [address, device] of devicesMap) {
+	    let prepped_device = {};
+	    let props;
+	    try {
+		props = await device.getProperties();
+	    } catch(err) {
+		//console.error(address, err);
+		// guessing this means the device has gone?
+		// so let's try this:
+		this.devicesMap.delete(address);
+		log.debug('[DEL]', address);
+	    }
+	    if (!props) {
+		continue;
+	    }
+	    // for (let prop in props) {
+	    // 	if (PROPS_JSON_WHITELIST.includes(prop)) {
+	    // 	    prepped_device[prop] = props[prop];
+	    // 	}
+	    // }
+	    prepped_device = props;
+	    prepped_devices[address] = prepped_device;
+        }
+        return prepped_devices;
+    }
+
+
+    logNewDevice(props) {
+        let format_props = (props) => { return `${props.Address}  ${props.Name || props.Address}  ${props.Paired}  ${props.Connected}  ${props.RSSI}` };
+	log.debug('[NEW] Device:', format_props(props));
+    }
+
+
+    async getDevice(address, warning=true) {
+	let device;
 	try {
-	    device_object = this.device_objects_cache.get(mac_address);
-	    if (!device_object) {
-		// device_object = await this.adapter.getDevice(mac_address);
-		device_object = await this.bluetooth.getDevice(mac_address);
-		this.device_objects_cache.set(mac_address, device_object);
-		device_object.on('PropertiesChanged', (props, invalidated) => {
-		    console.log('[CHG] Device:', mac_address, props, invalidated);
-		});
+	    device = this.devicesMap.get(address);
+	    if (!device) {
+		if (warning) {
+                    console.warn('odd. no device object in map. this should not happen?');
+		}
+	        device = await this.bluez.getDevice(address).catch(console.error);
+	        if (!device) {
+                    throw new Error(`could not get device for ${address}!`);
+                }
+	        device.on('PropertiesChanged', (...args) => this.handlePropertiesChangedEvent(address, ...args));
+                this.devicesMap.set(address, device);
 	    }
 	} catch(err) {
 	    console.warn('error getting device object', err);
 	}
-	return device_object;
+	return device;
     }
 
 
-    async getProps(mac_address) {
-	let device_object = await this.getDeviceObject(mac_address);
-	let props;
-	if (device_object) {
-	    try {
-		props = await device_object.helper.props();
-		props.mac_address = mac_address;
-	    } catch(err) {
-		console.warn('error getting props from device object', err);
+    async getAllDevices() {
+	let allProps = this.bluez.getAllDevicesProps();
+	for (let props of allProps) {
+	    if (!this.devicesMap.get(props.Address)) {
+		this.logNewDevice(props);
+		this.getDevice(props.Address, false);
 	    }
 	}
-	return props;
+	return this.devicesMap;
     }
-	
 
-    filterAddresses(mac_addresses) {
+
+    filterAddresses(addresses) {
 	let filtered_addresses = [];
 	if (!this.filter_pi_only) {
-	    filtered_addresses = mac_addresses;
+	    filtered_addresses = addresses;
 	} else {
-	    for (let mac_address of mac_addresses) {
-		let prefix = mac_address.split(':', 4).slice(0, 3).join(':');
+	    for (let address of addresses) {
+		let prefix = address.split(':', 4).slice(0, 3).join(':');
 		prefix = prefix.toLowerCase();
-		for (let pi_mac_prefix of PI_MAC_PREFIXES) {
-		    pi_mac_prefix = pi_mac_prefix.toLowerCase();
-		    if (prefix === pi_mac_prefix) {
-			filtered_addresses.push(mac_address);
+		for (let pi_address_prefix of PI_ADDRESS_PREFIXES) {
+		    pi_address_prefix = pi_address_prefix.toLowerCase();
+		    if (prefix === pi_address_prefix) {
+			filtered_addresses.push(address);
 			break;
 		    }
 		}
 	    }
-	    mac_addresses = filtered_addresses;
+	    addresses = filtered_addresses;
 	}
-	return mac_addresses;
+	return addresses;
     }
 
 
-    async solo(operation) {
+    async soloOperation(operation) {
 	if (this.operation_pending) {
 	    throw new Error('one at a time');
 	}
 	this.operation_pending = true;
 	try {
 	    await operation();
+	    this.operation_pending = false;
 	} catch(err) {
 	    this.operation_pending = false;
 	    throw err;
 	}
-	this.operation_pending = false;
     }
 
 
-    async pairBTDevice(mac_address) {
-	this.solo( async () => {
-	    let device_object = await this.getDeviceObject(mac_address);
-	    // let props = await this.getProps(mac_address);
-	    // if (!device_object || !props) {
-	    // 	return;
-	    // }
-
-	    //console.log('pairing', mac_address, props.Name, 'Paired: ', props.Paired, 'Connected: ', props.Connected);
-	    console.log('pairing', mac_address, device_object.Name, 'Paired: ', device_object.Paired, 'Connected: ', device_object.Connected);
-	    //let result = await device_object.pair();
-	    let result = await device_object.Pair();
-	    console.log('done. result:', result);
-
-	    // let finalProps = await this.getProps(mac_address);
-	    // console.log({ finalProps });
+    async pairBTDevice(address) {
+	this.soloOperation( async () => {
+	    let device = await this.getDevice(address);
+	    log.log('pairing', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
+	    let result = await device.Pair();
+	    log.log('done. result:', result);
 	});
     }
 
 
-    async unpairBTDevice(mac_address) {
-	this.solo( async () => {
-	    let device_object = await this.getDeviceObject(mac_address);
-	    // let props = await this.getProps(mac_address);
-	    // if (!device_object || !props) {
-	    //     return;
-	    // }
-
-	    //console.log('unpairing', mac_address, props.Name, 'Paired: ', props.Paired, 'Connected: ', props.Connected);
-	    console.log('unpairing', mac_address, device_object.Name, 'Paired: ', device_object.Paired, 'Connected: ', device_object.Connected);
-	    // let result = await device_object.cancelPair();
-            // let result = await this.adapter.removeDevice(mac_address);
-            let result = await this.adapter.RemoveDevice(device_object);
-	    console.log('done. result:', result);
-
-	    // let finalProps = await this.getProps(mac_address);
-	    // console.log({ finalProps });
-	});
-    }
-
-
-    async XconnectBTDevice(mac_address) {
-	this.solo( async () => {
-	    let device_object = await this.getDeviceObject(mac_address);
-	    let props = await this.getProps(mac_address);
-	    if (!device_object || !props) {
-	    	return;
-	    }
-
-	    console.log('1');
-	    console.log('connecting', mac_address, props.Name, 'Paired: ', props.Paired, 'Connected: ', props.Connected);
-
-	    console.log('stopping discovery');
-	    // await this.stopDiscovery();
-	    // console.log('pausing');
-	    await new Promise((resolve) => setTimeout(resolve, 2000));
-
+    async unpairBTDevice(address) {
+	this.soloOperation( async () => {
+	    let device = await this.getDevice(address);
+	    log.log('unpairing', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
 	    let result;
-	    console.log('2');
-	    if (!props.Paired) {
-		console.log('3');
-		console.log('pairing', mac_address, '...');
-		result = await device_object.pair();
-		console.log('done. result:', result);
-	    }
-	    console.log('4');
-	    console.log('connecting...');
-	    console.log('5');
-	    try {
-		console.log('5.1');
-		result = await device_object.connect();
-		console.log('5.2');
-	    } catch(err) {
-		console.error('error while connecting', err);
-	    }
-	    console.log('6');
-	    console.log('done. result:', result);
-
-	    console.log('7');
-	    let finalProps = await this.getProps(mac_address);
-	    console.log({ finalProps });
-	    console.log('8');
-	    // this.startDiscovery();
+            result = await device.CancelPairing();
+	    log.log('result:', result);
+            result = await this.adapter.RemoveDevice(device);
+	    log.log('done. result:', result);
 	});
     }
 
 
-    async connectBTDevice(mac_address) {
-	this.solo( async () => {
-	    let device_object = await this.getDeviceObject(mac_address);
+    async connectBTDevice(address) {
+	this.soloOperation( async () => {
+	    let device = await this.getDevice(address);
 
 	    console.log('1');
-	    console.log('connecting', mac_address, device_object.Name, 'Paired: ', device_object.Paired, 'Connected: ', device_object.Connected);
+	    console.log('connecting', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
 
 	    //console.log('stopping discovery');
 	    // await this.stopDiscovery();
@@ -366,10 +349,10 @@ class Bluetooth extends EventEmitter {
 
 	    let result;
 	    console.log('2');
-	    if (!device_object.Paired) {
+	    if (!device.Paired) {
 		console.log('3');
-		console.log('pairing', mac_address, '...');
-		result = await device_object.Pair();
+		console.log('pairing', address, '...');
+		result = await device.Pair();
 		console.log('done. result:', result);
 	    }
 	    console.log('4');
@@ -377,7 +360,7 @@ class Bluetooth extends EventEmitter {
 	    console.log('5');
 	    try {
 		console.log('5.1');
-		result = await device_object.Connect();
+		result = await device.Connect();
 		console.log('5.2');
 	    } catch(err) {
 		console.error('error while connecting', err);
@@ -386,81 +369,54 @@ class Bluetooth extends EventEmitter {
 	    console.log('done. result:', result);
 
 	    console.log('7');
-	    // let finalProps = await this.getProps(mac_address);
-	    // console.log({ finalProps });
-	    // console.log('8');
 	    // // this.startDiscovery();
 	});
     }
 
 
-    async disconnectBTDevice(mac_address) {
-	this.solo( async () => {
-	    let device_object = await this.getDeviceObject(mac_address);
-	    // let props = await this.getProps(mac_address);
-	    // if (!device_object || !props) {
-	    // 	return;
-	    // }
-
-	    //console.log('disconnecting', mac_address, props.Name, 'Paired: ', props.Paired, 'Connected: ', props.Connected);
-	    console.log('disconnecting', mac_address, device_object.Name, 'Paired: ', device_object.Paired, 'Connected: ', device_object.Connected);
-	    // let result = await device_object.disconnect();
-	    let result = await device_object.Disconnect();
+    async disconnectBTDevice(address) {
+	this.soloOperation( async () => {
+	    let device = await this.getDevice(address);
+	    console.log('disconnecting', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
+	    let result = await device.Disconnect();
 	    console.log('done. result:', result);
-
-	    // let finalProps = await this.getProps(mac_address);
-	    // console.log({ finalProps });
 	});
     }
 }
 
 
-// async function main() {
-//     console.log('start');
-//     let bluetooth = new Bluetooth();
-//     await bluetooth.init();
-//     //await bluetooth.startDiscovery();
+async function main() {
+    console.log('start');
+    let bluetooth = new Bluetooth();
+    await bluetooth.init();
+    await bluetooth.startDiscovery();
 
-//     let last_devices;
-//     let format_props = (props) => { return `${props.mac_address}  ${props.Name}  ${props.Paired}  ${props.Connected}  ${props.RSSI}` };
-//     // let format_props = (props) => {
-//     // 	let str = '';
-//     // 	for (let [key, value] of Object.entries(props)) {
-//     // 	    if (str) {
-//     // 		str += '  ';
-//     // 	    }
-//     // 	    str += `${key}:${value}`;
-//     // 	}
-//     // 	return str;
-//     // }
-//     bluetooth.on('devices', async (devices) => {
-// 	if (!last_devices) {
-// 	    for (let [mac, props] of devices) {
-// 		console.log(format_props(props));
-// 		if (props.Name === 'LIT0001') {
-// 		    await bluetooth.connectBTDevice(props.mac_address);
-// 		}
-// 	    }
-// 	} else {
-// 	    for (let [key, props] of last_devices) {
-// 		if (!devices.has(key)) {
-// 		    console.log('[-]', format_props(props));
-// 		}
-// 	    }
-// 	    for (let [key, props] of devices) {
-// 		if (!last_devices.has(key)) {
-// 		    console.log('[+]', format_props(props));
-// 		    if (props.Name === 'LIT0001') {
-// 			await bluetooth.connectBTDevice(props.mac_address);
-// 		    }
-// 		} else if (props.Connected !== last_devices.get(key).Connected) {
-// 		    console.log(props.Connected ? '[1]' : '[0]', format_props(props));
-// 		}
-// 	    }
-// 	}
-// 	last_devices = new Map(devices);
-//     });
-// }
+    let format_props = (props) => {
+    	let str = '';
+    	for (let [key, value] of Object.entries(props)) {
+    	    if (str) {
+    		str += '  ';
+    	    }
+    	    str += `${key}:${value}`;
+    	}
+    	return str;
+    }
+
+    let found_it = false;
+    bluetooth.on('devices', async (devices) => {
+        if (!found_it) {
+	    for (let [address, device] of devices) {
+		if (props.Name === 'LIT0001') {
+                    console.log('found it!');
+                    found_it = true;
+                    console.log(format_props(device));
+                    console.log('attempting to connect to it!')
+		    await bluetooth.connectBTDevice(device.Address);
+		}
+	    }
+        }
+    });
+}
 
 
 if (require.main === module) {

@@ -35,7 +35,7 @@ class WebServer {
         app.use(bodyParser.urlencoded({ extended: true }));
 
         let server = http.createServer(app);
-        let io = socketio(server);
+        let io = new socketio.Server(server, { cors:{origin: '*'} });
 
         server.listen(PORT, BIND, () => {
             log.log(`server started on port ${PORT}`);
@@ -52,13 +52,12 @@ class WebServer {
         });
 
         let bluetooth = new Bluetooth();
-        bluetooth.init(app, (err) => {
-            if (err) {
-                log.error(err);
-            } else {
-                log.log('bluetooth listening');
-            }
-        });
+        try {
+            await bluetooth.init(app, io);
+            log.log('bluetooth class listening');
+        } catch(err) {
+            log.error(err);
+        }
 
         missionPrograms.addRoutes(app, io);
 
@@ -71,7 +70,7 @@ class WebServer {
         let missionID = new MissionID();
         await missionID.init(app, io);
 
-      if (os.platform() === 'darwin') {
+	if (os.platform() === 'darwin') {
           const { createProxyMiddleware } = require('http-proxy-middleware');
           app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
           app.use(serveStatic(STATIC_DIR));
