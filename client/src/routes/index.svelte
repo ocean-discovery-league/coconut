@@ -4,7 +4,7 @@
   import Page from '$lib/Page.svelte';
   import MediaManager from '$lib/../pages/MediaManager.svelte';
   import MissionID from '$lib/../pages/MissionID.svelte';
-  import WiFiSetup from '$lib/../pages/WiFiSetup.svelte';
+  import NetworkSetup from '$lib/../pages/NetworkSetup.svelte';
   import VideoSetup from '$lib/../pages/VideoSetup.svelte';
   import PhotoSetup from '$lib/../pages/PhotoSetup.svelte';
   import MissionISetup from '$lib/../pages/MissionISetup.svelte';
@@ -141,8 +141,8 @@
   </Page>
 
 
-  <Page title="WiFi Setup" id="wifi_setup">
-    <WiFiSetup/>
+  <Page title="Network Setup" id="network-setup">
+    <NetworkSetup/>
   </Page>
 
 

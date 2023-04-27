@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { getSocketIO } from '$lib/utils';
-  import { dev } from '$app/env';
+  //import { dev } from '$app/env';
   import Button from '$lib/Button.svelte';
 
   let socket;
@@ -15,10 +15,10 @@
   onMount(() => {
       let root = '';
       let iframe_root = window.location.protocol + '//' + window.location.hostname;
-      if (dev) {  // for dev on mac
-          root = 'http://192.168.10.1';
-          iframe_root = root;
-      }
+      // if (dev) {  // for dev on mac
+      //     root = 'http://192.168.10.1';
+      //     iframe_root = root;
+      // }
       iframe_src = iframe_root + '/html/preview.php';
       download_all_url        = root + '/download/all';
       download_logs_url       = root + '/download/logs';
