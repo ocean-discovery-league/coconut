@@ -7,6 +7,7 @@ const path = require('path');
 const util = require('util');
 const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
+const asyncHandler = require('express-async-handler');
 
 const MEDIA_DIR =
       (os.platform() === 'darwin')
@@ -30,13 +31,12 @@ let log = {
 
 class UploadAll extends EventEmitter {
     async init(app, io) {
-        this.app = app;
-        this.io = io;
         this.uploading = false;
         this.uploading_cancel = false;
         if (app) {
             this.addRoutes(app);
         }
+        this.io = io;
         fs.watch(MEDIA_DIR, { persistent: false, encoding: 'utf8'}, (t, f) => this.onDirChange(t, f));
 
         this.io.on('connection', (socket) => {
@@ -50,7 +50,7 @@ class UploadAll extends EventEmitter {
 
 
     addRoutes(app) {
-        app.post('/uploadall', async (req, res) => {
+        app.post('/api/v1/uploadall', asyncHandler(async (req, res) => {
             if (!this.uploading) {
                 this.uploading = true;
                 this.uploading_cancel = false;
@@ -62,12 +62,12 @@ class UploadAll extends EventEmitter {
                         text = 'Uploading canceled';
                     }
                     res.end(text);
-                    this.io.emit('uploadfinished', text);
+                    this.io.emit('uploadall/finished', text);
                     log.log('uploadall finished');
                 } catch(err) {
                     log.error('uploadall error', err);
                     res.status(500).send(err.message);
-                    this.io.emit('uploaderror', err.message);
+                    this.io.emit('uploadall/error', err.message);
                     log.log('uploadall finished with error');
                 }
                 this.uploading = false;
@@ -75,9 +75,9 @@ class UploadAll extends EventEmitter {
                 log.error(`uploadall already uploading`);
                 res.status(500).send('already uploading');
             }
-        });
+        }));
 
-        app.post('/uploadall_cancel', async (req, res) => {
+        app.post('/api/v1/uploadall/cancel', asyncHandler(async (req, res) => {
             if (this.uploading) {
                 log.log('canceling upload...');
                 this.uploading_cancel = true;
@@ -91,14 +91,14 @@ class UploadAll extends EventEmitter {
                 log.error(`uploadall already canceling`);
                 res.status(500).send('already canceling uploading');
             }
-        });
+        }));
     }
 
 
     async uploadAll() {
         this.upload_filelists = await this.getFileLists();
         this.upload_filecounts = this.countFiles(this.upload_filelists);
-        this.io.emit('uploadstarted', { filecounts: this.upload_filecounts });
+        this.io.emit('uploadaall/started', { filecounts: this.upload_filecounts });
 
         // ordered from smallest to largest (txt, jpg, mp4):
         let file_ext_type_ids = [
@@ -220,7 +220,7 @@ class UploadAll extends EventEmitter {
 
             let filecounts = this.countFiles(filelists);
             log.debug('emit', filecounts);
-            this.io.emit('filecounts', { filecounts });
+            this.io.emit('uploadall/filecounts', { filecounts });
         }
     }
 
@@ -328,7 +328,7 @@ class UploadAll extends EventEmitter {
             this.lastProgressUpdate = { n, of, ext, filecounts: this.upload_filecounts };
         }
         if (this.lastProgressUpdate) {
-            this.io.emit('uploadprogress', this.lastProgressUpdate);
+            this.io.emit('uploadall/progress', this.lastProgressUpdate);
         }
     }
 

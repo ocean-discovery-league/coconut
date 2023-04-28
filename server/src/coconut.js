@@ -1,14 +1,13 @@
 'use strict';
 
 const os = require('os');
-const WebServer = require('./web-server');
-const MissionManager = require('./mission-manager');
-const MissionPrograms = require('./mission-programs');
-const DevProxyServer = require('./DevProxyServer.js');
+const WebServer = require('./WebServer');
+const MissionManager = require('./MissionManager');
+const MissionPrograms = require('./MissionPrograms');
 
 
 async function main() {
-    if (os.platform === 'linux') {
+    if (os.platform() === 'linux') {
         let missionPrograms = new MissionPrograms();
         await missionPrograms.init();
 
@@ -19,6 +18,7 @@ async function main() {
         let webServer = new WebServer();
         await webServer.init(missionPrograms);
     } else {
+	const DevProxyServer = require('./DevProxyServer.js');
         let devProxyServer = new DevProxyServer();
         await devProxyServer.init();
     }
@@ -26,4 +26,3 @@ async function main() {
 
 
 main();
-

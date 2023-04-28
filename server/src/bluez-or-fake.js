@@ -38,7 +38,7 @@ class FakeDevice extends EventEmitter {
 
 
 let Bluez;
-if (os.platform === 'linux') {
+if (os.platform() === 'linux') {
     Bluez = require('bluez');
 } else {
     console.warn('using fake Bluez module!');

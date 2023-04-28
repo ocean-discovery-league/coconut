@@ -3,6 +3,7 @@
 const fs = require('fs');
 const fsP = require('fs').promises;
 const path = require('path');
+const asyncHandler = require('express-async-handler');
 
 
 class MissionPrograms {
@@ -101,8 +102,8 @@ class MissionPrograms {
             this.syncDiagramFromMissionParams(mission);
         } catch(err) {
             if (err.code === 'ENOENT') {
-		console.log('no params file for this mission found at', paramsfilename);
-	    } else {
+                console.log('no params file for this mission found at', paramsfilename);
+            } else {
                 console.error(`error reading mission params file ${paramsfilename}`, err);
             }
         }
@@ -116,7 +117,7 @@ class MissionPrograms {
 
 
     addRoutes(app, io) {
-        app.get('/mission/diagram/:name', async (req, res) => {
+        app.get('/api/v1/missionprograms/diagram/:name', asyncHandler(async (req, res) => {
             try {
                 let mission = await this.load(req.params.name);
                 if (mission && mission.diagram) {
@@ -131,11 +132,11 @@ class MissionPrograms {
                 console.error('get missionid error', err);
                 res.status(500).send(err.message);
             }
-        });
+        }));
 
         io.on('connect', (socket) => {
             console.log('connect (mission-programs)');
-            socket.on('updateparam', async (data) => {
+            socket.on('missionprograms/updateparam', async (data) => {
                 let mission_name = data.programid;
                 let mission = this.missions[mission_name];
                 if (mission) {

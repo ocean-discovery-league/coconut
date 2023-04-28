@@ -2,16 +2,20 @@
 
 const os = require('os');
 const http = require('http');
+const cors = require('cors');
 const express = require('express');
+const asyncHandler = require('express-async-handler');
 const bodyParser = require('body-parser');
 const serveStatic = require('serve-static');
 const socketio = require('socket.io');
-const cors = require('cors');
-const DownloadAll = require('./download-all.js');
-const UploadAll = require('./upload-all.js');
-const MissionID = require('./mission-id.js');
-const WiFi = require('./wifi.js');
+require('express-async-error');
+
+const DownloadAll = require('./DownloadAll.js');
+const UploadAll = require('./UploadAll.js');
+const MissionID = require('./MissionID.js');
+const WiFi = require('./WiFi.js');
 const Bluetooth = require('./Bluetooth.js');
+const Rover = require('./Rover.js');
 
 const PORT = 6252;
 //const BIND = '127.0.0.1';
@@ -43,21 +47,10 @@ class WebServer {
         server.setTimeout(99999 * 1000);
 
         let wifi = new WiFi();
-        wifi.init(app, (err) => {
-            if (err) {
-                log.error(err);
-            } else {
-                log.log('wifi listening');
-            }
-        });
+        await wifi.init(app, io).catch(log.error);
 
         let bluetooth = new Bluetooth();
-        try {
-            await bluetooth.init(app, io);
-            log.log('bluetooth class listening');
-        } catch(err) {
-            log.error(err);
-        }
+        await bluetooth.init(app, io).catch(log.error);
 
         missionPrograms.addRoutes(app, io);
 
@@ -70,13 +63,26 @@ class WebServer {
         let missionID = new MissionID();
         await missionID.init(app, io);
 
-	if (os.platform() === 'darwin') {
-          const { createProxyMiddleware } = require('http-proxy-middleware');
-          app.get('*', createProxyMiddleware({ target: 'http://localhost:3000', ws: true, changeOrigin: true }));
-          app.use(serveStatic(STATIC_DIR));
-        } else {
-          app.use(serveStatic(CLIENT_DIR));
-        }
+        let rover = new Rover();
+        await rover.init(app, io, wifi, bluetooth);
+
+        app.get('/b', asyncHandler(async (req, res) => {
+            log.log('making bookmark');
+            let text = await this.getBookmarkDataURL();
+            res.setHeader('Content-Type', 'text/plain');
+            res.end(text);
+        }));
+
+        app.use(serveStatic(CLIENT_DIR));
+    }
+
+
+    async getBookmarkDataURL() {
+        let html = await fsP.readFile(STATIC_DIR + '/ping.html', 'utf8');
+        let buffer = Buffer.from(html, 'utf8');
+        let base64 = buffer.toString('base64');
+        //log.log('base64', base64);
+        return `data:text/html;base64,${base64}`;
     }
 }
 

@@ -5,6 +5,7 @@ const fs = require('fs');
 const fsP = require('fs').promises;
 const path = require('path');
 const util = require('util');
+const asyncHandler = require('express-async-handler');
 const { version } = require('../../package.json');
 
 // const MEDIA_DIR = '/var/www/html';
@@ -26,7 +27,6 @@ let log = {
 
 class MissionID {
     async init(app) {
-        this.app = app;
         if (app) {
             this.addRoutes(app);
         }
@@ -34,7 +34,7 @@ class MissionID {
 
 
     addRoutes(app) {
-        app.get('/missionid', async (req, res) => {
+        app.get('/api/v1/missionid', asyncHandler(async (req, res) => {
             try {
                 let missionid = await this.getMissionId();
                 let json = JSON.stringify(missionid);
@@ -44,9 +44,9 @@ class MissionID {
                 log.error('get missionid error', err);
                 res.status(500).send(err.message);
             }
-        });
+        }));
 
-        app.post('/missionid', async (req, res) => {
+        app.post('/api/v1/missionid', asyncHandler(async (req, res) => {
             try {
                 log.log('connect', req.body);
                 let saved = await this.saveMissionId(req.body.username, req.body.missionid);
@@ -57,7 +57,7 @@ class MissionID {
             } catch(err) {
                 res.status(500).send(err.message);
             }
-        });
+        }));
     }
 
 

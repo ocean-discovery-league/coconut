@@ -6,7 +6,7 @@ const tail = require('tail');
 const byline = require('byline');
 const byclock = require('./byclock.js');
 const sensors = require('./sensors.js');
-const sensorLog = require('./sensor-log.js');
+const SensorLog = require('./SensorLog.js');
 
 const NS_PER_SEC = 1e9;
 const NS_PER_MS = 1000000;
@@ -29,86 +29,86 @@ function elapsed_ms(start, end) {
 
 class SensorInput {
     async init() {
-	this.sensors = {};
-	this.sensorLog = new sensorLog();
-	this.count = 0;
+        this.sensors = {};
+        this.sensorLog = new SensorLog();
+        this.count = 0;
     }
 
 
     async start(filename, simulated, speedFactor) {
-	if (!filename) {
-	    throw new Error('filename required');
-	}
+        if (!filename) {
+            throw new Error('filename required');
+        }
 
-	if (!simulated) {
-	    let options = {
-		fromBeginning: true,
-		//logger: console,
-	    };
-	    this.readstream = new tail.Tail(filename, options);
-	    this.readstream.on('line', (line) => this.processLine(line));
-	    this.readstream.on('error', (err) => log.error(`tail error on file ${filename}`, err));
-	} else {
-	    this.notail = true;
-	    log.log('simulating using pre-recorded sensor data from', filename);
-	    let first_monoclock = await this.sensorLog.extractFirstMonoclock(filename);
-	    log.log('first monoclock in sensor data is', first_monoclock);
-	    if (speedFactor && speedFactor !== 1.0) {
-		log.log('speed factor is', speedFactor);
-	    }
-	    this.filestream = fs.createReadStream(filename, 'utf8');
-	    this.lineStream = byline.createStream(this.filestream);
-	    this.clockStream = new byclock.ClockStream(first_monoclock, speedFactor);
+        if (!simulated) {
+            let options = {
+                fromBeginning: true,
+                //logger: console,
+            };
+            this.readstream = new tail.Tail(filename, options);
+            this.readstream.on('line', (line) => this.processLine(line));
+            this.readstream.on('error', (err) => log.error(`tail error on file ${filename}`, err));
+        } else {
+            this.notail = true;
+            log.log('simulating using pre-recorded sensor data from', filename);
+            let first_monoclock = await this.sensorLog.extractFirstMonoclock(filename);
+            log.log('first monoclock in sensor data is', first_monoclock);
+            if (speedFactor && speedFactor !== 1.0) {
+                log.log('speed factor is', speedFactor);
+            }
+            this.filestream = fs.createReadStream(filename, 'utf8');
+            this.lineStream = byline.createStream(this.filestream);
+            this.clockStream = new byclock.ClockStream(first_monoclock, speedFactor);
 
-	    this.readstream = this.lineStream.pipe(this.clockStream);
-	    this.readstream.on('data', (line) => this.processLine(line));
-	    this.readstream.on('error', (err) => log.error(`stream error on file ${filename}`, err));
-	}
+            this.readstream = this.lineStream.pipe(this.clockStream);
+            this.readstream.on('data', (line) => this.processLine(line));
+            this.readstream.on('error', (err) => log.error(`stream error on file ${filename}`, err));
+        }
     }
 
 
     stop() {
-	if (this.readstream) {
-	    try {
-		this.readstream.destroy();
-	    } catch {}
-	    delete this.readstream;
-	}
-	if (this.clockStream) {
-	    try {
-		this.clockStream.destroy();
-	    } catch {}
-	    delete this.clockStream;
-	}
-	if (this.lineStream) {
-	    try {
-		this.lineStream.destroy();
-	    } catch {}
-	    delete this.lineStream;
-	}
+        if (this.readstream) {
+            try {
+                this.readstream.destroy();
+            } catch {}
+            delete this.readstream;
+        }
+        if (this.clockStream) {
+            try {
+                this.clockStream.destroy();
+            } catch {}
+            delete this.clockStream;
+        }
+        if (this.lineStream) {
+            try {
+                this.lineStream.destroy();
+            } catch {}
+            delete this.lineStream;
+        }
     }
 
 
     processLine(line) {
         line = String(line);
-	if (line && line.startsWith('DEID') || line.startsWith('MACA')) {
-	    return;
-	}
-	this.count++;
-	if (this.count % 1000 === 0) { log.log('.') };
-	let [id, reading] = this.sensorLog.parseLine(line);
-	this.monoclock = reading.monoclock;
-	this.update(id, reading);
+        if (line && line.startsWith('DEID') || line.startsWith('MACA')) {
+            return;
+        }
+        this.count++;
+        if (this.count % 1000 === 0) { log.log('.') };
+        let [id, reading] = this.sensorLog.parseLine(line);
+        this.monoclock = reading.monoclock;
+        this.update(id, reading);
     }
 
 
     update(id, reading) {
-	let sensor = this.sensors[id];
-	if (!sensor) {
-	    sensor = new sensors.Sensor(id);
-	    this.sensors[id] = sensor;
-	}
-	sensor.update(reading);
+        let sensor = this.sensors[id];
+        if (!sensor) {
+            sensor = new sensors.Sensor(id);
+            this.sensors[id] = sensor;
+        }
+        sensor.update(reading);
     }
 }
 
@@ -128,6 +128,6 @@ async function tests() {
 if (require.main === module) {
     tests();
 }
-	
+        
 
 module.exports = SensorInput;

@@ -5,6 +5,7 @@ const fsP = require('fs').promises;
 const path = require('path');
 const zlib = require('zlib');
 const { EventEmitter } = require('events');
+const asyncHandler = require('express-async-handler');
 
 const archiver = require('archiver');
 
@@ -25,13 +26,12 @@ let log = {
 
 class DownloadAll extends EventEmitter {
     async init(app, io) {
-        this.app = app;
-        this.io = io;
         // this.downloading = false;
         // this.downloading_cancel = false;
         if (app) {
             this.addRoutes(app);
         }
+        this.io = io;
 
         // this.io.on('connection', (socket) => {
         //     log.log('client connected');
@@ -44,17 +44,17 @@ class DownloadAll extends EventEmitter {
 
 
     addRoutes(app) {
-        app.get('/download/:select/:format', async (req, res) => {
+        app.get('/api/v1/download/:select/:format', asyncHandler(async (req, res) => {
             await this.download(req, res, req.params.select, req.params.format);
-        });
-        app.get('/download/:select', async (req, res) => {
+        }));
+        app.get('/api/v1/download/:select', asyncHandler(async (req, res) => {
             await this.download(req, res, req.params.select);
-        });
-        app.get('/download', async (req, res) => {
+        }));
+        app.get('/api/v1/download', asyncHandler(async (req, res) => {
             await this.download(req, res);
-        });
+        }));
 
-        // app.post('/download_cancel', async (req, res) => {
+        // app.post('/api/v1/download/cancel', asyncHandler(async (req, res) => {
         //     if (this.downloading) {
         //         log.log('canceling download...');
         //         this.downloading_cancel = true;
@@ -65,7 +65,7 @@ class DownloadAll extends EventEmitter {
         //         log.error(`download already canceling`);
         //         res.status(500).send('already canceling downloading');
         //     }
-        // });
+        // }));
     }
 
     async download(req, res, select='all', format='zip') {
@@ -109,17 +109,15 @@ class DownloadAll extends EventEmitter {
         archive.on('warning', (err) => {
             if (err.code === 'ENOENT') {
                 log.error('warning: file missing while archiving', err);
-                this.io.emit('downloaderror', err.message);
             } else {
-                //throw err;
                 log.error('warning while archiving', err);
-                this.io.emit('downloaderror', err.message);
             }
+            this.io.emit('downloadall/error', err.message);
         });
 
         archive.on('error', function(err) {
             log.error('error while archiving', err);
-            this.io.emit('downloaderror', err.message);
+            this.io.emit('downloadall/error', err.message);
             throw err;
         });
 
@@ -129,7 +127,7 @@ class DownloadAll extends EventEmitter {
 
         archive.on('progress', (event) => {
             //log.log('downloadprogress', event);
-            this.io.emit('downloadprogress', event);
+            this.io.emit('downloadall/progress', event);
         });
 
         let dirname = (new Date(Date.now())).toISOString();

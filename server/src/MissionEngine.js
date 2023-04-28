@@ -1,8 +1,8 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-const PulseClock = require('./pulse-clock.js');
-const RaspiMJPEG = require('./raspimjpeg.js');
+const PulseClock = require('./PulseClock.js');
+const RaspiMJPEG = require('./RaspiMJPEG.js');
 
 const PULSE_CLOCK_INTERVAL_MS = 300;
 const MINUTE_MS = 1000 * 60;
@@ -196,13 +196,14 @@ class MissionEngine extends EventEmitter {
 
 async function tests() {
     log = console;
-    const missions = require('../../missions');
+    const mission1 = require(`../../missions/mission1.js`);
     let name = 'mission1';
-    if (!(name in missions)) {
-        throw new Error(`unknown mission name ${name}`);
-    }
+    // if (!(name in missions)) {
+    //     throw new Error(`unknown mission name ${name}`);
+    // }
 
-    let mission = missions[name];
+    // let mission = missions[name];
+    let mission = mission1;
     let missionEngine = new MissionEngine();
     await missionEngine.init();
     log.log(`running mission ${name}`);

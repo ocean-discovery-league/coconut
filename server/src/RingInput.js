@@ -97,7 +97,7 @@ async function tests() {
     ringInput.on('change', (ring) => {
         report(ring, 'ring changed');
     });
-    log.log('to test: spin that ring! you have 20 seconds');
+    log.log('to test: spin that ring! you have 20 seconds to comply');
     setTimeout(() => log.log('exiting'), 20 * 1000);
 }
 
