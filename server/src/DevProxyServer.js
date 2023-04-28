@@ -45,7 +45,18 @@ class DevProxyServer {
         //console.warn(`using CLIENT_PROXY_ADDRESS ${clientProxy} for server api calls`);
         console.warn(`using MAKANIU_PROXY_ADDRESS ${serverProxy} for server api calls`);
 
-        app.use(createProxyMiddleware(
+        app.use('/api/*', createProxyMiddleware(
+            { target: serverProxy,
+              ws: true,
+              changeOrigin: true,  // needed?
+              onProxyReqWs: (proxyReq, req, socket) => {
+                  socket.on('error', (error) => {
+                      console.warn('Websocket error.', error.message);
+                  });
+              }
+            }));
+
+        app.use('/b', createProxyMiddleware(
             { target: serverProxy,
               ws: true,
               changeOrigin: true,  // needed?
