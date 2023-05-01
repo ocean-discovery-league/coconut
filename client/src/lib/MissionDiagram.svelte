@@ -1,7 +1,7 @@
 <script>
   import * as go from 'gojs';
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import { fetch200 } from '$lib/utils.js';
+  import { fetch200 } from '$lib/misc.js';
 
   export let programid;
   export let height;

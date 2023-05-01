@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { fetch200, getSocketIO } from '$lib/utils.js';
+  import { fetch200, getSocketIO } from '$lib/misc.js';
   //import { dev } from '$app/env'
   import Button from '$lib/Button.svelte';
 

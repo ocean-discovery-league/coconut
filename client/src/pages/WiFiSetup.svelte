@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   //import { dev } from '$app/env'
   import Button from '$lib/Button.svelte';
-  import { fetch200 } from '$lib/utils.js';
+  import { fetch200 } from '$lib/misc.js';
 
   let form_ssid;
   //let form_password; // 'type' attribute cannot be dynamic if input uses two-way binding

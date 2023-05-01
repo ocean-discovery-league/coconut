@@ -1,5 +1,5 @@
 import * as go from 'gojs';
-import { fetch200 } from '$lib/utils.js';
+import { fetch200 } from '$lib/misc.js';
 
 const MINLENGTH = 350;  // this controls the minimum length of any swimlane
 const MINBREADTH = 70;  // this controls the minimum breadth of any non-collapsed swimlane

@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import PageBody from '$lib/PageBody.svelte';
   import Button from '$lib/Button.svelte';
-  import { fetch200 } from '$lib/utils.js';
+  import { fetch200 } from '$lib/misc.js';
 
   let title = 'Maka Niu';
   let username;

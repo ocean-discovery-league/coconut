@@ -1,8 +1,8 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { fetch200, getSocketIO } from '$lib/utils.js';
   //import { dev } from '$app/env';
   import Button from '$lib/Button.svelte';
+  import { fetch200, getSocketIO } from '$lib/misc.js';
 
   let socket;
   let iframe_src;
