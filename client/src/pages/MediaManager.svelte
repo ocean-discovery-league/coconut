@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { getSocketIO } from '$lib/utils';
+  import { fetch200, getSocketIO } from '$lib/utils.js';
   //import { dev } from '$app/env';
   import Button from '$lib/Button.svelte';
 
@@ -67,7 +67,7 @@
               uploading_summary = false;
               canceling = false;
               canceled = false;
-              let response = await fetch(uploadall_request);
+              let response = await fetch200(uploadall_request);
               
               uploading = false;
               if (response.ok) {
@@ -91,7 +91,7 @@
           try {
               console.warn('upload all canceled!');
               canceling = true;
-              let response = await fetch(uploadallcancel_request);
+              let response = await fetch200(uploadallcancel_request);
               
               uploading = false;
               if (response.ok) {

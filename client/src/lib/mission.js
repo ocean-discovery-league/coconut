@@ -1,4 +1,5 @@
 import * as go from 'gojs';
+import { fetch200 } from '$lib/utils.js';
 
 const MINLENGTH = 350;  // this controls the minimum length of any swimlane
 const MINBREADTH = 70;  // this controls the minimum breadth of any non-collapsed swimlane
@@ -15,9 +16,9 @@ export default class Mission {
   async init(programid) {
     this.programid = programid;
     let request = new Request(`/api/v1/missionprograms/diagram/${programid}`);
-    let response = await fetch(request);
-    let diagram = await response.json();
-    this.program = diagram;
+    let response = await fetch200(request);
+    let program = await response.json();
+    this.program = program;
     this.diagram_div_id = this.programid + '-diagram';
     this.label_div_id   = this.programid + '-label';
     this.toolbox_div_id = this.programid + '-toolbox';

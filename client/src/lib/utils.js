@@ -13,3 +13,12 @@ export function getSocketIO() {
     }
     return socket;
 }
+
+
+export async function fetch200(...args) {
+    let response = await fetch(...args);
+    if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}`);
+    }
+    return response;
+}

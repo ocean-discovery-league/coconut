@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import PageBody from '$lib/PageBody.svelte';
   import Button from '$lib/Button.svelte';
+  import { fetch200 } from '$lib/utils.js';
 
   let title = 'Maka Niu';
   let username;
@@ -17,7 +18,7 @@
 
   onMount(async () => {
       missionid_request = new Request('/api/v1/missionid');
-      let response = await fetch(missionid_request);
+      let response = await fetch200(missionid_request);
       let data = await response.json();
 
       username  = data.username  || '';
@@ -45,7 +46,7 @@
 
 	  let data = { username, missionid };
           let json = JSON.stringify(data);
-	  let response = await fetch(missionid_request, {
+	  let response = await fetch200(missionid_request, {
 	      method: 'POST',
 	      body: json,
 	      headers: {
