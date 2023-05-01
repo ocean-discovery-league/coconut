@@ -34,41 +34,41 @@ class DevProxyServer {
 
         const { createProxyMiddleware } = require('http-proxy-middleware');
 
-        let clientProxy = process.env.CLIENT_PROXY_ADDRESS || 'http://localhost:5173';
-        let serverProxy = process.env.MAKANIU_PROXY_ADDRESS;
+        let clientProxyAddress = process.env.CLIENT_PROXY_ADDRESS || 'http://localhost:5173';
+        let serverProxyAddress = process.env.MAKANIU_PROXY_ADDRESS;
 
-        if (!serverProxy) {
+        if (!serverProxyAddress) {
             throw new Error('MAKANIU_PROXY_ADDRESS environment variable required!');
         }
 
         console.warn(`running in dev proxy server mode!`);
-        //console.warn(`using CLIENT_PROXY_ADDRESS ${clientProxy} for server api calls`);
-        console.warn(`using MAKANIU_PROXY_ADDRESS ${serverProxy} for server api calls`);
+        console.warn(`using MAKANIU_PROXY_ADDRESS ${serverProxyAddress} for server api calls`);
 
         let server_routes = [
-            '/api/*',
-            '/socket.io*',
-            '/html/*',  // the rasp cam pi web php media manager thing
-            '/b'        // bookmark setup convenience
+            // '/api/*',
+            //'/socket.io/*',
+            "/my-custom-path*",
+            // '/html/*',  // the rasp cam pi web php media manager thing
+            // '/b'        // bookmark setup convenience
         ];
         app.use(server_routes, createProxyMiddleware(
-            { target: serverProxy,
+            { target: serverProxyAddress,
               ws: true,
               changeOrigin: true,  // needed?
               onProxyReqWs: (proxyReq, req, socket) => {
                   socket.on('error', (error) => {
-                      console.warn('Websocket error.', error.message);
+                      console.warn('Websocket eror.', error.message);
                   });
               }
             }));
 
         app.use(createProxyMiddleware(
-            { target: clientProxy,
+            { target: clientProxyAddress,
               ws: true,
               changeOrigin: true,  // needed?
               onProxyReqWs: (proxyReq, req, socket) => {
                   socket.on('error', (error) => {
-                      console.warn('Websocket error.', error.message);
+                      console.warn('Websocket errror.', error.message);
                   });
               }
             }));
