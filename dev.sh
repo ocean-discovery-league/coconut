@@ -26,6 +26,12 @@ if [[ `uname -s` == "Darwin" ]]; then
     wait
 else
     # run the server dev environment on the Maka-Niu
+
+    if [[ $UID != "0" ]]; then
+	echo "you want to run this as root with sudo"
+	exit 1;
+    fi
+
     echo "running the server dev environment"
     INTERFACE="wlan0"
 
