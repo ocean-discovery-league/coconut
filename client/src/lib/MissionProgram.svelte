@@ -3,7 +3,7 @@
   import MissionDiagram from '$lib/MissionDiagram.svelte';
   import CloseButton from '$lib/CloseButton.svelte';
   import SteppedLogRangeSlider from '$lib/SteppedLogRangeSlider.svelte';
-  import { getSocketIO } from '$lib/utils';
+  import { getSocketIO } from '$lib/misc.js';
 
   export let programid;
   export let height = '790px';

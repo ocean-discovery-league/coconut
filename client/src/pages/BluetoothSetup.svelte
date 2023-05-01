@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { getSocketIO } from '$lib/utils';
+  import { fetch200, getSocketIO } from '$lib/misc.js';
   //import { dev } from '$app/env'
   import Button from '$lib/Button.svelte';
 
@@ -152,7 +152,7 @@
               let data = {
                   address: selected_btdevice.Address
               };
-              let response = await fetch(btpair_request, {
+              let response = await fetch200(btpair_request, {
                   method: 'POST',
                   body: JSON.stringify(data),
                   headers: {
@@ -174,7 +174,7 @@
               let data = {
                   address: selected_btdevice.Address
               };
-              let response = await fetch(btunpair_request, {
+              let response = await fetch200(btunpair_request, {
                   method: 'POST',
                   body: JSON.stringify(data),
                   headers: {
@@ -197,7 +197,7 @@
               let data = {
                   address: selected_btdevice.Address
               };
-              let response = await fetch(btconnect_request, {
+              let response = await fetch200(btconnect_request, {
                   method: 'POST',
                   body: JSON.stringify(data),
                   headers: {
@@ -221,7 +221,7 @@
               let data = {
                   address: selected_btdevice.Address
               };
-              let response = await fetch(btdisconnect_request, {
+              let response = await fetch200(btdisconnect_request, {
                   method: 'POST',
                   body: JSON.stringify(data),
                   headers: {

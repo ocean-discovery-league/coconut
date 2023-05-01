@@ -7,10 +7,16 @@ VIRTUALIZE_ACTIVATE_VIA_SCRIPT=1 source ./activate
 
 if [[ `uname -s` == "Darwin" ]]; then
     # run the client dev environment on a mac
+
+    if [[ -z $MAKANIU_PROXY_ADDRESS ]]; then
+        echo "MAKANIU_PROXY_ADDRESS env variable required!"
+        exit 1;
+    fi
+
     echo "running the client dev environment"
     cleanup() {
-	kill 0
-	exit
+        kill 0
+        exit
     }
 
     trap cleanup INT
@@ -28,8 +34,8 @@ else
     # run the server dev environment on the Maka-Niu
 
     if [[ $UID != "0" ]]; then
-	echo "you want to run this as root with sudo"
-	exit 1;
+        echo "you want to run this as root with sudo"
+        exit 1;
     fi
 
     echo "running the server dev environment"

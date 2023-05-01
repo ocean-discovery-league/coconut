@@ -1,6 +1,7 @@
 <script>
   import * as go from 'gojs';
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+  import { fetch200 } from '$lib/misc.js';
 
   export let programid;
   export let height;
@@ -14,7 +15,6 @@
   const dispatch = createEventDispatcher();
   
   let currentSelection;
-  let program;
   let diagram;
   let diagram_div_id = programid + '-diagram';
 
@@ -34,9 +34,9 @@
 
   onMount( async ()=> {
     let request = new Request(`/api/v1/missionprograms/diagram/${programid}`);
-    let response = await fetch(request);
-    let diagram = await response.json();
-    initDiagram(diagram);
+    let response = await fetch200(request);
+    let program = await response.json();
+    initDiagram(program);
   });
 
 
@@ -100,7 +100,7 @@
   }
 
 
-  function initDiagram() {
+  function initDiagram(program) {
     var $ = go.GraphObject.make;
 
     diagram =

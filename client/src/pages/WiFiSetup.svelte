@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   //import { dev } from '$app/env'
   import Button from '$lib/Button.svelte';
+  import { fetch200 } from '$lib/misc.js';
 
   let form_ssid;
   //let form_password; // 'type' attribute cannot be dynamic if input uses two-way binding
@@ -83,7 +84,7 @@
   async function monitorStatus() {
       try {
           if (isOnScreen()) {
-              let response = await fetch(status_request);
+              let response = await fetch200(status_request);
               let data = await response.json();
               if (data && !data.retry && Object.keys(data).length !== 0) {
                   showStatus(data);
@@ -92,7 +93,7 @@
       } catch(err) {
           console.error(err);
       }
-
+      statusTimeout = setTimeoutAnimationFrame(monitorStatus, STATUS_INTERVAL);
   }
 
 
@@ -119,7 +120,7 @@
   async function monitorScan() {
       if (isOnScreen()) {
           try {
-              let response = await fetch(scan_request);
+              let response = await fetch200(scan_request);
               let data = await response.json();
               //console.log(data);
               if (data && !data.retry && Object.keys(data).length !== 0) {
@@ -184,7 +185,7 @@
               //password: form_password
               password: password
           };
-          let response = await fetch(connect_request, {
+          let response = await fetch200(connect_request, {
               method: 'POST',
               body: JSON.stringify(data),
               headers: {
@@ -203,7 +204,7 @@
       event.preventDefault();
       disconnecting = true;
       try {
-          await fetch(disconnect_request, {
+          await fetch200(disconnect_request, {
               method: 'POST',
           });
       } catch(err) {
