@@ -34,7 +34,7 @@ class DevProxyServer {
 
         const { createProxyMiddleware } = require('http-proxy-middleware');
 
-        let clientProxy = process.env.CLIENT_PROXY_ADDRESS || 'http://localhost:3000';
+        let clientProxy = process.env.CLIENT_PROXY_ADDRESS || 'http://localhost:5173';
         let serverProxy = process.env.MAKANIU_PROXY_ADDRESS;
 
         if (!serverProxy) {
