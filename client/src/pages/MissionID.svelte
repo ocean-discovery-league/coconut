@@ -11,12 +11,12 @@
   let python_version = '• • •';
   let version = '• • •';
   let save_button;
+
   let missionid_request;
 
 
   onMount(async () => {
-      missionid_request = new Request('/missionid');
-  
+      missionid_request = new Request('/api/v1/missionid');
       let response = await fetch(missionid_request);
       let data = await response.json();
 

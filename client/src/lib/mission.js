@@ -14,8 +14,9 @@ export default class Mission {
 
   async init(programid) {
     this.programid = programid;
-    let request = await fetch(`/mission/diagram/${programid}`);
-    let diagram = await request.json();
+    let request = new Request(`/api/v1/missionprograms/diagram/${programid}`);
+    let response = await fetch(request);
+    let diagram = await response.json();
     this.program = diagram;
     this.diagram_div_id = this.programid + '-diagram';
     this.label_div_id   = this.programid + '-label';

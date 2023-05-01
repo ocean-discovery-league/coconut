@@ -33,8 +33,9 @@
   }
 
   onMount( async ()=> {
-    let request = await fetch(`/mission/diagram/${programid}`);
-    program = await request.json();
+    let request = new Request(`/api/v1/missionprograms/diagram/${programid}`);
+    let response = await fetch(request);
+    let diagram = await response.json();
     initDiagram(diagram);
   });
 

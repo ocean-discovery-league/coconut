@@ -32,19 +32,11 @@
       // socket.onAny( (eventName, ...args) => {
       //     console.log('socket event', eventName, ...args);
       // });
-      socket.on('btdevices', (...args) => handle_btdevices_event(...args));
-      btpair_request = new Request('/btpair');
-      btunpair_request = new Request('/btunpair');
-      btconnect_request = new Request('/btconnect');
-      btdisconnect_request = new Request('/btdisconnect');
-
-      // let proxy = process.env.MAKANIU_PROXY_ADDRESS;
-      // if (proxy) {
-      //     btpair_request = new Request(`${proxy}/btpair`);
-      //     btunpair_request = new Request(`${proxy}/btunpair`);
-      //     btconnect_request = new Request(`${proxy}/btconnect`);
-      //     btdisconnect_request = new Request(`${proxy}/btdisconnect`);
-      // }
+      socket.on('bluetooth/devices', (...args) => handle_btdevices_event(...args));
+      btpair_request = new Request('/api/v1/bluetooth/pair');
+      btunpair_request = new Request('/api/v1/bluetooth/unpair');
+      btconnect_request = new Request('/api/v1/bluetooth/connect');
+      btdisconnect_request = new Request('/api/v1/bluetooth/disconnect');
 
       requestScan();
   });
@@ -116,8 +108,8 @@
   async function requestScan() {
       try {
           if (isOnScreen()) {
-              console.log('btrequestscan');
-              socket.emit('btrequestscan');
+              console.log('bluetooth/requestscan');
+              socket.emit('bluetooth/requestscan');
           } else {
               handle_btdevices_event();
           }

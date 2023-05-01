@@ -13,24 +13,22 @@
   let upload_progress = '0%';
 
   onMount(() => {
-      let root = '';
       let iframe_root = window.location.protocol + '//' + window.location.hostname;
-      // if (dev) {  // for dev on mac
-      //     root = 'http://192.168.10.1';
-      //     iframe_root = root;
-      // }
+      if (window.location.port) {
+          iframe_root += ':' + window.location.port;
+      }
       iframe_src = iframe_root + '/html/preview.php';
-      download_all_url        = root + '/download/all';
-      download_logs_url       = root + '/download/logs';
-      uploadall_request       = new Request(root + '/uploadall', {method: 'POST'});
-      uploadallcancel_request = new Request(root + '/uploadall_cancel', {method: 'POST'});
+      download_all_url        = '/api/v1/download/all';
+      download_logs_url       = '/api/v1/download/logs';
+      uploadall_request       = new Request('/api/v1/uploadall', {method: 'POST'});
+      uploadallcancel_request = new Request('/api/v1/uploadall/cancel', {method: 'POST'});
 
       socket = getSocketIO();
-      socket.on('filecounts',     (data) => update_file_counts(data));
-      socket.on('uploadstarted',  (data) => update_upload_started(data));
-      socket.on('uploadprogress', (data) => update_upload_progress(data));
-      socket.on('uploadfinished', (data) => update_upload_finished(false, data));
-      socket.on('uploaderror',    (data) => update_upload_finished(data, false));
+      socket.on('uploadall/filecounts', (data) => update_file_counts(data));
+      socket.on('uploadall/started',    (data) => update_upload_started(data));
+      socket.on('uploadall/progress',   (data) => update_upload_progress(data));
+      socket.on('uploadall/finished',   (data) => update_upload_finished(false, data));
+      socket.on('uploadall/error',      (data) => update_upload_finished(data, false));
   });
 
   let uploading = false;

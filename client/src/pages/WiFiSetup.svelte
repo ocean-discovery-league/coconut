@@ -29,18 +29,10 @@
   let visible_networks = false;
 
   onMount(() => {
-      scan_request = new Request('/scan', {mode: 'no-cors'});
-      status_request = new Request('/status');
-      connect_request = new Request('/connect');
-      disconnect_request = new Request('/disconnect');
-
-      // let proxy = process.env.MAKANIU_PROXY_ADDRESS;
-      // if (proxy) {
-      //     scan_request = new Request(`${proxy}/scan`);
-      //     status_request = new Request(`${proxy}/status`);
-      //     connect_request = new Request(`${proxy}/connect`);
-      //     disconnect_request = new Request(`${proxy}/disconnect`);
-      // }
+      scan_request = new Request('/api/v1/wifi/scan', {mode: 'no-cors'});
+      status_request = new Request('/api/v1/wifi/status');
+      connect_request = new Request('/api/v1/wifi/connect');
+      disconnect_request = new Request('/api/v1/wifi/disconnect');
 
       monitorStatus();
       monitorScan();

@@ -45,18 +45,13 @@ class DevProxyServer {
         //console.warn(`using CLIENT_PROXY_ADDRESS ${clientProxy} for server api calls`);
         console.warn(`using MAKANIU_PROXY_ADDRESS ${serverProxy} for server api calls`);
 
-        app.use('/api/*', createProxyMiddleware(
-            { target: serverProxy,
-              ws: true,
-              changeOrigin: true,  // needed?
-              onProxyReqWs: (proxyReq, req, socket) => {
-                  socket.on('error', (error) => {
-                      console.warn('Websocket error.', error.message);
-                  });
-              }
-            }));
-
-        app.use('/b', createProxyMiddleware(
+        let server_routes = [
+            '/api/*',
+            '/socket.io*',
+            '/html/*',  // the rasp cam pi web php media manager thing
+            '/b'        // bookmark setup convenience
+        ];
+        app.use(server_routes, createProxyMiddleware(
             { target: serverProxy,
               ws: true,
               changeOrigin: true,  // needed?

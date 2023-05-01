@@ -112,7 +112,7 @@ class Bluetooth extends EventEmitter {
             await this.startDiscovery();
             await this.emitDevices();
         } else {
-            cancelDiscoveryTimeout(this.discovery_timeout);
+            this.cancelDiscoveryTimeout(this.discovery_timeout);
         }
         this.discovery_timeout = setTimeout( () => this.requestDiscoveyExpired(), REQUEST_DISCOVERY_TIMEOUT_MS);
     }
@@ -120,7 +120,7 @@ class Bluetooth extends EventEmitter {
 
     cancelDiscoveryTimeout() {
         if (this.discovery_timeout) {
-            cancelTimeout(this.discovery_timeout);
+            clearTimeout(this.discovery_timeout);
             this.discovery_timeout = null;
         }
     }
@@ -130,7 +130,7 @@ class Bluetooth extends EventEmitter {
         this.discovery_timeout = null;
         await this.stopDiscovery();
     }
-        
+
 
     async startDiscovery() {
         if (!await this.adapter.Discovering()) {
@@ -141,7 +141,7 @@ class Bluetooth extends EventEmitter {
         }
     }
 
-        
+
     async stopDiscovery() {
         if (await this.adapter.Discovering()) {
             console.log('stopping bt discovery');
@@ -150,14 +150,14 @@ class Bluetooth extends EventEmitter {
         }
     }
 
-    
+
     async handleDeviceEvent(address, props) {
         this.logNewDevice(props);
 
         if (this.devicesMap.has(address)) {
             log.warn('hmmm. device object already exists in map?');
         }
-        
+
         let device = await this.getDevice(address, false).catch(console.error);
         if (!device) {
             log.error(`could not get device for ${address}!`);
@@ -181,7 +181,7 @@ class Bluetooth extends EventEmitter {
             return;
         }
         props = filtered_props;
-            
+
         log.debug('[CHG] Device:', address, props, invalidated);
         await this.emitDevices();
     }
@@ -236,7 +236,7 @@ class Bluetooth extends EventEmitter {
 
 
     logNewDevice(props) {
-        let format_props = (props) => { return `${props.Address}  ${props.Name || props.Address}  ${props.Paired}  ${props.Connected}  ${props.RSSI}` };
+        let format_props = (props) => { return `${props.Address}  ${props.Name || props.Address}  ${props.Paired}  ${props.Connected}  ${props.RSSI}`; };
         log.debug('[NEW] Device:', format_props(props));
     }
 
@@ -400,17 +400,17 @@ async function main() {
             str += `${key}:${value}`;
         }
         return str;
-    }
+    };
 
     let found_it = false;
     bluetooth.on('devices', async (devices) => {
         if (!found_it) {
             for (let [address, device] of devices) {
-                if (props.Name === 'LIT0001') {
+                if (device.Name === 'LIT0001') {
                     console.log('found it!');
                     found_it = true;
                     console.log(format_props(device));
-                    console.log('attempting to connect to it!')
+                    console.log('attempting to connect to it!');
                     await bluetooth.connectBTDevice(device.Address);
                 }
             }
