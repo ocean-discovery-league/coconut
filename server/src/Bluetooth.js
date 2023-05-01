@@ -48,7 +48,7 @@ class Bluetooth extends EventEmitter {
 
         this.bluez.on('device', (...args) => this.handleDeviceEvent(...args));
         this.bluez.on('interface-removed', (...args) => console.error('we got an interface-removed event on a device??', ...args));
-        this.startDiscovery();  // FIXME
+        //this.startDiscovery();  // FIXME remove this
     }
 
 
