@@ -35,57 +35,32 @@ class WiFi {
 
 
     addRoutes(app) {
-        app.get('/api/v1/wifi/scan', async (req, res) => {
-            let json = '{}';
-            try {
-                let data = await this.getScan();
-                json = JSON.stringify(data);
-            } catch(err) {
-                log.error(err);
-            }
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
-        });
+        app.get('/api/v1/wifi/scan', asyncHandler(async (req, res) => {
+            let data = await this.getScan();
+            res.json(data);
+        }));
 
-        app.get('/api/v1/wifi/signal', async (req, res) => {
-            let json = '{}';
-            try {
-                let data = await this.wireless.exec('signal_poll');
-                json = JSON.stringify(data);
-            } catch(err) {
-                log.error(err);
-            }
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
-        });
+        app.get('/api/v1/wifi/status', asyncHandler(async (req, res) => {
+            let data = await this.getStatus();
+            res.json(data);
+        }));
 
-        app.post('/api/v1/wifi/connect', async (req, res) => {
-            let json = '{}';
-            try {
-                log.log('connect', req.body);
-                let data = await this.connectToWiFi(req.body.ssid, req.body.password);
-                json = JSON.stringify(data);
-                log.log('result', data);
-            } catch(err) {
-                log.error(err);
-            }
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
-        });
+        app.get('/api/v1/wifi/signal', asyncHandler(async (req, res) => {
+            let data = await this.wireless.exec('signal_poll');
+            res.json(data);
+        }));
 
-        app.post('/api/v1/wifi/disconnect', async (req, res) => {
-            let json = '{}';
-            try {
-                log.log('disconnect');
-                let data = await this.disconnectWiFi();
-                json = JSON.stringify(data);
-                log.log('result', data);
-            } catch(err) {
-                log.error(err);
-            }
-            res.setHeader('Content-Type', 'application/json');
-            res.end(json);
-        });
+        app.post('/api/v1/wifi/connect', asyncHandler(async (req, res) => {
+            log.log('connect', req.body);
+            let data = await this.connectToWiFi(req.body.ssid, req.body.password);
+            res.json(data);
+        }));
+
+        app.post('/api/v1/wifi/disconnect', asyncHandler(async (req, res) => {
+            log.log('disconnect');
+            let data = await this.disconnectWiFi();
+            res.json(data);
+        }));
     }
 
 
