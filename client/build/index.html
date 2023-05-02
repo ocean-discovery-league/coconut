@@ -7,31 +7,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script src="/socket.io/socket.io.js"></script>
+
     <meta http-equiv="content-security-policy" content="">
-	<link rel="modulepreload" href="/_app/immutable/start-c6491db3.js">
-	<link rel="modulepreload" href="/_app/immutable/chunks/index-c11b1f17.js">
-	<link rel="modulepreload" href="/_app/immutable/chunks/index-b5c0fcc1.js">
+		<link rel="modulepreload" href="/_app/immutable/entry/start.303c400f.js">
+		<link rel="modulepreload" href="/_app/immutable/chunks/index.6d27a7f7.js">
+		<link rel="modulepreload" href="/_app/immutable/chunks/singletons.b1227513.js">
+		<link rel="modulepreload" href="/_app/immutable/chunks/index.70425a4b.js">
+		<link rel="modulepreload" href="/_app/immutable/entry/app.08b71c45.js">
   </head>
 
   <body>
     <div id="svelte">
-		<script type="module" data-sveltekit-hydrate="45h">
-		import { set_public_env, start } from "/_app/immutable/start-c6491db3.js";
+			<script>
+				{
+					__sveltekit_10fvkk4 = {
+						base: "",
+						env: {}
+					};
 
-		set_public_env({});
+					const element = document.currentScript.parentElement;
 
-		start({
-			target: document.querySelector('[data-sveltekit-hydrate="45h"]').parentNode,
-			paths: {"base":"","assets":""},
-			session: {},
-			route: true,
-			spa: true,
-			trailing_slash: "never",
-			hydrate: null
-		});
-	</script></div>
-
-<!--    <script src="/socket.io/socket.io.js"></script> -->
-    <script src="/my-custom-path/socket.io.js"></script>
+					Promise.all([
+						import("/_app/immutable/entry/start.303c400f.js"),
+						import("/_app/immutable/entry/app.08b71c45.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+				}
+			</script>
+		</div>
   </body>
 </html>
