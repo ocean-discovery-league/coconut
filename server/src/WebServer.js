@@ -39,7 +39,7 @@ class WebServer {
         app.use(bodyParser.urlencoded({ extended: true }));
 
         let server = http.createServer(app);
-        let io = new socketio.Server(server, { cors:{origin: '*'}, path: "/my-custom-path/" });
+        let io = new socketio.Server(server, { cors:{origin: '*'}, /*maxHttpBufferSize: 1e8*/ });
 
         server.listen(PORT, BIND, () => {
             log.log(`server started on port ${PORT}`);
