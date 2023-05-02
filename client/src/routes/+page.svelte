@@ -1,7 +1,9 @@
- <script>
+<script>
   import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
+  import { getUnitType, parseHashParams } from '$lib/misc.js';
   import Page from '$lib/Page.svelte';
+  import EndPage from '$lib/EndPage.svelte';
   import MediaManager from '$lib/../pages/MediaManager.svelte';
   import MissionID from '$lib/../pages/MissionID.svelte';
   import NetworkSetup from '$lib/../pages/NetworkSetup.svelte';
@@ -10,6 +12,7 @@
   import MissionISetup from '$lib/../pages/MissionISetup.svelte';
   import MissionIISetup from '$lib/../pages/MissionIISetup.svelte';
 
+  let unittype = 'MKN';
   // let scrollX;
   // let scrollY;
   let isScrollingInterval;
@@ -24,22 +27,14 @@
   //   //scrollY = 0;
   // }
   
-  onMount(() => {
+  onMount(async () => {
+      unittype = await getUnitType();
+      console.log('unittype', unittype);
       //isScrollingInterval = setInterval(isScrolling, 100);
 
-      if (window.location.hash.substr(1)) {
-          parseHash();
-          if (hashParams.page) {
-              let n = Number(hashParams.page);
-              let sections = document.querySelectorAll('section');
-              if (sections[n-1]) {
-                  sections[n-1].scrollIntoView(true);
-                  //sections[n-1].focus();
-              }
-          }
-      } else {
-          window.location.hash = "page=2";
-          let n = 2;
+      let hashParams = parseHashParams('#page=2');
+      if (hashParams.has('page')) {
+          let n = Number(hashParams.get('page'));
           let sections = document.querySelectorAll('section');
           if (sections[n-1]) {
               sections[n-1].scrollIntoView(true);
@@ -60,19 +55,6 @@
           document.onkeydown = undefined;
       }
   });
-
-  let hashParams = {};
-  function parseHash() {
-      let hash = window.location.hash.substr(1);
-      hashParams = hash.split('&').reduce(function (result, item) {
-          let parts = item.split('=');
-          if (typeof parts[1] === 'undefined') {
-              parts[1] = true;
-          }
-          result[parts[0]] = parts[1];
-          return result;
-      }, {});
-  }
 
   function handle_key_press(event) {
       let keycode = typeof event !== 'undefined' ? event.keyCode : event.which;
@@ -129,42 +111,49 @@
 
 <!-- <svelte:window bind:scrollX={scrollX} bind:scrollY={scrollY}/> -->
 
+    
 <div id="sectionholder">
-
-  <Page title="Media Manager">
-    <MediaManager/>
-  </Page>
-
-
-  <Page title="Mission ID">
-    <MissionID/>
-  </Page>
-
-
-  <Page title="Network Setup" id="network-setup">
-    <NetworkSetup/>
-  </Page>
+  <EndPage/>
+  {#if unittype === 'LIT'}
+    <Page title="Network Setup" id="network-setup" {unittype}>
+      <NetworkSetup/>
+    </Page>
+  {:else}
+    <Page title="Media Manager">
+      <MediaManager/>
+    </Page>
 
 
-  <Page title="Video Setup">
-    <VideoSetup/>
-  </Page>
+    <Page title="Mission ID">
+      <MissionID/>
+    </Page>
 
 
-  <Page title="Photo Setup">
-    <PhotoSetup/>
-  </Page>
+    <Page title="Network Setup" id="network-setup">
+      <NetworkSetup/>
+    </Page>
 
 
-  <Page title="Mission &nbsp;I">
-    <MissionISetup/>
-  </Page>
+    <Page title="Video Setup">
+      <VideoSetup/>
+    </Page>
 
 
-  <Page title="Mission &nbsp;II">
-    <MissionIISetup/>
-  </Page>
+    <Page title="Photo Setup">
+      <PhotoSetup/>
+    </Page>
 
+
+    <Page title="Mission &nbsp;I">
+      <MissionISetup/>
+    </Page>
+
+
+    <Page title="Mission &nbsp;II">
+      <MissionIISetup/>
+    </Page>
+  {/if}
+  <EndPage/>
 </div>
 
 
