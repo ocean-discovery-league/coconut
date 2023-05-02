@@ -1,6 +1,6 @@
  <script>
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '$app/env';
+  import { browser } from '$app/environment';
   import Page from '$lib/Page.svelte';
   import MediaManager from '$lib/../pages/MediaManager.svelte';
   import MissionID from '$lib/../pages/MissionID.svelte';

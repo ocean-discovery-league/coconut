@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  //import { dev } from '$app/env'
+  //import { dev } from '$app/environment'
   import Button from '$lib/Button.svelte';
   import { fetch200 } from '$lib/misc.js';
 

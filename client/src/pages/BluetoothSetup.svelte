@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { fetch200, getSocketIO } from '$lib/misc.js';
-  //import { dev } from '$app/env'
+  //import { dev } from '$app/environment'
   import Button from '$lib/Button.svelte';
 
   const REQUEST_SCAN_INTERVAL = 5 * 1000;  // 5 seconds

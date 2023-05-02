@@ -5,8 +5,7 @@ let socket;
 export function getSocketIO() {
     if (!socket) {
         console.log('my socket');
-        // socket = io.connect();
-        socket = io({ path: "/my-custom-path/" });
+        socket = io.connect();
         socket.on('error', console.error);
         socket.on('connect', () => {
             console.log('web socket connected');
