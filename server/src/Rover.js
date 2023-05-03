@@ -16,6 +16,8 @@ const SSH_TCP_PORT = 22;
 const HAS_ROS = (os.arch() === 'x64');
 const ROS_URL = 'ws://localhost:9090';
 const ROS_CONNECT_TIMEOUT = 5 * 1000;
+const DEFAULT_DEVICETYPE = 'MKN';
+const VALID_DEVICETYPES = ['MKN', 'LIT', 'NUC', 'PI'];
 
 const log = console;
 
@@ -33,6 +35,11 @@ class Rover {
 
 
     addRoutes(app) {
+        app.get('/api/v1/rover/devicetype', (req, res) => {
+	    let devicetype = this.getDeviceType();
+            res.json({ devicetype });
+        });
+
         app.get('/api/v1/rover/ping', (req, res) => {
             res.json({ ping: true });
         });
@@ -52,6 +59,42 @@ class Rover {
             let data = await this.getStatus();
             res.json(data);
         }));
+    }
+
+
+    getDeviceType() {  // this should be it's own class someday
+	let devicetype;
+	let hostname = os.hostname();
+	let prefix = hostname.substr(0, 3);
+	prefix = prefix.toUpperCase();
+	if (VALID_DEVICETYPES.includes(prefix)) {
+	    devicetype = prefix;
+	}
+
+	if (!devicetype) {
+	    let found = hostname.match(/^[^-]+[-][^-]+[-]([a-z]+)[-][^-]+$/i);  // e.g. s02-n00-nuc-102
+	    if (found && found[1]) {
+		let clause3 = found[1].toUpperCase();
+		if (VALID_DEVICETYPES.includes(clause3)) {
+		    devicetype = clause3;
+		}
+	    }
+	}
+
+	if (!devicetype) {
+	    if (os.arch() === 'arm') {
+		// for now assume it's a pi
+		if (VALID_DEVICETYPES.includes('PI')) {
+		    devicetype = 'PI';
+		}
+	    }
+	}
+
+	if (!devicetype) {
+	    devicetype = FALLBACK_DEVICETYPE;
+	}
+
+	return devicetype;
     }
 
 
