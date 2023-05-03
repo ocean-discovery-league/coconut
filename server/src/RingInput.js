@@ -27,6 +27,23 @@ class RingInput extends EventEmitter {
     }
 
 
+    addRoutes(app) {
+        app.get('/api/v1/ringinput/position', (req, res) => {
+	    let position = this.getModenum();
+            let data = { position };
+            res.json(data);
+        });
+    }
+
+
+    addSocketIOHandlers(io) {
+	this.on('change', () => {
+	    let position = this.getModenum();
+	    io.emit('ringinput/position', position);
+	});	    
+    }
+
+
     async onStatusChange(eventType, filename) {
         log.debug('ring status file change event', eventType, filename);
         let status = await this.readStatus();
