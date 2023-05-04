@@ -134,7 +134,7 @@ class MissionPrograms {
             }
         }));
 
-        io.on('connect', (socket) => {
+        io.on('connect', (socket) => {  // shouldn't this be 'connection'? FIXME
             console.log('connect (mission-programs)');
             socket.on('missionprograms/updateparam', async (data) => {
                 let mission_name = data.programid;

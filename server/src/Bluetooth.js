@@ -15,7 +15,7 @@ const PI_ADDRESS_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01', '84
 const PROPS_CHANGED_BLACKLIST = ['ManufacturerData'];
 const REQUEST_DISCOVERY_TIMEOUT_MS = 20 * 1000;  // 20 seconds, client configured to refresh request every 5 seconds
 const REFRESH_PAIRABLE_TIMEOUT_MS = 60 * 1000;  // once a minute
-const RING_POSITION_NETWORK = 1;
+const RING_POSITION_NETWORK = '1';  // note: '1', not 1
 
 const log = console;
 
@@ -44,81 +44,83 @@ class Bluetooth extends EventEmitter {
         this.discovery_timeout = null;
 
         this.bluez.on('device', (...args) => this.handleDeviceEvent(...args));
-        this.bluez.on('interface-removed', (...args) => console.error('we got an interface-removed event on a device??', ...args));
+        this.bluez.on('interface-removed', (...args) => log.error('we got an interface-removed event on a device??', ...args));
 
 	let devicetype = getDeviceType();
 	if (devicetype === 'LIT') {
 	    this.watchRingToEnablePairable(ringInput);
 	}
+    }
 
-        //this.startDiscovery();  // FIXME remove this
+
+    addWebAPI(app, io) {
+	this.io = io;
+	this.addRoutes(app);
+	this.addSocketIOHandlers(io);
     }
 
 
     addRoutes(app) {
         app.post('/api/v1/bluetooth/pair', asyncHandler(async (req, res) => {
-            log.log('/btpair', req.body);
-            let data = await this.pairBTDevice(req.body.address);
+            log.log('bluetooth/pair', req.body);
+            let data = await this.pairDevice(req.body.address);
             log.log('result', data);
             res.json(data);
         }));
 
         app.post('/api/v1/bluetooth/unpair', asyncHandler(async (req, res) => {
-            log.log('/btunpair', req.body);
-            let data = await this.unpairBTDevice(req.body.address);
+            log.log('bluetooth/unpair', req.body);
+            let data = await this.unpairDevice(req.body.address);
             log.log('result', data);
             res.json(data);
         }));
 
         app.post('/api/v1/bluetooth/connect', asyncHandler(async (req, res) => {
-            log.log('/btconnect', req.body);
-            let data = await this.connectBTDevice(req.body.address);
+            log.log('bluetooth/connect', req.body);
+            let data = await this.connectDevice(req.body.address);
             log.log('result', data);
             res.json(data);
         }));
 
         app.post('/api/v1/bluetooth/disconnect', asyncHandler(async (req, res) => {
-            log.log('/btdisconnect', req.body);
-            let data = await this.disconnectBTDevice(req.body.address);
+            log.log('bluetooth/disconnect', req.body);
+            let data = await this.disconnectDevice(req.body.address);
             log.log('result', data);
             res.json(data);
         }));
     }
 
 
-	addSocketIOHandlers(io) {
-	    this.io = io;
+    addSocketIOHandlers(io) {
         io.on('connection', (socket) => {
-            console.log('connection');
+            log.log('socket io connection');
             this.emitDevices(socket);
-        });
 
-        io.on('bluetooth/requestscan', () => {
-            log.log('btrequestscan');
-            this.requestScan();
-        });
+            socket.on('bluetooth/requestdiscovery', () => {
+		this.requestDiscovery();
+            });
 
-        // io.on('bluetooth/stopdiscovery', () => {
-        //     console.log('btstopdiscovery');
-        //     this.stopDiscovery();
-        // });
+            // socket.on('bluetooth/stopdiscovery', () => {
+            //     log.log('bluetooth/stopdiscovery');
+            //     this.stopDiscovery();
+            // });
+	});
     }
 
 
-    async requestScan() {
+    async requestDiscovery() {
         // ask for a discovery scan to be done
         // enables discovery for 20 seconds, if not already running
         // or renews the 20 second timer
         // client should be configured to refresh request every 5 seconds
-        console.log('requestScan');
         if (!this.discovery_timeout) {
-            console.log('starting discovery scan');
+            log.log('starting discovery scan');
             await this.startDiscovery();
             await this.emitDevices();
         } else {
             this.cancelDiscoveryTimeout(this.discovery_timeout);
         }
-        this.discovery_timeout = setTimeout( () => this.requestDiscoveyExpired(), REQUEST_DISCOVERY_TIMEOUT_MS);
+        this.discovery_timeout = setTimeout( () => this.requestDiscoveryExpired(), REQUEST_DISCOVERY_TIMEOUT_MS);
     }
 
 
@@ -131,6 +133,7 @@ class Bluetooth extends EventEmitter {
 
 
     async requestDiscoveryExpired() {
+	log.log('request discovery expired');
         this.discovery_timeout = null;
         await this.stopDiscovery();
     }
@@ -138,7 +141,7 @@ class Bluetooth extends EventEmitter {
 
     async startDiscovery() {
         if (!await this.adapter.Discovering()) {
-            console.log('starting bt discovery');
+            log.log('starting bluetooth discovery');
             await this.adapter.StartDiscovery();
             await this.getAllDevices();
             await this.emitDevices();
@@ -148,22 +151,22 @@ class Bluetooth extends EventEmitter {
 
     async stopDiscovery() {
         if (await this.adapter.Discovering()) {
-            console.log('stopping bt discovery');
+            log.log('stopping bluetooth discovery');
             await this.adapter.StopDiscovery();
             this.cancelDiscoveryTimeout();
         }
     }
 
 
-    watchRingToEnableDiscovery(ringInput) {
-	this.ringChanged();
-	ringInput.on('change', () => this.ringChanged());
+    watchRingToEnablePairable(ringInput) {
+	this.ringChanged(ringInput);
+	ringInput.on('change', () => this.ringChanged(ringInput));
     }
 
 
-    async ringChanged() {
-	this.ring_position = ringInput.getModenum();
-	if (this.ring_position === RING_POSITION_NETWORK) {
+    async ringChanged(ringInput) {
+	let ring_position = ringInput.getModenum();
+	if (ring_position === RING_POSITION_NETWORK) {
 	    await this.startPairable();
 	} else {
 	    await this.stopPairable();
@@ -177,8 +180,9 @@ class Bluetooth extends EventEmitter {
 	    this.refresh_pairable_timeout = undefined;
 	}
 
-	await adapter.Discoverable(true);
-	await adapter.Pairable(true);
+	log.log('enabling discoverable and pairing');
+	await this.adapter.Discoverable(true);
+	await this.adapter.Pairable(true);
 	
         this.refresh_pairable_timeout = setTimeout( () => this.startPairable(), REFRESH_PAIRABLE_TIMEOUT_MS);
     }
@@ -190,8 +194,9 @@ class Bluetooth extends EventEmitter {
 	    this.refresh_pairable_timeout = undefined;
 	}
 
-	await adapter.Discoverable(false);
-	await adapter.Pairable(false);
+	log.log('stopping discoverable and pairing');
+	await this.adapter.Discoverable(false);
+	await this.adapter.Pairable(false);
     }
 
 
@@ -202,7 +207,7 @@ class Bluetooth extends EventEmitter {
             log.warn('hmmm. device object already exists in map?');
         }
 
-        let device = await this.getDevice(address, false).catch(console.error);
+        let device = await this.getDevice(address, false).catch(log.error);
         if (!device) {
             log.error(`could not get device for ${address}!`);
             return;
@@ -237,12 +242,10 @@ class Bluetooth extends EventEmitter {
         }
         if (this.io) {
             let devices = await this.prepDevicesForJSON(this.devicesMap);
-            //console.log('emit btdevices', { devices });
+            //log.log('emit bluetooth/devices', { devices });
             if (socket) {  // emit just to the new socket connection
-                console.log('bluetooth/devices to new socket');
                 socket.emit('bluetooth/devices', devices);
             } else {  // emit to all socket connections
-                console.log('bluetooth/devices to all sockets');
                 this.io.emit('bluetooth/devices', devices);
             }
         }
@@ -258,7 +261,7 @@ class Bluetooth extends EventEmitter {
             try {
                 props = await device.getProperties();
             } catch(err) {
-                //console.error(address, err);
+                //log.error(address, err);
                 // guessing this means the device has gone?
                 // so let's try this:
                 this.devicesMap.delete(address);
@@ -291,9 +294,9 @@ class Bluetooth extends EventEmitter {
             device = this.devicesMap.get(address);
             if (!device) {
                 if (warning) {
-                    console.warn('odd. no device object in map. this should not happen?');
+                    log.warn('odd. no device object in map. this should not happen?');
                 }
-                device = await this.bluez.getDevice(address).catch(console.error);
+                device = await this.bluez.getDevice(address).catch(log.error);
                 if (!device) {
                     throw new Error(`could not get device for ${address}!`);
                 }
@@ -301,7 +304,7 @@ class Bluetooth extends EventEmitter {
                 this.devicesMap.set(address, device);
             }
         } catch(err) {
-            console.warn('error getting device object', err);
+            log.warn('error getting device object', err);
         }
         return device;
     }
@@ -356,7 +359,7 @@ class Bluetooth extends EventEmitter {
     }
 
 
-    async pairBTDevice(address) {
+    async pairDevice(address) {
         this.soloOperation( async () => {
             let device = await this.getDevice(address);
             log.log('pairing', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
@@ -366,7 +369,7 @@ class Bluetooth extends EventEmitter {
     }
 
 
-    async unpairBTDevice(address) {
+    async unpairDevice(address) {
         this.soloOperation( async () => {
             let device = await this.getDevice(address);
             log.log('unpairing', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
@@ -379,7 +382,7 @@ class Bluetooth extends EventEmitter {
     }
 
 
-    async connectBTDevice(address) {
+    async connectDevice(address) {
         this.soloOperation( async () => {
             let device = await this.getDevice(address);
 
@@ -418,19 +421,19 @@ class Bluetooth extends EventEmitter {
     }
 
 
-    async disconnectBTDevice(address) {
+    async disconnectDevice(address) {
         this.soloOperation( async () => {
             let device = await this.getDevice(address);
-            console.log('disconnecting', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
+            log.log('disconnecting', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
             let result = await device.Disconnect();
-            console.log('done. result:', result);
+            log.log('done. result:', result);
         });
     }
 }
 
 
 async function main() {
-    console.log('start');
+    log.log('start');
     let bluetooth = new Bluetooth();
     await bluetooth.init();
     await bluetooth.startDiscovery();
@@ -451,11 +454,11 @@ async function main() {
         if (!found_it) {
             for (let [address, device] of devices) {
                 if (device.Name === 'LIT0001') {
-                    console.log('found it!');
+                    log.log('found it!');
                     found_it = true;
-                    console.log(format_props(device));
-                    console.log('attempting to connect to it!');
-                    await bluetooth.connectBTDevice(device.Address);
+                    log.log(format_props(device));
+                    log.log('attempting to connect to it!');
+                    await bluetooth.connectDevice(device.Address);
                 }
             }
         }
