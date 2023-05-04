@@ -6,8 +6,10 @@
 
 
 <center>
+<!-- FIXME
   <WiFiSetup {devicetype}/>
   <br>
+-->
   <hr>
   <br>
   <br>
