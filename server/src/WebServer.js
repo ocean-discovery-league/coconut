@@ -38,13 +38,23 @@ class WebServer {
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
 
-        let server = http.createServer(app);
-        let io = new socketio.Server(server, { cors:{origin: '*'}, /*maxHttpBufferSize: 1e8*/ });
+        let httpserver = http.createServer(app);
+        let io = new socketio.Server(httpserver, { cors:{origin: '*'}, /*maxHttpBufferSize: 1e8*/ });
 
-        server.listen(PORT, BIND, () => {
-            log.log(`server started on port ${PORT}`);
+	io.on('connection', (socket) => {
+	    socket.onAny((eventName, ...args) => {
+		console.log('socket io event', eventName, ...args);
+		const isNotRegistered = !Object.keys(socket._events).includes(eventName);
+		if (isNotRegistered) {
+		    console.error('error: got an unregistered socket io event', eventName);
+		}
+	    });
+	});
+
+        httpserver.listen(PORT, BIND, () => {
+            log.log(`http server started on port ${PORT}`);
         });
-        server.setTimeout(99999 * 1000);
+        httpserver.setTimeout(99999 * 1000);
 
         let wifi = new WiFi();
         await wifi.init(app, io).catch(log.error);
