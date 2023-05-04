@@ -1,6 +1,5 @@
 'use strict';
 
-const RingInput = require('./RingInput.js');
 const SensorInput = require('./SensorInput.js');
 const MissionEngine = require('./MissionEngine.js');
 const MissionId = require('./MissionID.js');
@@ -9,10 +8,9 @@ let log = console;
 
 
 class MissionManager {
-    async init(missionPrograms) {
+    async init(missionPrograms, ringInput) {
             this.missionPrograms = missionPrograms;
-            this.ringInput = new RingInput();
-            await this.ringInput.init();
+            this.ringInput = ringInput;
     }
 
 

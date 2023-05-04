@@ -7,6 +7,7 @@ const asyncHandler = require('express-async-handler');
 //const isOnline = require('is-online');
 //const isTcpOn = require('is-tcp-on');
 //const roslib = require('roslib');
+const getDeviceType = require('./getDeviceType.js');
 
 const ROVER_INTERFACE = 'tun0';
 const SERVER_TEST_ADDRESS = 'rover.irontech.org';
@@ -33,6 +34,11 @@ class Rover {
 
 
     addRoutes(app) {
+        app.get('/api/v1/rover/devicetype', (req, res) => {
+	    let devicetype = getDeviceType();
+            res.json({ devicetype });
+        });
+
         app.get('/api/v1/rover/ping', (req, res) => {
             res.json({ ping: true });
         });

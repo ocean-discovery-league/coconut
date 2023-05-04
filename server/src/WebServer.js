@@ -27,7 +27,7 @@ let log = console;
 
 
 class WebServer {
-    async init(missionPrograms) {
+    async init(bluetooth, missionPrograms, ringInput) {
         let app = express();
         app.use((req, res, next) => {
             log.log(req.method, req.url);
@@ -49,8 +49,11 @@ class WebServer {
         let wifi = new WiFi();
         await wifi.init(app, io).catch(log.error);
 
-        let bluetooth = new Bluetooth();
-        await bluetooth.init(app, io).catch(log.error);
+        bluetooth.addRoutes(app);
+        bluetooth.addSocketIOHandlers(io);
+
+	ringInput.addRoutes(app);
+	ringInput.addSocketIOHandlers(io);
 
         missionPrograms.addRoutes(app, io);
 

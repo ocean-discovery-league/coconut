@@ -6,12 +6,16 @@ const asyncHandler = require('express-async-handler');
 require('express-async-error');
 
 const Bluez = require('./bluez-or-fake.js');
+const getDeviceType = require('./getDeviceType.js');
+
 // https://raspberrytips.com/mac-address-on-raspberry-pi
 //const PI_ADDRESS_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01'];
 const PI_ADDRESS_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01', '84:7B:57', 'F8:4D:89'];  // + intel NUC and mac for debugging
 //const PROPS_JSON_WHITELIST = ['Address', 'AddressType', 'Name', 'Alias', 'Connected', 'Paired', 'RSSI', 'Blocked', 'Trusted', 'LegacyPairing', 'Adapter', 'TxPower'];
 const PROPS_CHANGED_BLACKLIST = ['ManufacturerData'];
 const REQUEST_DISCOVERY_TIMEOUT_MS = 20 * 1000;  // 20 seconds, client configured to refresh request every 5 seconds
+const REFRESH_PAIRABLE_TIMEOUT_MS = 60 * 1000;  // once a minute
+const RING_POSITION_NETWORK = 1;
 
 const log = console;
 
@@ -24,7 +28,7 @@ const log = console;
 // node-bluez needs sudo apt install libdbus-1-dev
 
 class Bluetooth extends EventEmitter {
-    async init(app, io) {
+    async init(ringInput) {
         this.bluez = new Bluez();
         await this.bluez.init();
 
@@ -38,16 +42,15 @@ class Bluetooth extends EventEmitter {
         this.filter_pi_only = false;
         this.operation_pending = false;
         this.discovery_timeout = null;
-        if (app) {
-            this.addRoutes(app);
-        }
-        if (io) {
-            this.io = io;
-            this.addSocketIOHandlers(io);
-        }
 
         this.bluez.on('device', (...args) => this.handleDeviceEvent(...args));
         this.bluez.on('interface-removed', (...args) => console.error('we got an interface-removed event on a device??', ...args));
+
+	let devicetype = getDeviceType();
+	if (devicetype === 'LIT') {
+	    this.watchRingToEnablePairable(ringInput);
+	}
+
         //this.startDiscovery();  // FIXME remove this
     }
 
@@ -83,7 +86,8 @@ class Bluetooth extends EventEmitter {
     }
 
 
-    addSocketIOHandlers(io) {
+	addSocketIOHandlers(io) {
+	    this.io = io;
         io.on('connection', (socket) => {
             console.log('connection');
             this.emitDevices(socket);
@@ -148,6 +152,46 @@ class Bluetooth extends EventEmitter {
             await this.adapter.StopDiscovery();
             this.cancelDiscoveryTimeout();
         }
+    }
+
+
+    watchRingToEnableDiscovery(ringInput) {
+	this.ringChanged();
+	ringInput.on('change', () => this.ringChanged());
+    }
+
+
+    async ringChanged() {
+	this.ring_position = ringInput.getModenum();
+	if (this.ring_position === RING_POSITION_NETWORK) {
+	    await this.startPairable();
+	} else {
+	    await this.stopPairable();
+	}
+    }
+
+
+    async startPairable() {
+	if (this.refresh_pairable_timeout) {
+	    clearTimeout(this.refresh_pairable_timeout);
+	    this.refresh_pairable_timeout = undefined;
+	}
+
+	await adapter.Discoverable(true);
+	await adapter.Pairable(true);
+	
+        this.refresh_pairable_timeout = setTimeout( () => this.startPairable(), REFRESH_PAIRABLE_TIMEOUT_MS);
+    }
+
+
+    async stopPairable() {
+	if (this.refresh_pairable_timeout) {
+	    clearTimeout(this.refresh_pairable_timeout);
+	    this.refresh_pairable_timeout = undefined;
+	}
+
+	await adapter.Discoverable(false);
+	await adapter.Pairable(false);
     }
 
 
