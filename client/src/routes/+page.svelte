@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
-  import { getUnitType, parseHashParams } from '$lib/misc.js';
+  import { getDeviceType, parseHashParams } from '$lib/misc.js';
   import Page from '$lib/Page.svelte';
   import EndPage from '$lib/EndPage.svelte';
   import MediaManager from '$lib/../pages/MediaManager.svelte';
@@ -12,7 +12,7 @@
   import MissionISetup from '$lib/../pages/MissionISetup.svelte';
   import MissionIISetup from '$lib/../pages/MissionIISetup.svelte';
 
-  let unittype = 'MKN';
+  let devicetype = 'MKN';
   // let scrollX;
   // let scrollY;
   let isScrollingInterval;
@@ -28,8 +28,8 @@
   // }
   
   onMount(async () => {
-      unittype = await getUnitType();
-      console.log('unittype', unittype);
+      devicetype = await getDeviceType();
+      console.log('devicetype', devicetype);
       //isScrollingInterval = setInterval(isScrolling, 100);
 
       let hashParams = parseHashParams('#page=2');
@@ -114,8 +114,8 @@
     
 <div id="sectionholder">
   <EndPage/>
-  {#if unittype === 'LIT'}
-    <Page title="Network Setup" id="network-setup" {unittype}>
+  {#if devicetype === 'LIT'}
+    <Page title="Network Setup" {devicetype}>
       <NetworkSetup/>
     </Page>
   {:else}
@@ -129,7 +129,7 @@
     </Page>
 
 
-    <Page title="Network Setup" id="network-setup">
+    <Page title="Network Setup" {devicetype}>
       <NetworkSetup/>
     </Page>
 
@@ -165,6 +165,7 @@
     /*scroll-behavior: smooth;*/
     display: flex;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: none;
     overflow-x: scroll;
     height: 100vh;
   }

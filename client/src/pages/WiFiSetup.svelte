@@ -1,9 +1,10 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   //import { dev } from '$app/environment'
+  import { fetch200, isOnScreen, setTimeoutAnimationFrame } from '$lib/misc.js';
   import Button from '$lib/Button.svelte';
-  import { fetch200 } from '$lib/misc.js';
 
+  let wifiSetup;
   let form_ssid;
   //let form_password; // 'type' attribute cannot be dynamic if input uses two-way binding
 
@@ -25,7 +26,6 @@
   let connected_ssid;
   let connected_ipaddress;
   let connected_rssi;
-  let wifi_section;
 
   let visible_networks = false;
 
@@ -57,33 +57,9 @@
   }
 
 
-  function isOnScreen() {
-      if (!wifi_section) {
-          wifi_section = document.querySelector('#network-setup');
-      }
-
-      let rect = wifi_section.getBoundingClientRect();
-      let elemLeft = rect.left;
-      let elemRight = rect.right;
-
-      //console.log(elemLeft, elemRight, window.innerWidth);
-
-      let partiallyOnScreen = (elemRight > 0) && (elemLeft < window.innerWidth);
-      //console.log('icu wifi?', partiallyOnScreen);
-      return partiallyOnScreen;
-  }
-
-
-  // setTimeout and then wait for the first full frame after that
-  // (so we can check isOnScreen without triggering any reflows)
-  function setTimeoutAnimationFrame(callback, interval) {
-      return setTimeout(() => window.requestAnimationFrame(callback), interval);
-  }
-
-
   async function monitorStatus() {
       try {
-          if (isOnScreen()) {
+          if (isOnScreen(wifiSetup)) {
               let response = await fetch200(status_request);
               let data = await response.json();
               if (data && !data.retry && Object.keys(data).length !== 0) {
@@ -223,7 +199,7 @@
 </script>
 
 
-<div id="wifisetup-container">
+<div id="wifisetup-container" bind:this={wifiSetup}>
   <center>
     <div id="wifi-connection">
       {#if !connected_ssid}

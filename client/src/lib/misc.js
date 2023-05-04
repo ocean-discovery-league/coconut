@@ -1,7 +1,7 @@
 'use strict';
 
 let socket;
-let unittype;
+let devicetype;
 
 export function getSocketIO() {
     if (!socket) {
@@ -26,38 +26,38 @@ export async function fetch200(...args) {
 }
 
 
-export async function getUnitType(fallback_unittype='MKN') {
-    if (unittype) {
-        return unittype;
+export async function getDeviceType(fallback_devicetype='MKN') {
+    if (devicetype) {
+        return devicetype;
     }
 
     let hashParams = parseHashParams();
-    if (hashParams.has('unittype')) {
-        unittype = hashParams.get('unittype');
-        return unittype;
+    if (hashParams.has('devicetype')) {
+        devicetype = hashParams.get('devicetype');
+        return devicetype;
     }
 
     try {
-        let request = new Request('/api/v1/rover/unittype');
+        let request = new Request('/api/v1/rover/devicetype');
         let response = await fetch200(request);
         let data = await response.json();
-        unittype = data.unittype;
+        devicetype = data.devicetype;
     } catch(err) {
-        console.warn('error while fetching unittype', err);
-        unittype = fallback_unittype;  // should we perhaps not set this so it will try again?
+        console.warn('error while fetching devicetype', err);
+        devicetype = fallback_devicetype;  // should we perhaps not set this so it will try again?
     }
 
-    return unittype;
+    return devicetype;
 }
 
 
-export function parseHashParams(defaultHashString) {
+export function parseHashParams(defaultHashString=null) {
     let hashParams = {};
     try {
         if (window && window.location) {
             let hash = window.location.hash;
-            if (hash.length === 0) {
-                window.location.hash = defaultHashString;  // will add a '#' if missing
+            if (hash.length === 0 && defaultHashString) {
+                window.location.hash = defaultHashString;  // a '#' will be added if missing
                 hash = window.location.hash;
             }
             hash = hash.substr(1);  // drop the '#'
@@ -73,3 +73,19 @@ export function parseHashParams(defaultHashString) {
     return hashParams;
 }
 
+
+export function isOnScreen(element) {
+    let rect = element.getBoundingClientRect();
+    let elemLeft = rect.left;
+    let elemRight = rect.right;
+
+    let partiallyOnScreen = (elemRight > 0) && (elemLeft < window.innerWidth-1);
+    return partiallyOnScreen;
+}
+
+
+// setTimeout and then wait for the first full frame after that
+// (so we can do things like check isOnScreen() without triggering any reflows)
+export function setTimeoutAnimationFrame(callback, interval) {
+    return setTimeout(() => window.requestAnimationFrame(callback), interval);
+}
