@@ -76,8 +76,8 @@ export function parseHashParams(defaultHashString=null) {
 
 export function isOnScreen(element) {
     let rect = element.getBoundingClientRect();
-    let elemLeft = rect.left;
-    let elemRight = rect.right;
+    let elemLeft = rect.left + 2;
+    let elemRight = rect.right - 2;
 
     let partiallyOnScreen = (elemRight > 0) && (elemLeft < window.innerWidth-1);
     return partiallyOnScreen;

@@ -7,39 +7,40 @@
   import Button from '$lib/Button.svelte';
 
   const REQUEST_DISCOVERY_INTERVAL_MS = 5 * 1000;  // 5 seconds, server stops after 20 seconds with no request
+  const REBOOTING_BUTTON_RESET_TIMEOUT_MS = 25 * 1000;  // 25 seconds
 
   let bluetoothSetup;
   let requestDiscoveryTimeout;
   let onscreen_section;
 
   let socket;
-  let btpair_request;
-  let btunpair_request;
-  let btconnect_request;
-  let btdisconnect_request;
+  let pair_request;
+  let remove_request;
+  let reboot_request;
+  // let connect_request;
+  // let disconnect_request;
 
-  let btconnecting;
-  let btconnect_error = '';
-  let btdisconnecting;
+  let pairing;
+  let bluetooth_error = '';
+  let removing;
+  let removed;
+  let rebooting;
 
-  let connected_btdevice;
-  let connected_macaddress;
-  let connected_btrssi;
-
-  let selected_btdevice;
-
-  let visible_btdevices = false;
+  let selected_device;
+  let paired_devices = false;
+  let visible_devices = false;
 
   onMount(() => {
       socket = getSocketIO();
       // socket.onAny( (eventName, ...args) => {
       //     console.log('socket event', eventName, ...args);
       // });
-      socket.on('bluetooth/devices', (...args) => handle_btdevices_event(...args));
-      btpair_request = new Request('/api/v1/bluetooth/pair');
-      btunpair_request = new Request('/api/v1/bluetooth/unpair');
-      btconnect_request = new Request('/api/v1/bluetooth/connect');
-      btdisconnect_request = new Request('/api/v1/bluetooth/disconnect');
+      socket.on('bluetooth/devices', (...args) => handle_devices_event(...args));
+      pair_request = new Request('/api/v1/bluetooth/pair');
+      remove_request = new Request('/api/v1/bluetooth/remove');
+      reboot_request = new Request('/api/v1/rover/reboot');
+      // connect_request = new Request('/api/v1/bluetooth/connect');
+      // disconnect_request = new Request('/api/v1/bluetooth/disconnect');
 
       requestDiscovery();
   });
@@ -50,32 +51,12 @@
   });
 
 
-  let filter_btdevices = true;
-  let btdevices_filter_icon;
-  $: btdevices_filter_icon = filter_btdevices ? '👁️' : '😆';
-  function toggle_btdevices_filter(event) {
-      filter_btdevices = !filter_btdevices;
+  let filter_devices = true;
+  let devices_filter_icon;
+  $: devices_filter_icon = filter_devices ? '👁️' : '😆';
+  function toggle_devices_filter(event) {
+      filter_devices = !filter_devices;
       event.preventDefault();  // keep from stealing keyboard focus
-  }
-
-
-  function showBTStatus(status) {
-      let state = status.wpa_state;
-      // console.log(status);
-      if (state) {
-          if (state === 'COMPLETED') {
-              let ssid = status.ssid.replace(/\n$/, '');  // remove newline at end of string
-              connected_ssid = ssid || 'unknown';
-              if (status.ip_address) {
-                  connected_ipaddress = status.ip_address;
-              }
-          } else {
-              connected_ssid = false;
-              if (!['DISCONNECTED', 'SCANNING'].includes(state)) {
-                  console.log('unknown state =', state);
-              }
-          }
-      }
   }
 
 
@@ -85,7 +66,7 @@
               console.log('bluetooth/requestdiscovery', socket);
               socket.emit('bluetooth/requestdiscovery');
           } else {
-              handle_btdevices_event();
+              handle_devices_event();
           }
       } catch(err) {
           console.error(error);
@@ -94,39 +75,45 @@
   }
 
 
-  function handle_btdevices_event(devices) {
-      console.log('handle btdevices', { devices });
+  function handle_devices_event(devices) {
+      console.log('handle bluetooth devices', { devices });
       if (devices === undefined) {
-          visible_btdevices = undefined;
+          paired_devices = undefined;
+          visible_devices = undefined;
           return;
       }
-      let filtered_btdevices = [];
+      paired_devices = [];
+      let filtered_devices = [];
       try {
           for (let [address, props] of Object.entries(devices)) {
-              if (filter_btdevices && (!props.Name || !props.Name.startsWith('LIT'))) {
+              if (props.Paired) {
+                  paired_devices.push(props);
                   continue;
               }
-              filtered_btdevices.push(props);
-
-              // if (address === connected_address) {
-              //     connected_rssi = device.signal;
+              if (filter_devices && (!props.Name || !props.Name.startsWith('LIT'))) {
+                  continue;
+              }
+              // if (!props.RSSI) {
+              //     continue;
               // }
+              filtered_devices.push(props);
           }
       } catch(err) {
           console.error(err);
       }
-      console.log({ filtered_btdevices });
-      visible_btdevices = filtered_btdevices;
+      visible_devices = filtered_devices;
+      console.log({ paired_devices });
+      console.log({ visible_devices });
   }
 
 
-  async function btpair_device(event) {
-      if (selected_btdevice) {
+  async function pair_device(event) {
+      if (selected_device) {
           try {
               let data = {
-                  address: selected_btdevice.Address
+                  address: selected_device.Address
               };
-              let response = await fetch200(btpair_request, {
+              let response = await fetch200(pair_request, {
                   method: 'POST',
                   body: JSON.stringify(data),
                   headers: {
@@ -142,13 +129,42 @@
   }
 
 
-  async function btunpair_device(event) {
-      if (selected_btdevice) {
+  async function remove_device(event) {
+      let device = paired_devices[0];
+      if (device) {
+          console.log('removing device', device.Address);
+          removing = true;
           try {
               let data = {
-                  address: selected_btdevice.Address
+                  address: device.Address
               };
-              let response = await fetch200(btunpair_request, {
+              let response = await fetch200(remove_request, {
+                  method: 'POST',
+                  body: JSON.stringify(data),
+                  headers: {
+                      'Content-Type': 'application/json'
+                  }
+              });
+              let result = await response.text();
+              console.log('result', result);
+              removed = true;
+          } catch(err) {
+              console.error(err);
+          }
+          removing = false;
+          selected_device = false;
+      }
+  }
+
+
+  async function connect_device(event) {
+      connecting = true;
+      if (selected_device) {
+          try {
+              let data = {
+                  address: selected_device.Address
+              };
+              let response = await fetch200(connect_request, {
                   method: 'POST',
                   body: JSON.stringify(data),
                   headers: {
@@ -161,17 +177,18 @@
               console.error(err);
           }
       }
+      connecting = false;
   }
 
 
-  async function btconnect_device(event) {
-      btconnecting = true;
-      if (selected_btdevice) {
+  async function disconnect_device(event) {
+      disconnecting = true;
+      if (selected_device) {
           try {
               let data = {
-                  address: selected_btdevice.Address
+                  address: selected_device.Address
               };
-              let response = await fetch200(btconnect_request, {
+              let response = await fetch200(disconnect_request, {
                   method: 'POST',
                   body: JSON.stringify(data),
                   headers: {
@@ -184,41 +201,17 @@
               console.error(err);
           }
       }
-      btconnecting = false;
+      disconnecting = false;
   }
 
-
-  async function btdisconnect_device(event) {
-      btdisconnecting = true;
-      if (selected_btdevice) {
-          try {
-              let data = {
-                  address: selected_btdevice.Address
-              };
-              let response = await fetch200(btdisconnect_request, {
-                  method: 'POST',
-                  body: JSON.stringify(data),
-                  headers: {
-                      'Content-Type': 'application/json'
-                  }
-              });
-              let result = await response.text();
-              console.log('result', result);
-          } catch(err) {
-              console.error(err);
-          }
-      }
-      btdisconnecting = false;
-  }
-
-  function click_btdevice(event) {
-      console.log('click btdevice', event);
-      //let btdevice_li = event.target.parentElement;
-      let btdevice_li = event.target;
-      //let clickssid = btdevice_li.querySelector('.clickssid');
-      let clicked_address = btdevice_li.dataset.macAddress;
+  function click_device(event) {
+      console.log('click bluetooth device', event);
+      //let device_li = event.target.parentElement;
+      let device_li = event.target;
+      //let clickssid = device_li.querySelector('.clickssid');
+      let clicked_address = device_li.dataset.macAddress;
       let clicked_props;
-      for (let props of visible_btdevices) {
+      for (let props of visible_devices) {
           console.log({ props });
           if (props.Address === clicked_address) {
               clicked_props = props;
@@ -228,119 +221,145 @@
           console.error('could not find device in visible devices', clicked_mac_address);
           return;
       }
-      if (selected_btdevice && selected_btdevice.mac_address === clicked_props.mac_address) {
-          selected_btdevice = undefined;
+      if (selected_device && selected_device.mac_address === clicked_props.mac_address) {
+          selected_device = undefined;
       } else {
-          selected_btdevice = clicked_props;
+          selected_device = clicked_props;
       }
-      console.log('selected btdevice', selected_btdevice);
+      console.log('selected bluetooth device', selected_device);
+  }
+
+  async function reboot(event) {
+      console.log('rebooting...');
+      rebooting = true;
+      try {
+          await fetch200(reboot_request, { method: 'POST' });
+      } catch(err) {
+          console.error('error requesting reboot', err);
+      }
+      selected_device = false;
+      visible_devices = false;
+      paired_devices = false;
+      await new Promise((resolve) => setTimeout(resolve, REBOOTING_BUTTON_RESET_TIMEOUT_MS));
+      console.log('resetting rebooting flag');
+      rebooting = false;
+      removed = false;
   }
 </script>
 
 
-<div id="btsetup-container" bind:this={bluetoothSetup}>
+<div id="setup-container" bind:this={bluetoothSetup}>
   <center>
-    <div class="btconnect-container">
-      <div id="btdevicelist-container">
-        <div id="btdevicelist">
-          <center>
-            <span style="color:darkgray">Visible LED Modules</span>
-            <div class="sublabel"><br>LED Modules are visible for<br>10 minutes when turned on</div>
-            <br>
-          </center>
-          <button
-            id="filtering"
-            type="button"
-            on:click={toggle_btdevices_filter}
-            >
-            {btdevices_filter_icon}
-          </button>
-          <ul width=300 id="btdevices">
+    <div class="connect-container">
+      <div id="devicelist-container">
+        <div id="devicelist">
+          {#if paired_devices && paired_devices.length}
             <center>
-              {#if !visible_btdevices}
-                <li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color:darkgray">• • •</span></li>
-              {:else if visible_btdevices.length === 0}
-                <li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color:darkgray">none</span></li>
-              {:else}
-                {#each visible_btdevices as btdevice}
-                  <li class="selector" on:click={click_btdevice} data-mac-address={btdevice.Address} data-paired={btdevice.Paired} data-connected={btdevice.Connected}>
-                    {#if selected_btdevice && selected_btdevice.Address === btdevice.Address}
-                      <div class="btdevice selected" style="position:relative">
-                        <div style="position:absolute;color:#AAAAAA;left:-38px">{btdevice.RSSI || ''}</div>
-                        <span class="clickbtdevice">{btdevice.Name || btdevice.Address}</span>
-                        {#if btdevice.Connected}
-                          <span class="connectedbtdevice">connected</span>
-                        {:else if btdevice.Paired}
-                          <span class="connectedbtdevice">paired</span>
-                        {/if}
-                      </div>
-                    {:else}
-                      <div class="btdevice" style="position:relative">
-                        <div style="position:absolute;color:#AAAAAA;left:-38px">{btdevice.RSSI || ''}</div>
-                        <span class="clickbtdevice">{btdevice.Name || btdevice.Address}</span>
-                        {#if btdevice.Connected}
-                          <span class="connectedbtdevice">connected</span>
-                        {:else if btdevice.Paired}
-                          <span class="connectedbtdevice">paired</span>
-                        {/if}
-                      </div>
-                    {/if}
+              <span style="color:darkgray">Paired LED Module</span>
+              <br>
+              <br>
+            </center>
+            <ul width=300 id="devices">
+              <center>
+                {#each paired_devices as device}
+                  <li class="selector">
+                    <div class="device" style="position:relative">
+                      <span class="clickdevice">{device.Name || device.Address}</span>
+                    </div>
                   </li>
                 {/each}
+              </center>
+            </ul>
+            <br>
+            <br>
+            <br>
+            <Button nofeedback on:click={remove_device}>
+              {#if !removing}
+                Remove LED
+              {:else}
+                Removing LED...
               {/if}
+            </Button>
+          {:else}
+            <center>
+              {#if removed}
+                <div class="sublabel"><br>To re-pair the recently removed device<br>You will need to reboot this Maka Niu</div>
+                <br>
+                  <Button nofeedback dangerous height=30 width=150 on:click={reboot}>
+                    {#if !rebooting}
+                      Reboot
+                    {:else}
+                      Rebooting...
+                    {/if}
+                  </Button>
+                <br>
+              {/if}
+              <div class="sublabel"><br>LED Modules are only visible<br>when ring is on "network"<br><br></div>
+              <span style="color:darkgray">Visible LED Modules</span>
+              <br>
+              <br>
             </center>
-          </ul>
+            <!--
+            <button
+              id="filtering"
+              type="button"
+              on:click={toggle_devices_filter}
+              >
+              {devices_filter_icon}
+            </button>
+            -->
+            <ul width=300 id="devices">
+              <center>
+                {#if !visible_devices}
+                  <li><span style="color:darkgray">• • •</span></li>
+                {:else if visible_devices.length === 0}
+                  <li><span style="color:darkgray">none</span></li>
+                {:else}
+                  {#each visible_devices as device}
+                    <li class="selector" on:click={click_device} data-mac-address={device.Address} data-paired={device.Paired} data-connected={device.Connected}>
+                      <div class="device {(selected_device && selected_device.Address === device.Address) ? 'selected' : ''}" style="position:relative">
+                        <!--
+                        <div style="position:absolute;color:#AAAAAA;left:-38px">{device.RSSI || ''}</div>
+                        -->
+                        <span class="clickdevice">{device.Name || device.Address}</span>
+                        <!--
+                        {#if device.Connected}
+                          <span class="connecteddevice">connected</span>
+                        {:else if device.Paired}
+                          <span class="connecteddevice">paired</span>
+                        {/if}
+                        -->
+                      </div>
+                    </li>
+                  {/each}
+                {/if}
+              </center>
+            </ul>
+            <br>
+            <br>
+            {#if selected_device}
+              <Button nofeedback on:click={pair_device}>
+                {#if !pairing}
+                  Pair LED
+                {:else}
+                  Pairing LED...
+                {/if}
+              </Button>
+            {/if}
+          {/if}
         </div>
       </div>
-
       <br>
       <br>
-      {#if selected_btdevice}
-        <Button nofeedback on:click={btconnect_device}>
-          {#if !btconnecting}
-            Pair LED
-          {:else}
-            Pairing LED...
-          {/if}
-        </Button>
-      {:else}
-        <Button nofeedback on:click={btdisconnect_device}>
-          {#if !btdisconnecting}
-            Disconnect LED
-          {:else}
-            Disconnecting LED...
-          {/if}
-        </Button>
-      {/if}
-      <div class="connect_status">{btconnect_error}</div>
-      <br>
-      <br>
+      <div class="bluetooth-error">{bluetooth_error}</div>
     </div>
 
-    <Button nofeedback on:click={btpair_device}>Pair</Button><br>
-    <Button nofeedback on:click={btunpair_device}>Unpair</Button><br>
-    <Button nofeedback on:click={btconnect_device}>Connect</Button><br>
-    <Button nofeedback on:click={btdisconnect_device}>Disconnect</Button><br>
-
-    <div id="btconnection">
-      {#if !connected_btdevice}
-        <span style="color:darkgray">Not Connected</span>
-        <br>
-        &nbsp;
-      {:else}
-        <div style="position:relative">
-          <span style="color:darkgray">connected to </span>{connected_btdevice.Name || connected_btdevice.Address}
-          {#if connected_btrssi}
-            &nbsp;<span style="position:absolute;color:#AAAAAA">{connected_btrssi}</span>
-          {/if}
-        </div>
-        {#if connected_btdevice.Address}
-          <span style="color:#AAAAAA">{connected_btdevice.macaddress}</span>
-        {:else}
-          &nbsp;
-        {/if}
-      {/if}
-    </div>
+    <!--
+    <Button nofeedback on:click={pair_device}>Pair</Button><br>
+    <Button nofeedback on:click={remove_device}>Remove</Button><br>
+    <Button nofeedback on:click={connect_device}>Connect</Button><br>
+    <Button nofeedback on:click={disconnect_device}>Disconnect</Button><br>
+    -->
 
   </center>
 </div>

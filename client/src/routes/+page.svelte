@@ -7,6 +7,8 @@
   import MediaManager from '$lib/../pages/MediaManager.svelte';
   import MissionID from '$lib/../pages/MissionID.svelte';
   import NetworkSetup from '$lib/../pages/NetworkSetup.svelte';
+  import WiFiSetup from '$lib/../pages/WiFiSetup.svelte';
+  import BluetoothSetup from '$lib/../pages/BluetoothSetup.svelte';
   import VideoSetup from '$lib/../pages/VideoSetup.svelte';
   import PhotoSetup from '$lib/../pages/PhotoSetup.svelte';
   import MissionISetup from '$lib/../pages/MissionISetup.svelte';
@@ -115,8 +117,13 @@
 <div id="sectionholder">
   <EndPage/>
   {#if devicetype === 'LIT'}
+    <!--
     <Page title="Network Setup">
       <NetworkSetup {devicetype}/>
+    </Page>
+    -->
+    <Page title="Network Setup">
+      <WiFiSetup {devicetype}/>
     </Page>
   {:else}
     <Page title="Media Manager">
@@ -129,8 +136,16 @@
     </Page>
 
 
+    <!--
     <Page title="Network Setup">
       <NetworkSetup {devicetype}/>
+    </Page>
+    -->
+    <Page title="Network Setup">
+      <WiFiSetup {devicetype}/>
+    </Page>
+    <Page title="Bluetooth Setup">
+      <BluetoothSetup {devicetype}/>
     </Page>
 
 
