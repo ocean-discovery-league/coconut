@@ -115,8 +115,8 @@
 <div id="sectionholder">
   <EndPage/>
   {#if devicetype === 'LIT'}
-    <Page title="Network Setup" {devicetype}>
-      <NetworkSetup/>
+    <Page title="Network Setup">
+      <NetworkSetup {devicetype}/>
     </Page>
   {:else}
     <Page title="Media Manager">
@@ -129,8 +129,8 @@
     </Page>
 
 
-    <Page title="Network Setup" {devicetype}>
-      <NetworkSetup/>
+    <Page title="Network Setup">
+      <NetworkSetup {devicetype}/>
     </Page>
 
 

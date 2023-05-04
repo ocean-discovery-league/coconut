@@ -1,12 +1,15 @@
 <script>
+  export let devicetype;
+
   import { onMount, onDestroy } from 'svelte';
-  import { fetch200, getSocketIO } from '$lib/misc.js';
+  import { isOnScreen, fetch200, getSocketIO, setTimeoutAnimationFrame } from '$lib/misc.js';
   //import { dev } from '$app/environment'
   import Button from '$lib/Button.svelte';
 
-  const REQUEST_SCAN_INTERVAL = 5 * 1000;  // 5 seconds
+  const REQUEST_DISCOVERY_INTERVAL_MS = 5 * 1000;  // 5 seconds, server stops after 20 seconds with no request
 
-  let requestScanTimeout;
+  let bluetoothSetup;
+  let requestDiscoveryTimeout;
   let onscreen_section;
 
   let socket;
@@ -38,12 +41,12 @@
       btconnect_request = new Request('/api/v1/bluetooth/connect');
       btdisconnect_request = new Request('/api/v1/bluetooth/disconnect');
 
-      requestScan();
+      requestDiscovery();
   });
 
 
   onDestroy(() => {
-      clearTimeout(requestScanTimeout);
+      clearTimeout(requestDiscoveryTimeout);
   });
 
 
@@ -53,35 +56,6 @@
   function toggle_btdevices_filter(event) {
       filter_btdevices = !filter_btdevices;
       event.preventDefault();  // keep from stealing keyboard focus
-  }
-
-
-  function isOnScreen() {
-      if (!onscreen_section) {
-          onscreen_section = document.querySelector('#network-setup');
-      }
-
-      if (!onscreen_section) {
-          console.log('not yet');
-          return false;
-      }
-
-      let rect = onscreen_section.getBoundingClientRect();
-      let elemLeft = rect.left;
-      let elemRight = rect.right;
-
-      //console.log(elemLeft, elemRight, window.innerWidth);
-
-      let partiallyOnScreen = (elemRight > 0) && (elemLeft < window.innerWidth);
-      //console.log('icu wifi?', partiallyOnScreen);
-      return partiallyOnScreen;
-  }
-
-
-  // setTimeout and then wait for the first full frame after that
-  // (so we can check isOnScreen without triggering any reflows)
-  function setTimeoutAnimationFrame(callback, interval) {
-      return setTimeout(() => window.requestAnimationFrame(callback), interval);
   }
 
 
@@ -105,18 +79,18 @@
   }
 
 
-  async function requestScan() {
+  async function requestDiscovery() {
       try {
-          if (isOnScreen()) {
-              console.log('bluetooth/requestscan');
-              socket.emit('bluetooth/requestscan');
+          if (isOnScreen(bluetoothSetup)) {
+              console.log('bluetooth/requestdiscovery', socket);
+              socket.emit('bluetooth/requestdiscovery');
           } else {
               handle_btdevices_event();
           }
       } catch(err) {
           console.error(error);
       }
-      requestScanTimeout = setTimeoutAnimationFrame(requestScan, REQUEST_SCAN_INTERVAL);
+      requestDiscoveryTimeout = setTimeoutAnimationFrame(requestDiscovery, REQUEST_DISCOVERY_INTERVAL_MS);
   }
 
 
@@ -264,7 +238,7 @@
 </script>
 
 
-<div id="btsetup-container">
+<div id="btsetup-container" bind:this={bluetoothSetup}>
   <center>
     <div class="btconnect-container">
       <div id="btdevicelist-container">

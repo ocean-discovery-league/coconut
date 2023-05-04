@@ -1,4 +1,6 @@
 <script>
+  export let devicetype;
+
   import { onMount, onDestroy } from 'svelte';
   //import { dev } from '$app/environment'
   import { fetch200, isOnScreen, setTimeoutAnimationFrame } from '$lib/misc.js';
@@ -94,7 +96,7 @@
 
 
   async function monitorScan() {
-      if (isOnScreen()) {
+      if (isOnScreen(wifiSetup)) {
           try {
               let response = await fetch200(scan_request);
               let data = await response.json();
