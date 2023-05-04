@@ -49,8 +49,7 @@ class WebServer {
         let wifi = new WiFi();
         await wifi.init(app, io).catch(log.error);
 
-        bluetooth.addRoutes(app);
-        bluetooth.addSocketIOHandlers(io);
+        bluetooth.addWebAPI(app, io);
 
 	ringInput.addRoutes(app);
 	ringInput.addSocketIOHandlers(io);

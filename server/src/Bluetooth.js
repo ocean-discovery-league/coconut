@@ -15,7 +15,7 @@ const PI_ADDRESS_PREFIXES = ['28:CD:C1', 'B8:27:EB', 'DC:26:32', 'E4:5F:01', '84
 const PROPS_CHANGED_BLACKLIST = ['ManufacturerData'];
 const REQUEST_DISCOVERY_TIMEOUT_MS = 20 * 1000;  // 20 seconds, client configured to refresh request every 5 seconds
 const REFRESH_PAIRABLE_TIMEOUT_MS = 60 * 1000;  // once a minute
-const RING_POSITION_NETWORK = 1;
+const RING_POSITION_NETWORK = '1';
 
 const log = console;
 
@@ -55,6 +55,13 @@ class Bluetooth extends EventEmitter {
     }
 
 
+    addWebAPI(app, io) {
+	this.io = io;
+	this.addRoutes(app);
+	this.addSocketIOHandlers(io);
+    }
+
+
     addRoutes(app) {
         app.post('/api/v1/bluetooth/pair', asyncHandler(async (req, res) => {
             log.log('/btpair', req.body);
@@ -86,16 +93,15 @@ class Bluetooth extends EventEmitter {
     }
 
 
-	addSocketIOHandlers(io) {
-	    this.io = io;
+    addSocketIOHandlers(io) {
         io.on('connection', (socket) => {
             console.log('connection');
             this.emitDevices(socket);
         });
 
-        io.on('bluetooth/requestscan', () => {
-            log.log('btrequestscan');
-            this.requestScan();
+        io.on('bluetooth/requestdiscovery', () => {
+            log.log('bluetooth/requestdiscovery');
+            this.requestDiscovery();
         });
 
         // io.on('bluetooth/stopdiscovery', () => {
@@ -105,12 +111,12 @@ class Bluetooth extends EventEmitter {
     }
 
 
-    async requestScan() {
+    async requestDiscovery() {
         // ask for a discovery scan to be done
         // enables discovery for 20 seconds, if not already running
         // or renews the 20 second timer
         // client should be configured to refresh request every 5 seconds
-        console.log('requestScan');
+        console.log('requestDiscovery');
         if (!this.discovery_timeout) {
             console.log('starting discovery scan');
             await this.startDiscovery();
@@ -155,15 +161,16 @@ class Bluetooth extends EventEmitter {
     }
 
 
-    watchRingToEnableDiscovery(ringInput) {
-	this.ringChanged();
-	ringInput.on('change', () => this.ringChanged());
+    watchRingToEnablePairable(ringInput) {
+	this.ringChanged(ringInput);
+	ringInput.on('change', () => this.ringChanged(ringInput));
     }
 
 
-    async ringChanged() {
-	this.ring_position = ringInput.getModenum();
-	if (this.ring_position === RING_POSITION_NETWORK) {
+    async ringChanged(ringInput) {
+	let ring_position = ringInput.getModenum();
+	console.log('ring_position', ring_position, RING_POSITION_NETWORK);
+	if (ring_position === RING_POSITION_NETWORK) {
 	    await this.startPairable();
 	} else {
 	    await this.stopPairable();
@@ -177,8 +184,9 @@ class Bluetooth extends EventEmitter {
 	    this.refresh_pairable_timeout = undefined;
 	}
 
-	await adapter.Discoverable(true);
-	await adapter.Pairable(true);
+	console.log('enabling discoverable and pairing');
+	await this.adapter.Discoverable(true);
+	await this.adapter.Pairable(true);
 	
         this.refresh_pairable_timeout = setTimeout( () => this.startPairable(), REFRESH_PAIRABLE_TIMEOUT_MS);
     }
@@ -190,8 +198,9 @@ class Bluetooth extends EventEmitter {
 	    this.refresh_pairable_timeout = undefined;
 	}
 
-	await adapter.Discoverable(false);
-	await adapter.Pairable(false);
+	console.log('stopping discoverable and pairing');
+	await this.adapter.Discoverable(false);
+	await this.adapter.Pairable(false);
     }
 
 
