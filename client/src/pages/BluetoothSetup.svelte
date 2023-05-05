@@ -21,6 +21,7 @@
   // let disconnect_request;
 
   let pairing;
+  let paired;
   let bluetooth_error = '';
   let removing;
   let removed;
@@ -122,6 +123,7 @@
               });
               let result = await response.text();
               console.log('result', result);
+              paired = true;
           } catch(err) {
               console.error(err);
           }
@@ -244,6 +246,7 @@
       console.log('resetting rebooting flag');
       rebooting = false;
       removed = false;
+      paired = false; 
   }
 </script>
 
@@ -253,6 +256,25 @@
     <div class="connect-container">
       <div id="devicelist-container">
         <div id="devicelist">
+          {#if paired || removed}
+            <center>
+              {#if paired}
+                <div class="sublabel"><br>To finish connecting to the device<br>please reboot this Maka Niu</div>
+                  
+              {:else}
+                <div class="sublabel"><br>To re-pair the recently removed device<br>you will need to reboot this Maka Niu</div>
+              {/if}
+              <br>
+              <Button nofeedback dangerous height=30 width=150 on:click={reboot}>
+                {#if !rebooting}
+                  Reboot
+                {:else}
+                  Rebooting...
+                {/if}
+              </Button>
+              <br>
+            </center>
+          {/if}
           {#if paired_devices && paired_devices.length}
             <center>
               <span style="color:darkgray">Paired LED Module</span>
@@ -282,18 +304,6 @@
             </Button>
           {:else}
             <center>
-              {#if removed}
-                <div class="sublabel"><br>To re-pair the recently removed device<br>You will need to reboot this Maka Niu</div>
-                <br>
-                  <Button nofeedback dangerous height=30 width=150 on:click={reboot}>
-                    {#if !rebooting}
-                      Reboot
-                    {:else}
-                      Rebooting...
-                    {/if}
-                  </Button>
-                <br>
-              {/if}
               <div class="sublabel"><br>LED Modules are only visible<br>when ring is on "network"<br><br></div>
               <span style="color:darkgray">Visible LED Modules</span>
               <br>
