@@ -122,11 +122,11 @@ class DownloadAll extends EventEmitter {
         });
 
         archive.on('end', () => {
-            log.log('download archive stream has ended');
+            log.log(`download ${select} archive stream has ended`);
         });
 
         archive.on('progress', (event) => {
-            //log.log('downloadprogress', event);
+            log.log('downloadprogress', event);
             this.io.emit('downloadall/progress', event);
         });
 
@@ -156,8 +156,10 @@ class DownloadAll extends EventEmitter {
             }
         }
 
+        log.log('finalize');
         await archive.finalize();
 
+        log.log('res.end');
         return res.end();
     }
 
