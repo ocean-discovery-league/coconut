@@ -160,7 +160,7 @@ class DownloadAll extends EventEmitter {
 
         await archive.finalize();
 
-        return res.end();
+        //return res.end();  // don't do this, this breaks downloading!
     }
 
 
