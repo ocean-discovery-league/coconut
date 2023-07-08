@@ -13,8 +13,8 @@ async function main() {
         let ringInput = new RingInput();
         await ringInput.init();
 
-	let bluetooth = new Bluetooth()
-	await bluetooth.init(ringInput);
+        let bluetooth = new Bluetooth();
+        await bluetooth.init(ringInput);
 
         let missionPrograms = new MissionPrograms();
         await missionPrograms.init();
@@ -26,7 +26,7 @@ async function main() {
         let webServer = new WebServer();
         await webServer.init(bluetooth, missionPrograms, ringInput);
     } else {
-	const DevProxyServer = require('./DevProxyServer.js');
+        const DevProxyServer = require('./DevProxyServer.js');
         let devProxyServer = new DevProxyServer();
         await devProxyServer.init();
     }

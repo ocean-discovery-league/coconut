@@ -41,15 +41,15 @@ class WebServer {
         let httpserver = http.createServer(app);
         let io = new socketio.Server(httpserver, { cors:{origin: '*'}, /*maxHttpBufferSize: 1e8*/ });
 
-	io.on('connection', (socket) => {
-	    socket.onAny((eventName, ...args) => {
-		console.log('socket io event', eventName, ...args);
-		const isNotRegistered = !Object.keys(socket._events).includes(eventName);
-		if (isNotRegistered) {
-		    console.error('error: got an unregistered socket io event', eventName);
-		}
-	    });
-	});
+        io.on('connection', (socket) => {
+            socket.onAny((eventName, ...args) => {
+                console.log('socket io event', eventName, ...args);
+                const isNotRegistered = !Object.keys(socket._events).includes(eventName);
+                if (isNotRegistered) {
+                    console.error('error: got an unregistered socket io event', eventName);
+                }
+            });
+        });
 
         httpserver.listen(PORT, BIND, () => {
             log.log(`http server started on port ${PORT}`);
@@ -61,8 +61,8 @@ class WebServer {
 
         bluetooth.addWebAPI(app, io);
 
-	ringInput.addRoutes(app);
-	ringInput.addSocketIOHandlers(io);
+        ringInput.addRoutes(app);
+        ringInput.addSocketIOHandlers(io);
 
         missionPrograms.addRoutes(app, io);
 
