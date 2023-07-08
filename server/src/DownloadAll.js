@@ -159,8 +159,7 @@ class DownloadAll extends EventEmitter {
         log.log('finalize');
         await archive.finalize();
 
-        log.log('res.end');
-        return res.end();
+        //return res.end();  // don't do this, this breaks downloading!
     }
 
 
