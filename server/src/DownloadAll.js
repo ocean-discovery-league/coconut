@@ -4,6 +4,7 @@ const os = require('os');
 const fsP = require('fs').promises;
 const path = require('path');
 const zlib = require('zlib');
+const glob = require('readdir-glob');  // we rely on the `archive` module depending on / using this
 const { EventEmitter } = require('events');
 const asyncHandler = require('express-async-handler');
 
@@ -74,16 +75,16 @@ class DownloadAll extends EventEmitter {
         }
         log.log(`download ${select} as ${format} started`);
 
-        let glob;
-        switch (select) {
-        case 'all':
-            glob = false;
-            break;
-        case 'logs':
-            glob = MEDIA_DIR + '*.txt';
-            break;
-        default: return res.status(404).end();
-        }
+        // let glob;
+        // switch (select) {
+        // case 'all':
+        //     glob = false;
+        //     break;
+        // case 'logs':
+        //     glob = MEDIA_DIR + '*.txt';
+        //     break;
+        // default: return res.status(404).end();
+        // }
 
         let ext;
         let archive;
@@ -106,6 +107,15 @@ class DownloadAll extends EventEmitter {
         default: return res.status(404).end();
         }
 
+        let pendingFiles = [];
+        let finishedFiles = [];
+        let pendingBytes = 0;
+        let finishedBytes = 0;
+        let dataBytes = 0;
+        let fileName;
+        let fileBytesTotal = 0;
+        let fileBytesDone = 0;
+
         archive.on('warning', (err) => {
             if (err.code === 'ENOENT') {
                 log.error('warning: file missing while archiving', err);
@@ -125,9 +135,26 @@ class DownloadAll extends EventEmitter {
             log.log(`download ${select} archive stream has ended`);
         });
 
+        archive.on('data', (data) => {
+            //log.log('data', data.length);
+            dataBytes += data.length;
+            fileBytesDone += data.length;
+            //this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
+        });
+
+        archive.on('entry', (event) => {
+            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
+            //log.log('archive entry', event);
+            fileName = event.name;
+            fileBytesTotal = event.stats.size;
+            fileBytesDone = 0;
+            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
+        });
+
         archive.on('progress', (event) => {
-            log.log('downloadprogress', event);
-            this.io.emit('downloadall/progress', event);
+            //log.log('archive progress', event);
+            finishedFiles.push(event);
+            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
         });
 
         let dirname = (new Date(Date.now())).toISOString();
@@ -144,7 +171,19 @@ class DownloadAll extends EventEmitter {
         // if (glob) {
         //     archive.glob(glob, { cwd: MEDIA_DIR });
         if (select === 'all') {
-            archive.directory(MEDIA_DIR, dirname);
+            // archive.directory(MEDIA_DIR, dirname, (entry) => {
+            //     log.log('adding pendingFile', entry);
+            //     pendingFiles.push(entry);
+            //     //pendingBytes += entry
+            //     return entry;
+            // });
+            pendingFiles = await this.getRecursiveDirectoryList(MEDIA_DIR);
+            for (let file of pendingFiles) {
+                archive.file(`${MEDIA_DIR}/${file.name}`, { name: `${dirname}/${file.name}` } );
+                pendingBytes += file.size;
+            }
+            log.log('pendingFiles', pendingFiles);
+            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
         } else {
             let filelists = await this.getFileLists();
             let filelist = [];
@@ -160,6 +199,24 @@ class DownloadAll extends EventEmitter {
         await archive.finalize();
 
         //return res.end();  // don't do this, this breaks downloading!
+    }
+
+
+    reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone) {
+        // let event = {
+        //     pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes
+        // };
+        let event = {
+            filesTotal: pendingFiles.length,
+            filesDone: finishedFiles.length,
+            bytesTotal: pendingBytes,
+            bytesDone: dataBytes,
+            fileName,
+            fileBytesTotal,
+            fileBytesDone
+        };
+        //log.log('progress', event);
+        this.io.emit('downloadall/progress', event);
     }
 
 
@@ -184,6 +241,24 @@ class DownloadAll extends EventEmitter {
             }
         }
         return filelists;
+    }
+
+
+    async getRecursiveDirectoryList(dirpath) {
+        let directoryList = [];
+        return new Promise( (resolve, reject) => {
+            let globOptions = {
+                stat: true,
+                dot: true
+            };
+
+            let globber = glob(dirpath, globOptions);
+            globber.on('match', (match) => {
+                directoryList.push({ name: match.relative, size: match.stat.size });
+            });
+            globber.on('error', (err) => reject(err));
+            globber.on('end', () => resolve(directoryList));
+        });
     }
 }
 
