@@ -29,6 +29,9 @@
       socket.on('uploadall/progress',   (data) => update_upload_progress(data));
       socket.on('uploadall/finished',   (data) => update_upload_finished(false, data));
       socket.on('uploadall/error',      (data) => update_upload_finished(data, false));
+
+      socket.on('downloadall/progress', (data) => console.log('downloadall/progress', data));
+      console.log('put your hands up!');
   });
 
   let uploading = false;
