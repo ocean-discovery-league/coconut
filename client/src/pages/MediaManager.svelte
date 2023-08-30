@@ -30,8 +30,10 @@
       socket.on('uploadall/finished',   (data) => update_upload_finished(false, data));
       socket.on('uploadall/error',      (data) => update_upload_finished(data, false));
 
-      socket.on('downloadall/progress', (data) => console.log('downloadall/progress', data));
-      console.log('put your hands up!');
+      socket.on('downloadall/progress', (data) => {
+      update_download_started();
+      update_download_progress();
+      });
   });
 
   let uploading = false;
@@ -192,13 +194,58 @@
       }
       return text;
   }
+
+
+  function update_download_started(data) {
+      downloading = true;
+      downloading_error = false;
+      downloading_response = false;
+      downloading_summary = false;
+      canceling = false;
+      canceled = false;
+      filecounts = data.filecounts;
+  }
+  
+
+  function update_download_progress(data) {
+      console.log('progress', data);
+      if (!downloading) {
+          downloading = true;
+          downloading_error = false;
+          downloading_response = false;
+          downloading_summary = false;
+          canceling = false;
+          canceled = false;
+      }
+      filecounts = data.filecounts;
+      downloading_summary = download_counts_summary_text(data);
+  }
+
+
+  function download_counts_summary_text(data) {
+      let text = '';
+      if (data.of > 0) {
+          text = `Downloading ${data.filesDone} of ${data.filesTotal}<br>${data.fileName}`;
+          download_progress = '' + Math.floor( Math.max(100, 100 * ((data.bytesDone) / (data.bytesTotal))) ) + '%';
+          console.log(download_progress);
+      }
+      return text;
+  }
 </script>
 
 
 <center>
   <div class="upload-container">
     <Button width=280 height=36 fontsize='16px' nofeedback on:click={() => {download_a_url(download_all_url)}}>
+      {#if !downloading}
         Download All Files
+      {:else}
+        {#if canceling}
+          Canceling...
+        {:else}
+          Cancel Download
+        {/if}
+      {/if}
     </Button>
     <div style='height:24px'></div>
     <Button width=280 height=36 fontsize='16px' nofeedback on:click={() => {download_a_url(download_logs_url)}}>
@@ -233,6 +280,26 @@
           {uploading_response}
         {:else}
           {uploading_summary}
+        {/if}
+      {/if}
+    </div>
+    <div class="downloadstatus">
+      {#if downloading}
+        {#if downloading_summary}
+          {downloading_summary}
+          <div id="uploadprogressbar"><div id="downloadprogressbarfiller" style="width: {download_progress}"></div></div>
+        {:else}
+          Downloading...
+        {/if}
+      {:else}
+        {#if canceled}
+          Downloading canceled
+        {:else if downloading_error}
+          <span class="error">{downloading_error}</span>
+        {:else if downloading_response}
+          {downloading_response}
+        {:else}
+          {downloading_summary}
         {/if}
       {/if}
     </div>
