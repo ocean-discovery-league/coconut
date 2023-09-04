@@ -116,7 +116,7 @@ class DownloadAll extends EventEmitter {
         let fileBytesTotal = 0;
         let fileBytesDone = 0;
         let downloadFinished = false;
-        let startTime = date.now();
+        let startTime = Date.now();
         let finalElapsedTime = null;
 
         function report() {
