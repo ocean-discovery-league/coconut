@@ -68,9 +68,9 @@ class Bluetooth extends EventEmitter {
             res.json(data);
         }));
 
-        app.post('/api/v1/bluetooth/unpair', asyncHandler(async (req, res) => {
-            log.log('bluetooth/unpair', req.body);
-            let data = await this.unpairDevice(req.body.address);
+        app.post('/api/v1/bluetooth/remove', asyncHandler(async (req, res) => {
+            log.log('bluetooth/remove', req.body);
+            let data = await this.removeDevice(req.body.address);
             log.log('result', data);
             res.json(data);
         }));
@@ -362,20 +362,24 @@ class Bluetooth extends EventEmitter {
     async pairDevice(address) {
         this.soloOperation( async () => {
             let device = await this.getDevice(address);
-            log.log('pairing', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
+            log.log('pairing', address, device.Name(), 'Paired: ', device.Paired(), 'Connected: ', device.Connected());
             let result = await device.Pair();
             log.log('done. result:', result);
         });
     }
 
 
-    async unpairDevice(address) {
+    async removeDevice(address) {
         this.soloOperation( async () => {
             let device = await this.getDevice(address);
-            log.log('unpairing', address, device.Name, 'Paired: ', device.Paired, 'Connected: ', device.Connected);
+            log.log('removeing', address, device.Name(), 'Paired: ', device.Paired(), 'Connected: ', device.Connected());
             let result;
-            result = await device.CancelPairing();
-            log.log('result:', result);
+	    try {
+		result = await device.CancelPairing();
+		log.log('result:', result);
+	    } catch(err) {
+		log.error('warning: error while canceling pairing', err);
+	    }
             result = await this.adapter.RemoveDevice(device);
             log.log('done. result:', result);
         });
