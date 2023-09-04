@@ -77,7 +77,7 @@
 
 
   function handle_devices_event(devices) {
-      console.log('handle bluetooth devices', { devices });
+      //console.log('handle bluetooth devices', { devices });
       if (devices === undefined) {
           paired_devices = undefined;
           visible_devices = undefined;
