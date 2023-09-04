@@ -119,9 +119,9 @@ class DownloadAll extends EventEmitter {
         let startTime = Date.now();
         let finalElapsedTime = null;
 
-        function report() {
+        const  report = () => {
             this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone, downloadFinished, startTime, finalElapsedTime);
-        }
+        };
 
         archive.on('warning', (err) => {
             if (err.code === 'ENOENT') {
