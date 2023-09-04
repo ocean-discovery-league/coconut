@@ -115,6 +115,13 @@ class DownloadAll extends EventEmitter {
         let fileName;
         let fileBytesTotal = 0;
         let fileBytesDone = 0;
+        let downloadFinished = false;
+        let startTime = date.now();
+        let finalElapsedTime = null;
+
+        function report() {
+            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone, downloadFinished, startTime, finalElapsedTime);
+        }
 
         archive.on('warning', (err) => {
             if (err.code === 'ENOENT') {
@@ -139,22 +146,40 @@ class DownloadAll extends EventEmitter {
             //log.log('data', data.length);
             dataBytes += data.length;
             fileBytesDone += data.length;
-            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
+            report();
         });
 
-        archive.on('entry', (event) => {
-            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
-            //log.log('archive entry', event);
-            fileName = event.name;
-            fileBytesTotal = event.stats.size;
-            fileBytesDone = 0;
-            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
-        });
+        // archive.on('entry', (event) => {
+        //     report();
+        //     log.log('archive entry', event);
+        //     // fileName = event.name;
+        //     // fileBytesTotal = event.stats.size;
+        //     // fileBytesDone = 0;
+        //     report();
+        // });
 
         archive.on('progress', (event) => {
-            //log.log('archive progress', event);
+            log.log('archive progress', event);
             finishedFiles.push(event);
-            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
+            if (pendingFiles.length > finishedFiles.length) {
+                let n = finishedFiles.length - 1;
+                fileName = pendingFiles[n].name;
+                fileBytesDone = 0;
+                fileBytesTotal = pendingFiles[n].size;
+            } else {
+                fileName = '';
+                fileBytesDone = 0;
+                fileBytesTotal = 0;
+            }
+            report();
+        });
+
+        archive.on('finish', () => {
+            fileName = '';
+            fileBytesDone = 0;
+            fileBytesTotal = 0;
+            downloadFinished = true;
+            finalElapsedTime = Date.now() - startTime;
         });
 
         let dirname = (new Date(Date.now())).toISOString();
@@ -183,7 +208,12 @@ class DownloadAll extends EventEmitter {
                 pendingBytes += file.size;
             }
             //log.log('pendingFiles', pendingFiles);
-            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
+            if (pendingFiles) {
+                fileName = pendingFiles[0].name;
+                fileBytesDone = 0;
+                fileBytesTotal = pendingFiles[0].size;
+            }
+            report();
         } else {
             let filelists = await this.getFileLists();
             let filelist = [];
@@ -202,7 +232,7 @@ class DownloadAll extends EventEmitter {
     }
 
 
-    reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone) {
+    reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone, downloadFinished, startTime, finalElapsedTime) {
         // let event = {
         //     pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes
         // };
@@ -213,7 +243,9 @@ class DownloadAll extends EventEmitter {
             bytesDone: dataBytes,
             fileName,
             fileBytesTotal,
-            fileBytesDone
+            fileBytesDone,
+            finished: downloadFinished,
+            elapsedTime: finalElapsedTime || Date.now() - startTime
         };
         //log.log('progress', event);
         this.io.emit('downloadall/progress', event);
