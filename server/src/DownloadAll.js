@@ -139,7 +139,7 @@ class DownloadAll extends EventEmitter {
             //log.log('data', data.length);
             dataBytes += data.length;
             fileBytesDone += data.length;
-            //this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
+            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
         });
 
         archive.on('entry', (event) => {
@@ -182,7 +182,7 @@ class DownloadAll extends EventEmitter {
                 archive.file(`${MEDIA_DIR}/${file.name}`, { name: `${dirname}/${file.name}` } );
                 pendingBytes += file.size;
             }
-            log.log('pendingFiles', pendingFiles);
+            //log.log('pendingFiles', pendingFiles);
             this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone);
         } else {
             let filelists = await this.getFileLists();
