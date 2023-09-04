@@ -41,6 +41,10 @@ class DevProxyServer {
             throw new Error('MAKANIU_PROXY_ADDRESS environment variable required!');
         }
 
+        if (serverProxyAddress === 'localhost') {
+            serverProxyAddress = 'http://localhost:6253';
+        }
+
         console.warn(`running in dev proxy server mode!`);
         console.warn(`using MAKANIU_PROXY_ADDRESS ${serverProxyAddress} for server api calls`);
 
@@ -51,7 +55,7 @@ class DevProxyServer {
             '/b'        // bookmark setup convenience
         ];
         app.all(server_routes, createProxyMiddleware(
-        //app.use(createProxyMiddleware(
+            //app.use(createProxyMiddleware(
             { target: serverProxyAddress,
               changeOrigin: true,  // needed?
               // ws: true,
@@ -77,7 +81,6 @@ class DevProxyServer {
 
         // const CLIENT_DIR = __dirname + '/../../client/build';
         // app.use(serveStatic(CLIENT_DIR));
-
 
         app.use(serveStatic(STATIC_DIR));
     }

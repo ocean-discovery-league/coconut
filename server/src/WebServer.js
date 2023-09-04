@@ -27,7 +27,7 @@ let log = console;
 
 
 class WebServer {
-    async init(bluetooth, missionPrograms, ringInput) {
+    async init(bluetooth, missionPrograms, ringInput, port=PORT, previewManager=null) {
         let app = express();
         app.use((req, res, next) => {
             log.log(req.method, req.url);
@@ -51,8 +51,8 @@ class WebServer {
             });
         });
 
-        httpserver.listen(PORT, BIND, () => {
-            log.log(`http server started on port ${PORT}`);
+        httpserver.listen(port, BIND, () => {
+            log.log(`http server started on port ${port}`);
         });
         httpserver.setTimeout(99999 * 1000);
 
@@ -65,6 +65,10 @@ class WebServer {
         ringInput.addSocketIOHandlers(io);
 
         missionPrograms.addRoutes(app, io);
+
+        if (previewManager) {
+            previewManager.addWebAPI(app, io);
+        }
 
         let downloadAll = new DownloadAll();
         downloadAll.init(app, io);

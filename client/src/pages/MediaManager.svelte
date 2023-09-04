@@ -2,6 +2,8 @@
   import { onMount, onDestroy } from 'svelte';
   //import { dev } from '$app/environment';
   import Button from '$lib/Button.svelte';
+  import ProgressBar from '$lib/ProgressBar.svelte';
+  import ProgressCircle from '$lib/ProgressCircle.svelte';
   import { fetch200, getSocketIO } from '$lib/misc.js';
 
   let socket;
@@ -10,7 +12,6 @@
   let download_logs_url;
   let uploadall_request;
   let uploadallcancel_request;
-  let upload_progress = '0%';
 
   onMount(() => {
       let iframe_root = window.location.protocol + '//' + window.location.hostname;
@@ -32,7 +33,7 @@
 
       socket.on('downloadall/progress', (data) => {
       update_download_started();
-      update_download_progress();
+      update_download_progress(data);
       });
   });
 
@@ -43,7 +44,15 @@
   let canceled = false;
   let filecounts;
   let filecounts_summary;
+  let upload_fraction = '0';
   let uploading_summary = '';
+  let downloading = false;
+  let downloading_error = false;
+  let downloading_response = false;
+  let download_fraction = 0;
+  let downloading_summary = '';
+  let downloading_file_name = '';
+  let downloading_file_fraction = 0;
 
   async function download_a_url(url) {
       console.log('downloading', url);
@@ -189,8 +198,7 @@
       let text = '';
       if (data.of > 0) {
           text = `Uploading ${data.n+1} of ${data.of} ${data.ext}${data.of===1?'':'s'}`;
-          upload_progress = '' + Math.floor( 100 * ((data.n) / (data.of)) ) + '%';
-          console.log(upload_progress);
+          upload_fraction = data.n / data.of;
       }
       return text;
   }
@@ -203,7 +211,6 @@
       downloading_summary = false;
       canceling = false;
       canceled = false;
-      filecounts = data.filecounts;
   }
   
 
@@ -217,19 +224,24 @@
           canceling = false;
           canceled = false;
       }
-      filecounts = data.filecounts;
-      downloading_summary = download_counts_summary_text(data);
+      download_counts_summary_text(data);
   }
 
 
   function download_counts_summary_text(data) {
       let text = '';
-      if (data.of > 0) {
-          text = `Downloading ${data.filesDone} of ${data.filesTotal}<br>${data.fileName}`;
-          download_progress = '' + Math.floor( Math.max(100, 100 * ((data.bytesDone) / (data.bytesTotal))) ) + '%';
-          console.log(download_progress);
+      if (data.bytesTotal > 0) {
+          downloading_file_name = '';
+          if (data.fileName) {
+              let parts = data.fileName.split('/');
+              downloading_file_name = parts[parts.length-1];
+          }
+          text = `Downloading ${data.filesDone} of ${data.filesTotal}`;
+          download_fraction = data.bytesDone / data.bytesTotal;
+          //downloading_file_fraction = download_fraction;
+          downloading_file_fraction = data.fileBytesDone / data.fileBytesTotal;
       }
-      return text;
+      downloading_summary = text;
   }
 </script>
 
@@ -267,7 +279,8 @@
       {#if uploading}
         {#if uploading_summary}
           {uploading_summary}
-          <div id="uploadprogressbar"><div id="uploadprogressbarfiller" style="width: {upload_progress}"></div></div>
+          <br>
+          <ProgressBar fraction={upload_fraction}/>
         {:else}
           Uploading...
         {/if}
@@ -286,8 +299,12 @@
     <div class="downloadstatus">
       {#if downloading}
         {#if downloading_summary}
+          <ProgressBar fraction={download_fraction}/>
+          <div style="height:5px"></div>
           {downloading_summary}
-          <div id="uploadprogressbar"><div id="downloadprogressbarfiller" style="width: {download_progress}"></div></div>
+          <br>
+          <ProgressCircle width=24 fraction={downloading_file_fraction}/>
+          {downloading_file_name}
         {:else}
           Downloading...
         {/if}
@@ -312,26 +329,6 @@
 
 
 <style>
-  #uploadprogressbar {
-    display: inline-block;
-    position: relative;
-    top: 1px;
-    width: 200px;
-    height: 14px;
-    text-align: left;
-    border: 2px solid white;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  #uploadprogressbarfiller {
-    display: inline-block;
-    position: relative;
-    top: -10px;
-    left: 0;
-    width: 0%;
-    height: 20px;
-    background-color: white;
-  }
   .upload-container {
     height: 260px;
     color: white;
