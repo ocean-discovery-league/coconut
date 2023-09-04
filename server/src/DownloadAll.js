@@ -162,7 +162,7 @@ class DownloadAll extends EventEmitter {
             log.log('archive progress', event);
             finishedFiles.push(event);
             if (pendingFiles.length > finishedFiles.length) {
-                let n = finishedFiles.length - 1;
+                let n = finishedFiles.length;
                 fileName = pendingFiles[n].name;
                 fileBytesDone = 0;
                 fileBytesTotal = pendingFiles[n].size;
