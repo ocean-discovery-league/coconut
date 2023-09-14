@@ -4,7 +4,7 @@
   import { getDeviceType, parseHashParams } from '$lib/misc.js';
   import Page from '$lib/Page.svelte';
   import EndPage from '$lib/EndPage.svelte';
-  import MediaManager from '$lib/../pages/MediaManager.svelte';
+  import MediaManager from '$pages/MediaManager.svelte';
   import MissionID from '$lib/../pages/MissionID.svelte';
   import NetworkSetup from '$lib/../pages/NetworkSetup.svelte';
   import WiFiSetup from '$lib/../pages/WiFiSetup.svelte';
