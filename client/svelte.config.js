@@ -6,7 +6,13 @@ const config = {
         adapter: adapter({
             //fallback: '200.html',
             fallback: 'index.html',
-        })
+        }),
+        alias: {
+            '$widgets': 'src/widgets',
+            '$panels': 'src/panels',
+            '$pages': 'src/pages',
+            '$models': 'src/models'
+        }
     },
     vite: {
       build: {

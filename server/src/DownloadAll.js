@@ -27,8 +27,8 @@ let log = {
 
 class DownloadAll extends EventEmitter {
     async init(app, io) {
-        // this.downloading = false;
-        // this.downloading_cancel = false;
+        this.downloading = false;
+        this.downloading_cancel = false;
         if (app) {
             this.addRoutes(app);
         }
@@ -45,28 +45,44 @@ class DownloadAll extends EventEmitter {
 
 
     addRoutes(app) {
-        app.get('/api/v1/download/:select/:format', asyncHandler(async (req, res) => {
-            await this.download(req, res, req.params.select, req.params.format);
+        app.post('/api/v1/download/cancel', asyncHandler(async (req, res) => {
+            if (this.downloading) {
+                log.log('canceling download...');
+                this.downloading_cancel = true;
+                this.archive.abort();
+                this.downloading_res.socket.destroy();
+                this.downloading_res = null;
+                this.downloading = false;
+                this.io.emit('downloadall/error', 'canceled');
+                res.end('download canceled');
+            } else if (this.download_cancel) {
+                log.error(`download already canceling`);
+                res.status(500).end('already canceling downloading');
+            } else {
+                log.error(`no download to cancel`);
+                res.status(500).end('no download to cancel');
+            }
         }));
-        app.get('/api/v1/download/:select', asyncHandler(async (req, res) => {
-            await this.download(req, res, req.params.select);
+        app.get(['/api/v1/download',
+                 '/api/v1/download/:select',
+                 '/api/v1/download/:select/:format'],
+                asyncHandler(async (req, res) =>
+        {
+            if (!this.downloading) {
+                this.downloading = true;
+                this.downloading_res = res;
+                try {
+                    await this.download(req, res, req.params.select, req.params.format);
+                } catch(err) {
+                    log.error('downloading error', err);
+                }
+                this.downloading_res = null;
+                this.downloading = false;
+            } else {
+                log.error('downloading already in progress');
+                res.status(409).end('downloading already in progress');
+            }
         }));
-        app.get('/api/v1/download', asyncHandler(async (req, res) => {
-            await this.download(req, res);
-        }));
-
-        // app.post('/api/v1/download/cancel', asyncHandler(async (req, res) => {
-        //     if (this.downloading) {
-        //         log.log('canceling download...');
-        //         this.downloading_cancel = true;
-        //         archive.abort();
-        //         this.downloading = false;
-        //         res.end();
-        //     } else {
-        //         log.error(`download already canceling`);
-        //         res.status(500).send('already canceling downloading');
-        //     }
-        // }));
     }
 
     async download(req, res, select='all', format='zip') {
@@ -97,11 +113,13 @@ class DownloadAll extends EventEmitter {
             }
             ext = 'zip';
             archive = archiver(format, { zlib: { level: compression } });
+            this.archive = archive;  // for canceling
             contentType = 'application/zip';
             break;
         case 'tar':
             ext = 'tar.gz';
             archive = archiver(format, { gzip: true });
+            this.archive = archive;  // for canceling
             contentType = 'application/gzip';
             break;
         default: return res.status(404).end();
@@ -159,7 +177,7 @@ class DownloadAll extends EventEmitter {
         // });
 
         archive.on('progress', (event) => {
-            log.log('archive progress', event);
+            //log.log('archive progress', event);
             finishedFiles.push(event);
             if (pendingFiles.length > finishedFiles.length) {
                 let n = finishedFiles.length;
@@ -174,12 +192,18 @@ class DownloadAll extends EventEmitter {
             report();
         });
 
+        archive.on('error', (err) => {
+            log.error('archiver error', err);
+        });
+
         archive.on('finish', () => {
+            console.log('archive emitted finish!');
             fileName = '';
             fileBytesDone = 0;
             fileBytesTotal = 0;
             downloadFinished = true;
             finalElapsedTime = Date.now() - startTime;
+            this.io.emit('downloadall/finish');
         });
 
         let dirname = (new Date(Date.now())).toISOString();
@@ -191,7 +215,9 @@ class DownloadAll extends EventEmitter {
 
         res.setHeader('Content-Type', contentType);
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Connection', 'close');
         archive.pipe(res);
+        res.on('error', () => { archive.abort(); });
 
         // if (glob) {
         //     archive.glob(glob, { cwd: MEDIA_DIR });

@@ -19,7 +19,9 @@ class DevProxyServer {
     async init() {
         let app = express();
         app.use((req, res, next) => {
-            log.log(req.method, req.url);
+            if (!req.url.startsWith('/socket.io/')) {
+                log.log(req.method, req.url);
+            }
             next();
         });
 
