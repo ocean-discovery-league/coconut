@@ -41,7 +41,7 @@
 
   .tab:disabled,
   .tab[disabled] {
-    opacity: 0.5;
+    opacity: 0.3;
     /* cursor: wait; */
     cursor: not-allowed;
   }    

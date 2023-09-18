@@ -9,10 +9,7 @@ const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
 const asyncHandler = require('express-async-handler');
 
-const MEDIA_DIR =
-      (os.platform() === 'darwin')
-      ? (__dirname + '/../test/media')
-      : '/var/www/html/media';
+const MediaWatcher = require('./MediaWatcher.js');
 
 const TATOR_UPLOAD_SCRIPT =
       (os.platform() === 'darwin')
@@ -30,18 +27,16 @@ let log = {
 
 
 class UploadAll extends EventEmitter {
-    async init(app, io) {
+    async init(app, io, mediaWatcher) {
+        this.io = io;
+        this.mediaWatcher = mediaWatcher;
         this.uploading = false;
         this.uploading_cancel = false;
         if (app) {
             this.addRoutes(app);
         }
-        this.io = io;
-        fs.watch(MEDIA_DIR, { persistent: false, encoding: 'utf8'}, (t, f) => this.onDirChange(t, f));
-
         this.io.on('connection', (socket) => {
             log.log('client connected');
-            this.onDirChange();
             if (this.uploading) {
                 this.reportUploadProgress();
             }
@@ -96,76 +91,62 @@ class UploadAll extends EventEmitter {
 
 
     async uploadAll() {
-        this.upload_filelists = await this.getFileLists();
-        this.upload_filecounts = this.countFiles(this.upload_filelists);
-        this.io.emit('uploadaall/started', { filecounts: this.upload_filecounts });
+        let allFiles = await this.mediaWatcher.getAllFiles();
+        this.filesByExt = this.mediaWatcher.groupFilesByExt(allFiles);
+        this.countsByExt = this.mediaWatcher.countFilesByExt(this.filesByExt);
+        this.io.emit('uploadall/started', { filecounts: this.countsByExt });
 
-        // ordered from smallest to largest (txt, jpg, mp4):
+        // ordered from smallest to largest: txt (logs), jpg (images), mp4 (videos)
         let file_ext_type_ids = [
             { ext: 'txt', type_id: 1, attach: true},  // type_id is ignored for attachments
             { ext: 'jpg', type_id: 120 },
             { ext: 'mp4', type_id: 28 },
         ];
 
-        this.uploads_total_file_count = 0;
-        for (let { ext, type_id } of file_ext_type_ids) {
-            if (ext in this.upload_filelists) {
-                this.uploads_total_file_count += this.upload_filelists[ext].length;
+        let total_files_count = 0;
+        for (let { ext, type_id, attach } of file_ext_type_ids) {
+            if (ext in this.filesByExt) {
+                total_files_count += this.filesByExt[ext].length;
             }
         }
-        log.log('this.uploads_total_file_count', this.uploads_total_file_count);
+        log.log('total_files_count', total_files_count);
 
-        // if (this.uploads_total_file_count === 0) {
+        // if (total_files_count === 0) {
         // }
 
         log.info('fetching list of existing tator media files');
         let tator_file_list = await this.listTatorFiles();
         log.info(`current tator media list has ${tator_file_list.length} items`);
 
+        this.uploaded_bytes = 0;
+        this.total_upload_bytes = 0;
         this.duplicate_count = 0;
-        let file_sizes = {};
         for (let { ext, type_id, attach } of file_ext_type_ids) {
-            if (ext in this.upload_filelists) {
-                let filelist = this.upload_filelists[ext];
-                filelist = filelist.filter( filename => !tator_file_list.includes(filename) );
-                this.duplicate_count += this.upload_filelists[ext].length - filelist.length;
-                this.upload_filelists[ext] = filelist;
-
-                log.info(`stating ${ext} files`);
-                for (let filename of filelist) {
-                    let size = 0;
-                    try {
-                        let stat = await fsP.stat(`${MEDIA_DIR}/${filename}`);
-                        size = stat.size;
-                    } catch(err) {
-                        log.error(`could not stat upload size for ${filename}`, err);
-                    }
-                    file_sizes[filename] = size;
+            if (ext in this.filesByExt) {
+                let filelist = this.filesByExt[ext];
+                filelist = filelist.filter( file => !tator_file_list.includes(file.name) );
+                this.duplicate_count += this.filesByExt[ext].length - filelist.length;
+                for (let file of filelist) {
+                    this.total_upload_bytes += file.size;
                 }
             }
         }
         log.info(`skipping ${this.duplicate_count} files that have already been uploaded`);
-
-        this.total_upload_bytes = 0;
-        this.uploaded_bytes = 0;
-        for (let k in file_sizes) {
-            this.total_upload_bytes += file_sizes[k];
-        }
-        log.info(`uploading ${this.total_upload_bytes} bytes from ${Object.keys(file_sizes).length} files`);
+        log.info(`uploading ${this.total_upload_bytes} bytes from ${total_files_count} files`);
 
         let media_id;
         for (let { ext, type_id, attach } of file_ext_type_ids) {
-            if (ext in this.upload_filelists) {
-                log.log(`uploading ${this.upload_filelists[ext].length} ${ext}s with type_id ${type_id}`);
+            if (ext in this.filesByExt) {
+                log.log(`uploading ${this.filesByExt[ext].length} ${ext}s with type_id ${type_id}`);
                 if (attach) {
                     if (!media_id) {
                         // quick and dirty hack to just have something stable to attach txt files to
                         log.info('uploading placard image for attaching files to');
                         media_id = await this.createMediaId();
                     }
-                    await this.uploadList(this.upload_filelists[ext], type_id, media_id);
+                    await this.uploadList(this.filesByExt[ext], ext, type_id, media_id);
                 } else {
-                    await this.uploadList(this.upload_filelists[ext], type_id);
+                    await this.uploadList(this.filesByExt[ext], ext, type_id);
                 }
             }
         }
@@ -173,77 +154,29 @@ class UploadAll extends EventEmitter {
 
 
     async createMediaId() {
-        this.upload_media_id = false;
+        this.tator_media_id = false;
         await this.uploadOneFile(__dirname + '/../static/tatorfile.jpg', 120);
         let media_id;
-        if (this.upload_media_id) {
-            media_id = this.upload_media_id;
-            delete this.upload_media_id;
+        if (this.tator_media_id) {
+            media_id = this.tator_media_id;
+            delete this.tator_media_id;
             log.log('got the media_id!', media_id);
         }
         return media_id;
     }
 
 
-    async getFileLists() {
-        let files = await fsP.readdir(MEDIA_DIR);
-        let filelists = {
-            'jpg':  [],
-            'mp4':  [],
-            'h264': [],
-            'txt':  [],
-        };
-        for (let f of files) {
-            if (f.endsWith('.th.jpg')) {  // skip the thumbnails
-                continue;
-            }
-            let ext = path.extname(f);
-            if (ext.startsWith('.')) {
-                ext = ext.substring(1);
-            }
-            if (ext in filelists) {
-                filelists[ext].push(f);
-            }
-        }
-        return filelists;
-    }
-
-
-    async onDirChange(eventType, filename) {
-        log.debug('onDirChange', eventType, filename);
-        if (!this.reporting_change) {
-            // give it a half second
-            this.reporting_change = true;
-            await new Promise( (res) => setTimeout(res, 500) );
-            let filelists = await this.getFileLists();
-            this.reporting_change = false;
-
-            let filecounts = this.countFiles(filelists);
-            log.debug('emit', filecounts);
-            this.io.emit('uploadall/filecounts', { filecounts });
-        }
-    }
-
-
-    countFiles(filelists) {
-        let filecounts = {};
-        for (let ext of Object.keys(filelists)) {
-            filecounts[ext] = filelists[ext].length;
-        }
-        return filecounts;
-    }
-
-
-    async uploadList(filelist, type_id='28', media_id=false) {
+    async uploadList(filelist, ext, type_id='28', media_id=false) {
         let n=0;
-        for (let file of filelist.sort()) {  // FIXME .reverse()??
+        let sorted_filelist = this.mediaWatcher.sortFiles(filelist);
+        for (let file of sorted_filelist) {
             if (!this.uploading_cancel) {
-                let filename = `${MEDIA_DIR}/${file}`;
+                let filename = `${MediaWatcher.MEDIA_DIR}/${file.name}`;
                 log.log('uploading', filename);
-                this.reportUploadProgress(n, filelist, this.upload_filelists);
+                this.reportUploadProgress(n, filelist, ext);
                 await this.uploadOneFile(filename, type_id, media_id);
                 n+=1;
-                this.reportUploadProgress(n, filelist, this.upload_filelists);
+                this.reportUploadProgress(n, filelist, ext);
             } else {
                 break;
             }
@@ -318,14 +251,10 @@ class UploadAll extends EventEmitter {
     }
 
 
-    reportUploadProgress(n, filelist, filelists) {
+    reportUploadProgress(n, filelist, ext) {
         if (n !== undefined) {
             let of = filelist.length;
-            let ext = path.extname(filelist[0]);
-            if (ext.startsWith('.')) {
-                ext = ext.substring(1);
-            }
-            this.lastProgressUpdate = { n, of, ext, filecounts: this.upload_filecounts };
+            this.lastProgressUpdate = { n, of, ext, filecounts: this.countsByExt };
         }
         if (this.lastProgressUpdate) {
             this.io.emit('uploadall/progress', this.lastProgressUpdate);
@@ -348,8 +277,8 @@ class UploadAll extends EventEmitter {
                         log.debug('data', data);
                         if (data.message && data.message.includes('Image saved successfully')) {
                             if (data.id) {
-                                this.upload_media_id = data.id;
-                                log.log('spotted the media id!', this.upload_media_id);
+                                this.tator_media_id = data.id;
+                                log.log('spotted the media id!', this.tator_media_id);
                             } else {
                                 log.error('did not spot the media id');
                             }
@@ -385,7 +314,7 @@ async function tests() {
     console.time('filelists');
     let filelists = await uploadAll.getFileLists();
     console.timeEnd('filelists');
-    console.log(`file list counts from ${MEDIA_DIR}:`);
+    console.log(`file list counts from ${MediaWatcher.MEDIA_DIR}:`);
     for (let ext of Object.keys(filelists).sort()) {
         console.log(`  ${ext} ${filelists[ext].length}`);
     }

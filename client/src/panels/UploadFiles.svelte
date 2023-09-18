@@ -28,6 +28,7 @@
   let canceled = false;
   let upload_fraction = '0';
   let uploading_summary = '';
+  let filecounts;
 
   async function upload_all(event) {
       if (!uploading) {
@@ -158,7 +159,6 @@
       Uploading...
     {/if}
   {:else}
-
     {#if canceled}
       Uploading canceled
     {:else if uploading_error}
@@ -174,7 +174,7 @@
 
 <style>
   .uploadstatus {
-    margin-top: 10px;
+    margin-top: 24px;
     height: 1.1em;
   }
 

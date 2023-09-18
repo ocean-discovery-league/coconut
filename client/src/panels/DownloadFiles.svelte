@@ -19,20 +19,14 @@
       download_cancel_url = '/api/v1/download/cancel';
 
       socket = getSocketIO();
-      socket.on('downloadall/started',    (data) => update_download_started(data));
-      socket.on('downloadall/progress',   (data) => update_download_progress(data));
-      socket.on('downloadall/finish',     (data) => update_download_finish(false, data));
-      socket.on('downloadall/error',      (data) => update_download_finish(data, false));
-
-      //downloadingModel.init(socket, 'downloadall/progress');
-      socket.on('downloadall/progress', (data) => {
-          update_download_started();
-          update_download_progress(data);
-      });
+      socket.on('download/started',    (data) => update_download_started(data));
+      socket.on('download/progress',   (data) => update_download_progress(data));
+      socket.on('download/warning',    (data) => update_download_warning(data));
+      socket.on('download/error',      (data) => update_download_finish(data, false));
+      socket.on('download/finish',     (data) => update_download_finish(false, data));
   });
 
   let canceling = false;
-  let canceled = false;
   let finished = false;
   let downloading = false;
   let downloading_error = false;
@@ -48,17 +42,8 @@
       downloading = true;
       transferring = true;
       finished = false;
-      //window.location = download_logs_url;
-      // let a = document.createElement('a');
-      // a.download = true;
-      // a.href = download_logs_url;
-      // a.click();
       let iframe = document.createElement('iframe');
       iframe.src = url;
-      // let html = '<'+'html>'+'<'+'body></body>'+'<'+'script>window.location="'
-      //     + download_logs_url
-      //     + '";<'+'/script>'+'<'+'/body>'+'<'+'/html>';
-      // iframe.srcdoc = html;
       document.body.append(iframe);
   }
 
@@ -71,22 +56,14 @@
           downloading_response = false;
           downloading_summary = false;
           canceling = false;
-          canceled = false;
       }
   }
   
 
   function update_download_progress(data) {
       //console.log('progress', data);
-      if (!downloading && !canceling && !finished) {
-          console.log('truing');
-          downloading = true;
-          transferring = true;
-          downloading_error = false;
-          downloading_response = false;
-          downloading_summary = false;
-          canceling = false;
-          canceled = false;
+      if (!downloading) {
+          update_download_started();
       }
       download_counts_summary_text(data);
   }
@@ -106,7 +83,6 @@
           } else {
               download_fraction = 0;
           }
-          //downloading_file_fraction = download_fraction;
           downloading_file_fraction = data.fileBytesDone / data.fileBytesTotal;
       }
       downloading_summary = text;
@@ -133,6 +109,13 @@
       }
   }
 
+
+  function update_download_warning(message) {
+      console.log('update_download_warning', message);
+      downloading_error = `Download warning: ${message}`;
+  }
+
+
   function update_download_finish(err, message) {
       console.log('update_download_finish', err, message);
       downloading = false;
@@ -144,46 +127,55 @@
           downloading_response = false;
       } else {
           downloading_error = false;
-          downloading_response = message || 'Download done!';
+          downloading_response = message || 'Download finished!';
       }      
   }
 </script>
 
 
-<div class="tabsection selected" data-name="download">
-  {#if !downloading && !canceling}
-    <Button width=280 height=36 fontsize='16px' nofeedback on:click={start_download}>Download All Files</Button>
+{#if !downloading && !canceling}
+  <Button width=280 height=36 fontsize='16px' nofeedback on:click={start_download}>Download All Files</Button>
+{:else}
+  {#if canceling}
+    <Button width=280 height=36 fontsize='16px' nofeedback on:click={cancel_download}>Canceling...</Button>
   {:else}
-    {#if canceling}
-      Canceling...
+    <Button width=280 height=36 fontsize='16px' nofeedback on:click={cancel_download}>Cancel Download</Button>
+  {/if}
+{/if}
+
+<div class="downloadstatus">
+  {#if downloading}
+    {#if downloading_summary}
+      {downloading_summary}
+      <br>
+      <ProgressBar fraction={download_fraction}/>
+      <div style="height:2px"></div>
+      <ProgressCircle width=24 fraction={downloading_file_fraction}/>
+      {downloading_file_name}
     {:else}
-      <Button width=280 height=36 fontsize='16px' nofeedback on:click={cancel_download}>Cancel Download</Button>
-      
+      Downloading...
+    {/if}
+  {:else}
+    {#if downloading_response}
+      {downloading_response}
+    {:else}
+      {downloading_summary}
     {/if}
   {/if}
-  <div style='height:24px'></div>
-  <div class="downloadstatus">
-    {#if downloading}
-      {#if downloading_summary}
-        {downloading_summary}
-        <br>
-        <ProgressBar fraction={download_fraction}/>
-        <div style="height:2px"></div>
-        <ProgressCircle width=24 fraction={downloading_file_fraction}/>
-        {downloading_file_name}
-      {:else}
-        Downloading...
-      {/if}
-    {:else}
-      {#if canceled}
-        Downloading canceled
-      {:else if downloading_error}
-        <span class="error">{downloading_error}</span>
-      {:else if downloading_response}
-        {downloading_response}
-      {:else}
-        {downloading_summary}
-      {/if}
-    {/if}
-  </div>
+  {#if downloading_error}
+    <div style="height:8px"></div>
+    <div class="error">{downloading_error}</div>
+  {/if}
 </div>
+
+
+<style>
+  .downloadstatus {
+    margin-top: 24px;
+    height: 1.1em;
+  }
+
+  .error {
+    color: #DD2C1D;
+  }
+</style>

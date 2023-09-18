@@ -4,16 +4,12 @@ const os = require('os');
 const fsP = require('fs').promises;
 const path = require('path');
 const zlib = require('zlib');
-const glob = require('readdir-glob');  // we rely on the `archive` module depending on / using this
 const { EventEmitter } = require('events');
 const asyncHandler = require('express-async-handler');
-
 const archiver = require('archiver');
 
-const MEDIA_DIR =
-      (os.platform() === 'darwin')
-      ? (__dirname + '/../test/media')
-      : '/var/www/html/media';
+const MediaWatcher = require('./MediaWatcher.js');
+const TransferSession = require('./TransferSession.js');
 
 const shunt = () => {};
 let log = {
@@ -26,81 +22,67 @@ let log = {
 
 
 class DownloadAll extends EventEmitter {
-    async init(app, io) {
-        this.downloading = false;
-        this.downloading_cancel = false;
+    async init(app, io, mediaWatcher) {
+        this.mediaWatcher = mediaWatcher;
+        this.downloadingSession = false;
         if (app) {
             this.addRoutes(app);
         }
         this.io = io;
-
-        // this.io.on('connection', (socket) => {
-        //     log.log('client connected');
-        //     this.onDirChange();
-        //     if (this.downloading) {
-        //         //this.reportDownProgress();
-        //     }
-        // });
     }
 
 
     addRoutes(app) {
-        app.post('/api/v1/download/cancel', asyncHandler(async (req, res) => {
-            if (this.downloading) {
-                log.log('canceling download...');
-                this.downloading_cancel = true;
-                this.archive.abort();
-                this.downloading_res.socket.destroy();
-                this.downloading_res = null;
-                this.downloading = false;
-                this.io.emit('downloadall/error', 'canceled');
-                res.end('download canceled');
-            } else if (this.download_cancel) {
-                log.error(`download already canceling`);
-                res.status(500).end('already canceling downloading');
-            } else {
-                log.error(`no download to cancel`);
-                res.status(500).end('no download to cancel');
-            }
-        }));
         app.get(['/api/v1/download',
-                 '/api/v1/download/:select',
-                 '/api/v1/download/:select/:format'],
+                 '/api/v1/download/:selection',
+                 '/api/v1/download/:selection/:format'],
                 asyncHandler(async (req, res) =>
         {
-            if (!this.downloading) {
-                this.downloading = true;
-                this.downloading_res = res;
-                try {
-                    await this.download(req, res, req.params.select, req.params.format);
-                } catch(err) {
-                    log.error('downloading error', err);
+            if (!this.session) {
+                let selection = req.params.selection;
+                let format = req.params.format;
+                let validSelections = ['all','video','images','logs','other'];
+                let validFormats = ['zip', 'tar'];
+
+                if (!validSelections.includes(selection) ||
+                    (format && !validFormats.includes(format)))
+                {
+                    this.session = false;
+                    res.status(404).end();
+                    return;
                 }
-                this.downloading_res = null;
-                this.downloading = false;
+
+                this.session = new TransferSession();
+                this.session.on('end', () => {
+                    this.session = undefined;
+                });
+
+                try {
+                    await this.startDownload(this.session, res, selection, format);
+                } catch(err) {
+                    this.session.error(err);
+                    throw err;
+                }
+                //return res.end();  // don't do this, this breaks downloading!
             } else {
                 log.error('downloading already in progress');
                 res.status(409).end('downloading already in progress');
             }
         }));
+
+        app.post('/api/v1/download/cancel', asyncHandler(async (req, res) => {
+            if (this.session) {
+                this.session.cancel();
+                res.end('download canceled');
+            } else {
+                log.error(`no download to cancel`);
+                res.status(500).end('no download to cancel');
+            }
+        }));
     }
 
-    async download(req, res, select='all', format='zip') {
-        if (!['all','logs'].includes(select) || !['zip','tar'].includes(format)) {
-            return res.status(404).end();
-        }
+    async startDownload(session, res, select='all', format='zip') {
         log.log(`download ${select} as ${format} started`);
-
-        // let glob;
-        // switch (select) {
-        // case 'all':
-        //     glob = false;
-        //     break;
-        // case 'logs':
-        //     glob = MEDIA_DIR + '*.txt';
-        //     break;
-        // default: return res.status(404).end();
-        // }
 
         let ext;
         let archive;
@@ -113,98 +95,15 @@ class DownloadAll extends EventEmitter {
             }
             ext = 'zip';
             archive = archiver(format, { zlib: { level: compression } });
-            this.archive = archive;  // for canceling
             contentType = 'application/zip';
             break;
         case 'tar':
             ext = 'tar.gz';
             archive = archiver(format, { gzip: true });
-            this.archive = archive;  // for canceling
             contentType = 'application/gzip';
             break;
-        default: return res.status(404).end();
+        default: throw new Error('bad format type');
         }
-
-        let pendingFiles = [];
-        let finishedFiles = [];
-        let pendingBytes = 0;
-        let finishedBytes = 0;
-        let dataBytes = 0;
-        let fileName;
-        let fileBytesTotal = 0;
-        let fileBytesDone = 0;
-        let downloadFinished = false;
-        let startTime = Date.now();
-        let finalElapsedTime = null;
-
-        const  report = () => {
-            this.reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone, downloadFinished, startTime, finalElapsedTime);
-        };
-
-        archive.on('warning', (err) => {
-            if (err.code === 'ENOENT') {
-                log.error('warning: file missing while archiving', err);
-            } else {
-                log.error('warning while archiving', err);
-            }
-            this.io.emit('downloadall/error', err.message);
-        });
-
-        archive.on('error', function(err) {
-            log.error('error while archiving', err);
-            this.io.emit('downloadall/error', err.message);
-            throw err;
-        });
-
-        archive.on('end', () => {
-            log.log(`download ${select} archive stream has ended`);
-        });
-
-        archive.on('data', (data) => {
-            //log.log('data', data.length);
-            dataBytes += data.length;
-            fileBytesDone += data.length;
-            report();
-        });
-
-        // archive.on('entry', (event) => {
-        //     report();
-        //     log.log('archive entry', event);
-        //     // fileName = event.name;
-        //     // fileBytesTotal = event.stats.size;
-        //     // fileBytesDone = 0;
-        //     report();
-        // });
-
-        archive.on('progress', (event) => {
-            //log.log('archive progress', event);
-            finishedFiles.push(event);
-            if (pendingFiles.length > finishedFiles.length) {
-                let n = finishedFiles.length;
-                fileName = pendingFiles[n].name;
-                fileBytesDone = 0;
-                fileBytesTotal = pendingFiles[n].size;
-            } else {
-                fileName = '';
-                fileBytesDone = 0;
-                fileBytesTotal = 0;
-            }
-            report();
-        });
-
-        archive.on('error', (err) => {
-            log.error('archiver error', err);
-        });
-
-        archive.on('finish', () => {
-            console.log('archive emitted finish!');
-            fileName = '';
-            fileBytesDone = 0;
-            fileBytesTotal = 0;
-            downloadFinished = true;
-            finalElapsedTime = Date.now() - startTime;
-            this.io.emit('downloadall/finish');
-        });
 
         let dirname = (new Date(Date.now())).toISOString();
         dirname = dirname.split('.')[0];
@@ -219,104 +118,35 @@ class DownloadAll extends EventEmitter {
         archive.pipe(res);
         res.on('error', () => { archive.abort(); });
 
-        // if (glob) {
-        //     archive.glob(glob, { cwd: MEDIA_DIR });
-        if (select === 'all') {
-            // archive.directory(MEDIA_DIR, dirname, (entry) => {
-            //     log.log('adding pendingFile', entry);
-            //     pendingFiles.push(entry);
-            //     //pendingBytes += entry
-            //     return entry;
-            // });
-            pendingFiles = await this.getRecursiveDirectoryList(MEDIA_DIR);
-            for (let file of pendingFiles) {
-                archive.file(`${MEDIA_DIR}/${file.name}`, { name: `${dirname}/${file.name}` } );
-                pendingBytes += file.size;
-            }
-            //log.log('pendingFiles', pendingFiles);
-            if (pendingFiles) {
-                fileName = pendingFiles[0].name;
-                fileBytesDone = 0;
-                fileBytesTotal = pendingFiles[0].size;
-            }
-            report();
-        } else {
-            let filelists = await this.getFileLists();
-            let filelist = [];
-            if (select === 'logs') {
-                filelist = filelists['txt'];
-            }
-            for (let filename of filelist) {
-                archive.file(`${MEDIA_DIR}/${filename}`, { name: `${dirname}/${filename}` } );
-            }
-        }
+        await session.init(this.io, res, archive);
 
-        log.log('finalize');
-        await archive.finalize();
-
-        //return res.end();  // don't do this, this breaks downloading!
-    }
-
-
-    reportProgress(pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes, fileName, fileBytesTotal, fileBytesDone, downloadFinished, startTime, finalElapsedTime) {
-        // let event = {
-        //     pendingFiles, finishedFiles, pendingBytes, finishedBytes, dataBytes
-        // };
-        let event = {
-            filesTotal: pendingFiles.length,
-            filesDone: finishedFiles.length,
-            bytesTotal: pendingBytes,
-            bytesDone: dataBytes,
-            fileName,
-            fileBytesTotal,
-            fileBytesDone,
-            finished: downloadFinished,
-            elapsedTime: finalElapsedTime || Date.now() - startTime
-        };
-        //log.log('progress', event);
-        this.io.emit('downloadall/progress', event);
-    }
-
-
-    async getFileLists() {
-        let files = await fsP.readdir(MEDIA_DIR);
-        let filelists = {
-            'jpg':  [],
-            'mp4':  [],
-            'h264': [],
-            'txt':  [],
-        };
-        for (let f of files) {
-            if (f.endsWith('.th.jpg')) {  // skip the thumbnails
-                continue;
-            }
-            let ext = path.extname(f);
-            if (ext.startsWith('.')) {
-                ext = ext.substring(1);
-            }
-            if (ext in filelists) {
-                filelists[ext].push(f);
-            }
-        }
-        return filelists;
-    }
-
-
-    async getRecursiveDirectoryList(dirpath) {
-        let directoryList = [];
-        return new Promise( (resolve, reject) => {
-            let globOptions = {
-                stat: true,
-                dot: true
-            };
-
-            let globber = glob(dirpath, globOptions);
-            globber.on('match', (match) => {
-                directoryList.push({ name: match.relative, size: match.stat.size });
-            });
-            globber.on('error', (err) => reject(err));
-            globber.on('end', () => resolve(directoryList));
+        archive.on('warning', (err) => session.warning(err));
+        archive.on('error', (err) => session.error(err));
+        archive.on('data', (event) => session.data(event));
+        // archive.on('entry', (event) => session.entry(event);
+        archive.on('progress', (event) => session.progress(event));
+        archive.on('finish', () => session.finish());
+        archive.on('end', () => {
+            log.log(`download ${select} archive stream has ended`);
         });
+
+        let allMediaFiles = await this.mediaWatcher.getAllFiles(undefined, true, true);
+
+        let pendingFiles = [];
+        if (select === 'all') {
+            pendingFiles = allMediaFiles;
+        } else {
+            let filesByGroup = this.mediaWatcher.groupFilesByType(allMediaFiles);
+            pendingFiles = filesByGroup[select];
+        }
+
+        for (let file of pendingFiles) {
+            archive.file(`${MediaWatcher.MEDIA_DIR}/${file.name}`, { name: `${dirname}/${file.name}` } );
+            session.addPendingFile(file);
+        }
+
+        session.begin();
+        await archive.finalize();
     }
 }
 

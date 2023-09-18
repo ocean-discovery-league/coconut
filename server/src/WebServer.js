@@ -10,6 +10,7 @@ const serveStatic = require('serve-static');
 const socketio = require('socket.io');
 require('express-async-error');
 
+const MediaWatcher = require('./MediaWatcher.js');
 const DownloadAll = require('./DownloadAll.js');
 const UploadAll = require('./UploadAll.js');
 const MissionID = require('./MissionID.js');
@@ -70,11 +71,14 @@ class WebServer {
             previewManager.addWebAPI(app, io);
         }
 
+        let mediaWatcher = new MediaWatcher();
+        mediaWatcher.init(app, io);
+
         let downloadAll = new DownloadAll();
-        downloadAll.init(app, io);
+        downloadAll.init(app, io, mediaWatcher);
 
         let uploadAll = new UploadAll();
-        uploadAll.init(app, io);
+        uploadAll.init(app, io, mediaWatcher);
 
         let missionID = new MissionID();
         await missionID.init(app, io);
