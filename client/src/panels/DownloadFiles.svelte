@@ -46,6 +46,7 @@
 
 
   function update_download_started() {
+      console.log('update_download_started');
       transferring = true;
       canceled = false;
       downloading_error = false;
@@ -56,8 +57,14 @@
   
 
   function update_download_progress(data) {
+      if (data.fileName === '') {
+          // a final progress event is sent which messes up our state and put it back into transferring mode
+          // ignore it
+          return;
+      }
       //console.log('progress', data);
       if (!transferring) {
+          console.log('progress', data);
           update_download_started();
       }
       download_counts_summary_text(data);
@@ -90,7 +97,6 @@
               let total_time = data.bytesTotal / speed_bpms;
               //let estimated_ms = (1 - download_fraction) * total_time;
               let estimated_ms = total_time - data.elapsedTime;
-              console.log(speed_bpms, data.bytesTotal, total_time, download_fraction, data.elapsedTime);
               downloading_estimate = format_speed(speed_bpms) + ' ' + format_time(estimated_ms);
           }
       }
@@ -180,7 +186,7 @@
       } else {
           downloading_error = false;
           downloading_response = message || 'Download finished!';
-      }      
+      }
   }
 </script>
 
