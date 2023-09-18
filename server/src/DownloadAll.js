@@ -24,7 +24,7 @@ let log = {
 class DownloadAll extends EventEmitter {
     async init(app, io, mediaWatcher) {
         this.mediaWatcher = mediaWatcher;
-        this.downloadingSession = false;
+        this.session = undefined;
         if (app) {
             this.addRoutes(app);
         }
@@ -47,7 +47,6 @@ class DownloadAll extends EventEmitter {
                 if (!validSelections.includes(selection) ||
                     (format && !validFormats.includes(format)))
                 {
-                    this.session = false;
                     res.status(404).end();
                     return;
                 }
@@ -81,8 +80,8 @@ class DownloadAll extends EventEmitter {
         }));
     }
 
-    async startDownload(session, res, select='all', format='zip') {
-        log.log(`download ${select} as ${format} started`);
+    async startDownload(session, res, selection='all', format='zip') {
+        log.log(`download ${selection} as ${format} started`);
 
         let ext;
         let archive;
@@ -90,7 +89,7 @@ class DownloadAll extends EventEmitter {
         switch (format) {
         case 'zip':
             let compression = zlib.constants.Z_NO_COMPRESSION;
-            if (select === 'logs') {
+            if (selection === 'logs') {
                 compression = zlib.constants.Z_BEST_COMPRESSION;
             }
             ext = 'zip';
@@ -109,7 +108,7 @@ class DownloadAll extends EventEmitter {
         dirname = dirname.split('.')[0];
         dirname = dirname.replace(/[-:]/g, '');
         dirname = dirname.replace('T', '_');
-        dirname = os.hostname + '_' + dirname + '_' + select;
+        dirname = os.hostname + '_' + dirname + '_' + selection;
         let filename = `${dirname}.${ext}`;
 
         res.setHeader('Content-Type', contentType);
@@ -127,17 +126,17 @@ class DownloadAll extends EventEmitter {
         archive.on('progress', (event) => session.progress(event));
         archive.on('finish', () => session.finish());
         archive.on('end', () => {
-            log.log(`download ${select} archive stream has ended`);
+            log.log(`download ${selection} archive stream has ended`);
         });
 
         let allMediaFiles = await this.mediaWatcher.getAllFiles(undefined, true, true);
 
         let pendingFiles = [];
-        if (select === 'all') {
+        if (selection === 'all') {
             pendingFiles = allMediaFiles;
         } else {
             let filesByGroup = this.mediaWatcher.groupFilesByType(allMediaFiles);
-            pendingFiles = filesByGroup[select];
+            pendingFiles = filesByGroup[selection];
         }
 
         for (let file of pendingFiles) {

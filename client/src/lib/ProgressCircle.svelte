@@ -40,10 +40,10 @@
   }
   circle {
     fill: transparent;
-    stroke: white;
+    stroke: grey;
   }
 
   path {
-    fill: white;
+    fill: grey;
   }
 </style>

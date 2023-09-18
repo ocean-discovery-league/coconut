@@ -77,7 +77,8 @@ class MediaWatcher extends EventEmitter {
         if (groupthem) {
             let filesByGroup = this.groupFilesByType(directoryFiles);
             directoryFiles = [];
-            let groupOrder = ['logs', 'images', 'videos', 'other'];
+            //let groupOrder = ['logs', 'images', 'videos', 'other'];
+            let groupOrder = ['videos', 'logs', 'images', 'other'];
             for (let group of groupOrder) {
                 if (group in filesByGroup) {
                     directoryFiles = directoryFiles.concat(filesByGroup[group]);

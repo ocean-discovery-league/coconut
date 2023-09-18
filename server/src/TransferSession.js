@@ -4,8 +4,7 @@ const { EventEmitter } = require('events');
 
 const shunt = () => {};
 let log = {
-    //debug: shunt
-    debug: console.debug,
+    debug: shunt,
     log: console.log,
     info: console.log,
     warn: console.warn,
@@ -42,7 +41,7 @@ class TransferSession extends EventEmitter {
 
     begin() {
         if (this.pendingFiles) {
-            log.log('pendingFiles', this.pendingFiles);
+            // log.log('pendingFiles', this.pendingFiles);
             this.fileName = this.pendingFiles[0].name;
             this.fileBytesTotal = this.pendingFiles[0].size;
         }
