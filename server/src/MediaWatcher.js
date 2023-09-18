@@ -86,7 +86,8 @@ class MediaWatcher extends EventEmitter {
             }
             // pickup any strays not in groupOrder list
             for (let group of Object.keys(filesByGroup)) {
-                if (!(group in groupOrder)) {
+                if (!groupOrder.includes(group)) {
+		    console.log('warning: adding missed group', group, filesByGroup[group]);
                     directoryFiles = directoryFiles.concat(filesByGroup[group]);
                 }
             }
