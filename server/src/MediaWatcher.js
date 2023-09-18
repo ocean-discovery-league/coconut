@@ -120,7 +120,7 @@ class MediaWatcher extends EventEmitter {
                 continue;
             }
 
-            if (ext === 'mp3' || f.name.endsWith('.th.jpg')) {
+            if (ext === 'mp4' || f.name.endsWith('.th.jpg')) {
                 group = 'videos';
             } else if (ext === 'jpg') {
                 group = 'images';
