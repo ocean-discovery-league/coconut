@@ -145,7 +145,7 @@ class TransferSession extends EventEmitter {
         // };
         let event = {
             filesTotal: this.pendingFiles.length,
-            filesDone: this.finishedFiles.length,
+            filesDone: Math.min(this.finishedFiles.length, this.pendingFiles.length),  // pendingFiles is buggy, finishedFiles might have a extra at the end
             bytesTotal: this.pendingBytes,
             bytesDone: this.dataBytes,
             fileName: this.fileName,

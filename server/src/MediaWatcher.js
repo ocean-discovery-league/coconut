@@ -77,8 +77,7 @@ class MediaWatcher extends EventEmitter {
         if (groupthem) {
             let filesByGroup = this.groupFilesByType(directoryFiles);
             directoryFiles = [];
-            //let groupOrder = ['logs', 'images', 'videos', 'other'];
-            let groupOrder = ['videos', 'logs', 'images', 'other'];
+            let groupOrder = ['logs', 'images', 'videos', 'other'];
             for (let group of groupOrder) {
                 if (group in filesByGroup) {
                     directoryFiles = directoryFiles.concat(filesByGroup[group]);
@@ -87,7 +86,7 @@ class MediaWatcher extends EventEmitter {
             // pickup any strays not in groupOrder list
             for (let group of Object.keys(filesByGroup)) {
                 if (!groupOrder.includes(group)) {
-		    console.log('warning: adding missed group', group, filesByGroup[group]);
+                    console.log('warning: adding missed group', group, filesByGroup[group]);
                     directoryFiles = directoryFiles.concat(filesByGroup[group]);
                 }
             }

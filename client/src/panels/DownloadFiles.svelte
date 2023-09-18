@@ -86,50 +86,56 @@
               || now - timeOfLastEstimate > 5 * 1000)
           {
               timeOfLastEstimate = now;
-              let estimated_ms = (1 - download_fraction) * data.elapsedTime;
-              downloading_estimate = format_time(estimated_ms);
+              let speed_bpms = data.bytesDone / data.elapsedTime;
+              let total_time = data.bytesTotal / speed_bpms;
+              //let estimated_ms = (1 - download_fraction) * total_time;
+              let estimated_ms = total_time - data.elapsedTime;
+              console.log(speed_bpms, data.bytesTotal, total_time, download_fraction, data.elapsedTime);
+              downloading_estimate = format_speed(speed_bpms) + ' ' + format_time(estimated_ms);
           }
       }
       downloading_summary = text;
   }
 
 
-  function format_time(ms, minlen = 4) {
-      let seconds = parseInt(ms / 1000);
-      let hours = parseInt(seconds / 3600);
-      seconds = seconds % 3600;
-
-      let minutes = parseInt(seconds / 60);
-      seconds = parseInt(seconds % 60);
-
-      if (seconds < 10) {
-          seconds = '0' + seconds;
+  function format_speed(bytes_per_ms) {
+      let bytes_per_second = (bytes_per_ms * 1000);
+      let value;
+      let units;
+      if (bytes_per_second > 10_000_000_000) {
+          value = Math.floor(bytes_per_second / 1_000_000_000);
+          units = 'GBps';
+      } else if (bytes_per_second > 10_000_000) {
+          value = Math.floor(bytes_per_second / 1_000_000);
+          units = 'MBps';
+      } else if (bytes_per_second > 10_000) {
+          value = Math.floor(bytes_per_second / 1_000);
+          units = 'KBps';
       } else {
-          seconds = '' + seconds;
-      }
+          value = Math.floor(bytes_per_second);
+          units = 'Bps';
+      }          
+      return `${value} ${units}`;
+  }
 
-      if (minutes < 10 && (hours > 0 || minlen > 4)) {
-          minutes = '0' + minutes;
-      } else {
-          minutes = '' + minutes;
-      }
 
-      // if (hours || minlen > 6) {
-      //     return `${hours}:${minutes}:${seconds}`;
-      // } else {
-      //     return `${minutes}:${seconds}`;
-      // }
+  function format_time(ms) {
+      let seconds = Math.floor(ms / 1000);
+      let minutes = Math.floor(seconds / 60);
+      seconds = seconds % 60;
+      let hours = Math.floor(minutes / 60);
+      minutes = minutes % 60;
 
       if (hours < 1) {
           if (minutes < 1) {
-              return `1 min`;
+              return `${seconds} sec${seconds===1?'':'s'}`;
           } else {
-              return `${minutes} mins`;
+              return `${minutes} min${minutes===1?'':'s'}`;
           }
       } else {
-          return `${hours} hours ${minutes} mins`;
+          return `${hours} hour${hours===1?'':'s'} ${minutes} min${minutes===1?'':'s'}`;
       }
-  };
+  }
 
 
   function start_download() {
@@ -194,8 +200,9 @@
     {#if downloading_summary}
       {downloading_summary}{#if downloading_estimate}<span class="estimate">{downloading_estimate}</span>{/if}
       <br>
+      <div style="height:4px"></div>
       <ProgressBar fraction={download_fraction}/>
-      <div style="height:2px"></div>
+      <div style="height:5px"></div>
       <ProgressCircle width=24 fraction={downloading_file_fraction}/>
       <span class="filename">{downloading_file_name}</span>
     {:else}

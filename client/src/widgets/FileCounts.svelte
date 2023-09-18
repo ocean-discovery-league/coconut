@@ -11,7 +11,7 @@
           let videos = fileCounts.videos || 0;
 
           text = `${logs} log${logs===1?'':'s'},
-                  ${images} image${images===1?'':'s'},
+                  ${images} photo${images===1?'':'s'},
                   ${videos} video${videos===1?'':'s'}`;
 
           let others = fileCounts.other || 0;
