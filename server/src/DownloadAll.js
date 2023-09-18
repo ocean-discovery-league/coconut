@@ -8,7 +8,7 @@ const { EventEmitter } = require('events');
 const asyncHandler = require('express-async-handler');
 const archiver = require('archiver');
 
-const MediaWatcher = require('./MediaWatcher.js');
+const { MediaWatcher, MEDIA_DIR } = require('./MediaWatcher.js');
 const TransferSession = require('./TransferSession.js');
 
 const shunt = () => {};
@@ -141,7 +141,7 @@ class DownloadAll extends EventEmitter {
         }
 
         for (let file of pendingFiles) {
-            archive.file(`${MediaWatcher.MEDIA_DIR}/${file.name}`, { name: `${dirname}/${file.name}` } );
+            archive.file(`${MEDIA_DIR}/${file.name}`, { name: `${dirname}/${file.name}` } );
             session.addPendingFile(file);
         }
 

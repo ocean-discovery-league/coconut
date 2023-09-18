@@ -19,16 +19,16 @@ let log = {
 };
 
 
+const MEDIA_DIR =
+      (os.platform() === 'darwin')
+      ? (__dirname + '/../test/media')
+      : '/var/www/html/media';
+
+
 class MediaWatcher extends EventEmitter {
-    static MEDIA_DIR =
-        (os.platform() === 'darwin')
-        ? (__dirname + '/../test/media')
-        : '/var/www/html/media';
-
-
     async init(app, io) {
         this.io = io;
-        fs.watch(MediaWatcher.MEDIA_DIR, { persistent: false, encoding: 'utf8'}, (t, f) => this.onDirChange(t, f));
+        fs.watch(MEDIA_DIR, { persistent: false, encoding: 'utf8'}, (t, f) => this.onDirChange(t, f));
 
         this.io.on('connection', (socket) => {
             log.log('MediaWatcher client connected');
@@ -54,7 +54,7 @@ class MediaWatcher extends EventEmitter {
     }
 
 
-    async getAllFiles(dirpath=MediaWatcher.MEDIA_DIR, sortthem=false, groupthem=false) {
+    async getAllFiles(dirpath=MEDIA_DIR, sortthem=false, groupthem=false) {
         let directoryFiles = [];
         await new Promise( (resolve, reject) => {
             let globOptions = {
@@ -188,7 +188,7 @@ async function tests() {
     console.timeEnd('getAllFiles');
     let filesByGroup = this.groupFilesByType(allFiles);
     let filecounts = this.countFilesByGroup(filesByGroup);
-    console.log(`file list counts from ${MediaWatcher.MEDIA_DIR}:`);
+    console.log(`file list counts from ${MEDIA_DIR}:`);
     for (let group of Object.keys(filecounts).sort()) {
         console.log(`  ${group} ${filecounts[group]}`);
     }
@@ -203,4 +203,4 @@ if (require.main === module) {
 }
 
 
-module.exports = MediaWatcher;
+module.exports = { MediaWatcher, MEDIA_DIR };

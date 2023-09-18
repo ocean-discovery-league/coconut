@@ -10,7 +10,7 @@ const serveStatic = require('serve-static');
 const socketio = require('socket.io');
 require('express-async-error');
 
-const MediaWatcher = require('./MediaWatcher.js');
+const { MediaWatcher } = require('./MediaWatcher.js');
 const DownloadAll = require('./DownloadAll.js');
 const UploadAll = require('./UploadAll.js');
 const MissionID = require('./MissionID.js');

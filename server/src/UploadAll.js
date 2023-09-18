@@ -9,7 +9,7 @@ const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
 const asyncHandler = require('express-async-handler');
 
-const MediaWatcher = require('./MediaWatcher.js');
+const { MediaWatcher, MEDIA_DIR } = require('./MediaWatcher.js');
 
 const TATOR_UPLOAD_SCRIPT =
       (os.platform() === 'darwin')
@@ -171,7 +171,7 @@ class UploadAll extends EventEmitter {
         let sorted_filelist = this.mediaWatcher.sortFiles(filelist);
         for (let file of sorted_filelist) {
             if (!this.uploading_cancel) {
-                let filename = `${MediaWatcher.MEDIA_DIR}/${file.name}`;
+                let filename = `${MEDIA_DIR}/${file.name}`;
                 log.log('uploading', filename);
                 this.reportUploadProgress(n, filelist, ext);
                 await this.uploadOneFile(filename, type_id, media_id);
@@ -314,7 +314,7 @@ async function tests() {
     console.time('filelists');
     let filelists = await uploadAll.getFileLists();
     console.timeEnd('filelists');
-    console.log(`file list counts from ${MediaWatcher.MEDIA_DIR}:`);
+    console.log(`file list counts from ${MEDIA_DIR}:`);
     for (let ext of Object.keys(filelists).sort()) {
         console.log(`  ${ext} ${filelists[ext].length}`);
     }
