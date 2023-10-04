@@ -9,8 +9,8 @@ const MEDIA_DIR = '/var/www/html/media';
 const shunt = () => {};
 // safe stringify that won't throw an error
 const safe_stringify = (o) => {
-    try { return util.inspect(o, {breakLength: Infinity, colors: true}) }
-    catch { return 'error stringifying' /*+ ' ' + o*/ }};
+    try { return util.inspect(o, {breakLength: Infinity, colors: true}); }
+    catch { return 'error stringifying'; /*+ ' ' + o*/ }};
 let log = {
     debug: shunt,
     log: shunt,
@@ -55,7 +55,7 @@ class SensorLog {
         }
         return [id, reading];
     }
-        
+
 
     parseMonoclock(line) {
         let [id, reading] = this.parseLine(line);
@@ -90,7 +90,7 @@ async function tests() {
 
     let sensorLog = new SensorLog();
 
-    let filename = '../test/MKN0002_M1_2021_02_22_17_03_57.423.txt'
+    let filename = '../test/MKN0002_M1_2021_02_22_17_03_57.423.txt';
     log.log('parsing test log file', filename);
     let readstream = fs.createReadStream(filename, 'utf8');
     let readbyline = byline.createStream(readstream);
@@ -119,6 +119,6 @@ async function tests() {
 if (require.main === module) {
     tests();
 }
-        
+
 
 module.exports = SensorLog;

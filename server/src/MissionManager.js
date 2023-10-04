@@ -1,6 +1,6 @@
 'use strict';
 
-const SensorInput = require('./SensorInput.js');
+const SensorReadTxt = require('./SensorReadTxt.js');
 const MissionEngine = require('./MissionEngine.js');
 const MissionId = require('./MissionID.js');
 
@@ -44,11 +44,11 @@ class MissionManager {
                 if (filename) {
                         this.filename = filename;
                         this.modenum = modenum;
-                        this.sensorInput = new SensorInput();
+                        this.sensorReadTxt = new SensorReadTxt();
                         let missionId = new MissionId();
                         missionId.writeMissionIdMarkerFile(this.filename);  // no need to await
-                        await this.sensorInput.init(this.filename);
-                        await this.sensorInput.start(this.filename);
+                        await this.sensorReadTxt.init(this.filename);
+                        await this.sensorReadTxt.start(this.filename);
 
                         let name = `ring${this.modenum}`;
                         let mission = await this.missionPrograms.load(name);
@@ -58,15 +58,15 @@ class MissionManager {
                         }
                         this.missionEngine = new MissionEngine();
                         await this.missionEngine.init();
-                        await this.missionEngine.start(mission, this.sensorInput.sensors);
+                        await this.missionEngine.start(mission, this.sensorReadTxt.sensors);
                 } else {
                         log.error('no sensor filename specified, not beginning mission');
                 }
             } else {
                 this.filename = filename;
-                this.sensorInput = new SensorInput();
-                await this.sensorInput.init();
-                await this.sensorInput.start(this.filename, true, speedFactor);
+                this.sensorReadTxt = new SensorReadTxt();
+                await this.sensorReadTxt.init();
+                await this.sensorReadTxt.start(this.filename, true, speedFactor);
                 let mission = await this.missionPrograms.load(missionName);
                 if (!mission) {
                         await this.stopMission();
@@ -74,7 +74,7 @@ class MissionManager {
                 }
                 this.missionEngine = new MissionEngine();
                 await this.missionEngine.init();
-                await this.missionEngine.start(mission, this.sensorInput.sensors);
+                await this.missionEngine.start(mission, this.sensorReadTxt.sensors);
             }
     }
 
@@ -85,9 +85,9 @@ class MissionManager {
                 await this.missionEngine.stop()
                 delete this.missionEngine;
             }
-            if (this.sensorInput) {
-                this.sensorInput.stop();
-                delete this.sensorInput;
+            if (this.sensorReadTxt) {
+                this.sensorReadTxt.stop();
+                delete this.sensorReadTxt;
             }
             delete this.filename;
             delete this.modenum;

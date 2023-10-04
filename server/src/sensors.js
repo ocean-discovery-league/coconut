@@ -19,6 +19,13 @@ let log = {
 log = console;  // FIXME
 
 
+const HEADERS = {
+    'KELL': ['Pressure', 'Depth', 'Temp_Environ'],
+    'BATT': ['Voltage'],
+    'GNSS': ['Latitude', 'Longitude'],
+    'IMUN': ['X_Accel', 'Y_Accel', 'Z_Accel', 'Rot_X', 'Rot_Y', 'Rot_Z', 'Mag_Field_X', 'Mag_Field_Y', 'Mag_Field_Z', 'Temp_Internal']
+};
+
 
 function elapsed_ms(start, end) {
     return Number((end - start) / BigInt(NS_PER_MS));
@@ -33,7 +40,7 @@ class Reading {
         this.values = values;
     }
 }
-    
+
 
 class Sensor {
     constructor(id, nosubclass) {
@@ -82,7 +89,7 @@ class SensorKELL extends Sensor {
         }
     }
 }
-        
+
 
 class SensorGNSS extends Sensor {
     constructor(id) {
@@ -151,7 +158,7 @@ class SensorGNSS extends Sensor {
         return new_state;
     }
 }
-        
+
 
 class SensorBATT extends Sensor {
     constructor(id) {
@@ -183,7 +190,7 @@ class SensorIMUN extends Sensor {
         super.update(reading);
     }
 }
-        
+
 
 let sensorSubClasses = {
     'KELL': SensorKELL,
@@ -201,6 +208,6 @@ async function tests() {
 if (require.main === module) {
     tests();
 }
-        
 
-module.exports = { Sensor, Reading };
+
+module.exports = { Sensor, Reading, HEADERS };

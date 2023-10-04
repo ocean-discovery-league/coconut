@@ -9,11 +9,13 @@
   import { fetch200, getSocketIO } from '$lib/misc.js';
 
   let socket;
+  let download_url;
   let download_all_url;
   let download_logs_url;
   let download_cancel_url;
 
   onMount(() => {
+      download_url    = '/api/v1/download';
       download_all_url    = '/api/v1/download/all';
       download_logs_url   = '/api/v1/download/logs';
       download_cancel_url = '/api/v1/download/cancel';
@@ -26,6 +28,7 @@
       socket.on('download/finish',     (data) => update_download_finish(false, data));
   });
 
+  let selected = 'all';
   let canceled = false;
   let downloading_error = false;
   let downloading_response = false;
@@ -146,7 +149,13 @@
 
   function start_download() {
       if (!transferring && !transferring) {
-          download_a_url(download_all_url);
+          //download_a_url(download_all_url);
+          let url = `${download_url}/${selected || 'all'}`;
+          console.log('downloading', url);
+          update_download_started();
+          let iframe = document.createElement('iframe');
+          iframe.src = url;
+          document.body.append(iframe);
       } else {
           console.error('transfer in progress');
       }
@@ -185,6 +194,7 @@
           downloading_response = false;
       } else {
           downloading_error = false;
+          downloading_summary = false;
           downloading_response = message || 'Download finished!';
       }
   }
@@ -192,13 +202,17 @@
 
 
 {#if !transferring && !canceled}
-  <Button width=280 height=36 fontsize='16px' nofeedback on:click={start_download}>Download All Files</Button>
-{:else}
-  {#if canceled}
-    <Button width=280 height=36 fontsize='16px' nofeedback on:click={cancel_download}>Canceling...</Button>
-  {:else}
-    <Button width=280 height=36 fontsize='16px' nofeedback on:click={cancel_download}>Cancel Download</Button>
-  {/if}
+  <select bind:value={selected} id="files-select">
+    <option value="all">All</option>
+    <hr>
+    <option value="logs">Logs</option>
+    <option value="photos">Photos</option>
+    <option value="video">Video</option>
+    <option value="other">Other</option>
+  </select>
+  <br>
+  <br>
+  <Button width=280 height=36 fontsize='16px' nofeedback on:click={start_download}>Download {selected} files</Button>
 {/if}
 
 <div class="downloadstatus">
@@ -227,10 +241,23 @@
     <div style="height:8px"></div>
     <div class="error">{downloading_error}</div>
   {/if}
+  <div style="height:20px"></div>
+  {#if transferring}
+    {#if !canceled}
+      <Button width=280 height=36 fontsize='16px' nofeedback on:click={cancel_download}>Cancel Download</Button>
+    {:else}
+      <Button width=280 height=36 fontsize='16px' nofeedback on:click={cancel_download}>Canceling...</Button>
+    {/if}
+  {/if}
 </div>
 
 
 <style>
+  select, option {
+    min-width: 70px;
+    text-size: 40px;
+  }
+
   .downloadstatus {
     margin-top: 24px;
     height: 1.1em;

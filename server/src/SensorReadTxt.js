@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const fsP = require('fs').promises;
+const { EventEmitter } = require('events');
 const tail = require('tail');
 const byline = require('byline');
 const byclock = require('./byclock.js');
@@ -27,7 +28,7 @@ function elapsed_ms(start, end) {
 }
 
 
-class SensorInput {
+class SensorReadTxt extends EventEmitter {
     async init() {
         this.sensors = {};
         this.sensorLog = new SensorLog();
@@ -95,10 +96,11 @@ class SensorInput {
             return;
         }
         this.count++;
-        if (this.count % 1000 === 0) { log.log('.') };
+        if (this.count % 1000 === 0) { log.log('.'); };
         let [id, reading] = this.sensorLog.parseLine(line);
         this.monoclock = reading.monoclock;
         this.update(id, reading);
+        this.emit('line', line);
     }
 
 
@@ -109,25 +111,26 @@ class SensorInput {
             this.sensors[id] = sensor;
         }
         sensor.update(reading);
+        this.emit('reading', { id, reading });
     }
 }
 
 
 async function tests() {
     log = console;
-    let sensorInput = new SensorInput();
-    await sensorInput.init();
+    let sensorReadTxt = new SensorReadTxt();
+    await sensorReadTxt.init();
 
-    //await sensorInput.start('../test/sampledata_fake.txt', true);
-    //await sensorInput.start('../test/sampledata_bad.txt', true);
-    //await sensorInput.start('../test/MKN0001_M1_2021_02_18_21_03_01.725.txt', true, 100.0);
-    await sensorInput.start('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt', true, 100.0);
+    //await sensorReadTxt.start('../test/sampledata_fake.txt', true);
+    //await sensorReadTxt.start('../test/sampledata_bad.txt', true);
+    //await sensorReadTxt.start('../test/MKN0001_M1_2021_02_18_21_03_01.725.txt', true, 100.0);
+    await sensorReadTxt.start('../test/MKN0002_M1_2021_02_22_17_03_57.423.txt', true, 100.0);
 }
 
 
 if (require.main === module) {
     tests();
 }
-        
 
-module.exports = SensorInput;
+
+module.exports = SensorReadTxt;

@@ -9,7 +9,7 @@
 </script>
 
 <TabbedBox>
-  <TabList><TabButton {disabled}>Download</TabButton><TabButton {disabled}>Upload</TabButton></TabList>
+  <TabList><TabButton {disabled}>Download Options</TabButton><TabButton {disabled}>Upload Options</TabButton></TabList>
   <TabContent>
     <DownloadFiles bind:transferring/>
   </TabContent>

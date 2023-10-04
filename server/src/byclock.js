@@ -43,7 +43,7 @@ async function tests() {
 
     const fs = require('fs');
     const byline = require('byline');
-    
+
     let filename = '../test/MKN0002_M1_2021_02_22_17_03_57.423.txt';
     let sensorLog = new SensorLog();
     let first_monoclock = await sensorLog.extractFirstMonoclock(filename);
@@ -61,6 +61,6 @@ async function tests() {
 if (require.main === module) {
     tests();
 }
-        
+
 
 module.exports = { ClockStream };
