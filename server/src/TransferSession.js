@@ -40,7 +40,7 @@ class TransferSession extends EventEmitter {
 
 
     begin() {
-        if (this.pendingFiles) {
+        if (this.pendingFiles && this.pendingFiles.length) {
             // log.log('pendingFiles', this.pendingFiles);
             this.fileName = this.pendingFiles[0].name;
             this.fileBytesTotal = this.pendingFiles[0].size;

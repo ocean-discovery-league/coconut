@@ -6,9 +6,9 @@
       let text = '';
       console.log( {fileCounts} );
       if (fileCounts) {
-          let logs   = fileCounts.logs   || 0;
-          let images = fileCounts.images || 0;
-          let videos = fileCounts.videos || 0;
+          let logs   = fileCounts.log   || 0;
+          let images = fileCounts.photo || 0;
+          let videos = fileCounts.video || 0;
 
           text = `${logs} log${logs===1?'':'s'},
                   ${images} photo${images===1?'':'s'},
@@ -35,7 +35,7 @@
 
 <style>
   .filecounts {
-    color: gray;
+    color: var(--odl-gray-4);
     margin-top: 5px;
     min-height: calc(1em + 2px);
   }

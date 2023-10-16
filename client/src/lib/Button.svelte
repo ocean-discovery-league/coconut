@@ -17,9 +17,9 @@
     height: height,
     width: width,
     fontSize: fontsize,
-    bgColor: '68, 204, 204',
+    bgColor: '24, 125, 139',
     //rippleColor: '#187D8B',
-    rippleColor: '24, 125, 139',
+    rippleColor: '24, 125, 139', //FIXME
     rippleBlur: 1,
     round: '.3rem',
     opacityIn: .5,

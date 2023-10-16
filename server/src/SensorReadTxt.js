@@ -20,7 +20,6 @@ let log = {
     warn: shunt,
     error: console.error
 };
-log = console;  // FIXME
 
 
 function elapsed_ms(start, end) {
@@ -48,14 +47,15 @@ class SensorReadTxt extends EventEmitter {
             };
             this.readstream = new tail.Tail(filename, options);
             this.readstream.on('line', (line) => this.processLine(line));
+            this.readstream.on('close', () => this.emit('close'));  // never because of tail?
             this.readstream.on('error', (err) => log.error(`tail error on file ${filename}`, err));
         } else {
             this.notail = true;
-            log.log('simulating using pre-recorded sensor data from', filename);
+            log.error('simulating using pre-recorded sensor data from', filename);
             let first_monoclock = await this.sensorLog.extractFirstMonoclock(filename);
-            log.log('first monoclock in sensor data is', first_monoclock);
+            log.error('first monoclock in sensor data is', first_monoclock);
             if (speedFactor && speedFactor !== 1.0) {
-                log.log('speed factor is', speedFactor);
+                log.error('speed factor is', speedFactor);
             }
             this.filestream = fs.createReadStream(filename, 'utf8');
             this.lineStream = byline.createStream(this.filestream);
@@ -63,6 +63,7 @@ class SensorReadTxt extends EventEmitter {
 
             this.readstream = this.lineStream.pipe(this.clockStream);
             this.readstream.on('data', (line) => this.processLine(line));
+            this.readstream.on('close', () => this.emit('close'));
             this.readstream.on('error', (err) => log.error(`stream error on file ${filename}`, err));
         }
     }
@@ -96,7 +97,7 @@ class SensorReadTxt extends EventEmitter {
             return;
         }
         this.count++;
-        if (this.count % 1000 === 0) { log.log('.'); };
+        if (this.count % 1000 === 0) { log.error('.'); };
         let [id, reading] = this.sensorLog.parseLine(line);
         this.monoclock = reading.monoclock;
         this.update(id, reading);

@@ -77,7 +77,7 @@ class MediaWatcher extends EventEmitter {
         if (groupthem) {
             let filesByGroup = this.groupFilesByType(directoryFiles);
             directoryFiles = [];
-            let groupOrder = ['logs', 'images', 'videos', 'other'];
+            let groupOrder = ['log', 'photo', 'video', 'other'];
             for (let group of groupOrder) {
                 if (group in filesByGroup) {
                     directoryFiles = directoryFiles.concat(filesByGroup[group]);
@@ -105,9 +105,9 @@ class MediaWatcher extends EventEmitter {
 
     groupFilesByType(files, includethumbs=false) {
         let filesByGroup = {
-            'videos': [],
-            'images': [],
-            'logs':   [],
+            'video':  [],
+            'photo':  [],
+            'log':    [],
             'other':  []  // includes any h264 files
         };
         for (let f of files) {
@@ -122,11 +122,11 @@ class MediaWatcher extends EventEmitter {
             }
 
             if (ext === 'mp4' || f.name.endsWith('.th.jpg')) {
-                group = 'videos';
+                group = 'video';
             } else if (ext === 'jpg') {
-                group = 'images';
+                group = 'photo';
             } else if (ext === 'txt' || ext === 'csv' || ext === 'tsv' || ext === 'json') {
-                group = 'logs';
+                group = 'log';
             } else {
                 group = 'other';
             }

@@ -3,13 +3,14 @@
   import PageHeader from '$lib/PageHeader.svelte';
   export let id = undefined;
   export let title;
+  export let twolines;
 </script>
 
 <section {id}>
 
   <div class="PageHeader">
     <slot name="PageHeader">
-      <PageHeader {title}/>
+      <PageHeader {title} {twolines}/>
     </slot>
   </div>
 
@@ -41,10 +42,10 @@
   }
 
   section:nth-child(even) {
-    background-color: #1A4565 /*#1B617C;*/ /*#13343D;*/
+    background-color: var(--page-background-color-1);
   }
   section:nth-child(odd) {
-    background-color: #29617C /*#187D8B;*/ /*#1B3C45;*/
+    background-color: var(--page-background-color-2);
   }
   
   .PageHeader {
@@ -79,6 +80,6 @@
     /* max-height: --height; */
     font-size:22px;
     font-weight:700;
-    color:white;
+    color: var(--page-body-color);
   }
 </style>

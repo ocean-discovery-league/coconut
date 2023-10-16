@@ -10,7 +10,7 @@
 </script>
 
 
-<button class="tab" class:selected="{$selectedTab === tab}" on:click="{() => selectTab(tab)}" {disabled}>
+<button class="tab" class:selected="{$selectedTab === tab}" on:click="{() => {console.log('clickkkk!');selectTab(tab);}}" {disabled}>
   <slot></slot>
 </button>
 
@@ -18,12 +18,14 @@
 <style>
   .tab {
     display: inline-block;
-    border: 2px solid gray;
+    border: 2px solid var(--odl-gray-3);
     font-size: 20px;
     width: 250px;
-    height: 30px;
-    color: gray;
+    height: 40px;
+    color: var(--odl-gray-3);
     background-color: transparent;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
   }
 
   .tab:not(:first-child) {
@@ -32,8 +34,9 @@
   }
 
   .tab.selected {
-    color: #1A4565;
-    background-color: gray;
+    color: var(--odl-brand-5);
+    background-color: var(--odl-gray-3);
+
   }
 
   .locked .tab {

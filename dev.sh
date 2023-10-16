@@ -22,7 +22,7 @@ if [[ `uname -s` == "Darwin" ]]; then
     trap cleanup INT
 
     echo "starting sveltekit client server in backgound"
-    (cd client && yarn dev) &
+    (cd client && yarn dev $*) &
     sleep 2
 
     echo "starting coconut server in dev mode"

@@ -28,10 +28,9 @@
       socket.on('download/finish',     (data) => update_download_finish(false, data));
   });
 
-  let selected = 'all';
+  let selected = 'All';
   let canceled = false;
   let downloading_error = false;
-  let downloading_response = false;
   let download_fraction = 0;
   let downloading_summary = false;
   let downloading_estimate = false;
@@ -53,7 +52,6 @@
       transferring = true;
       canceled = false;
       downloading_error = false;
-      downloading_response = false;
       downloading_summary = false;
       downloading_estimate = false;
   }
@@ -92,8 +90,9 @@
           downloading_file_fraction = data.fileBytesDone / data.fileBytesTotal;
 
           let now = Date.now();
-          if (!timeOfLastEstimate && data.elapsedTime > 5 * 1000
-              || now - timeOfLastEstimate > 5 * 1000)
+          if (data.bytesDone > 1000 &&
+              (!timeOfLastEstimate && data.elapsedTime > 5 * 1000
+               || now - timeOfLastEstimate > 5 * 1000 || true))
           {
               timeOfLastEstimate = now;
               let speed_bpms = data.bytesDone / data.elapsedTime;
@@ -150,7 +149,9 @@
   function start_download() {
       if (!transferring && !transferring) {
           //download_a_url(download_all_url);
-          let url = `${download_url}/${selected || 'all'}`;
+          let select = selected || 'All';
+          select = select.toLowerCase();
+          let url = `${download_url}/${select}`;
           console.log('downloading', url);
           update_download_started();
           let iframe = document.createElement('iframe');
@@ -168,6 +169,7 @@
           canceled = true;
           let request = new Request(download_cancel_url, { method: 'POST' });
           let response = await fetch(request);
+          canceled = false;
           console.log('download cancel response', response);
       } else {
           console.error('no download in progress');
@@ -191,33 +193,35 @@
           } else {
               downloading_error = `Download error: ${err}`;
           }
-          downloading_response = false;
+          downloading_summary = false;
       } else {
           downloading_error = false;
-          downloading_summary = false;
-          downloading_response = message || 'Download finished!';
+          downloading_summary = message || 'Download finished!';
       }
   }
 </script>
 
 
 {#if !transferring && !canceled}
+  <br>
+  <label style="font-weight: normal">Select File Type
   <select bind:value={selected} id="files-select">
-    <option value="all">All</option>
+    <option value="All">All</option>
     <hr>
-    <option value="logs">Logs</option>
-    <option value="photos">Photos</option>
-    <option value="video">Video</option>
-    <option value="other">Other</option>
+    <option value="Log">Log</option>
+    <option value="Photo">Photo</option>
+    <option value="Video">Video</option>
+    <option value="Other">Other</option>
   </select>
+  </label>
   <br>
   <br>
-  <Button width=280 height=36 fontsize='16px' nofeedback on:click={start_download}>Download {selected} files</Button>
+  <Button width=280 height=36 fontsize='16px' nofeedback on:click={start_download}>Download {selected} Files</Button>
 {/if}
 
 <div class="downloadstatus">
   {#if transferring}
-    {#if downloading_summary}
+    {#if downloading_summary && !canceled}
       {downloading_summary}{#if downloading_estimate}<span class="estimate">{downloading_estimate}</span>{/if}
       <br>
       <div style="height:4px"></div>
@@ -229,16 +233,11 @@
       Downloading...
     {/if}
   {:else}
-    {#if downloading_response}
-      {downloading_response}
-    {:else}
-      {#if downloading_summary}
-        {downloading_summary}
-      {/if}
+    {#if downloading_summary}
+      {downloading_summary}
     {/if}
   {/if}
   {#if downloading_error}
-    <div style="height:8px"></div>
     <div class="error">{downloading_error}</div>
   {/if}
   <div style="height:20px"></div>
@@ -253,9 +252,15 @@
 
 
 <style>
+  label {
+    color: var(--odl-gray-3);
+  }
   select, option {
     min-width: 70px;
-    text-size: 40px;
+    font-size: 18px;
+    margin-left: 12px;
+    padding: 4px 10px;
+    background-color: var(--odl-gray-3);
   }
 
   .downloadstatus {

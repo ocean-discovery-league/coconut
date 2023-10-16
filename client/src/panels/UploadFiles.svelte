@@ -137,6 +137,7 @@
 </script>
 
 
+<br>
 <Button width=280 height=36 fontsize='16px' nofeedback on:click={upload_all}>
   {#if !uploading}
     Upload All Files To Tator.io

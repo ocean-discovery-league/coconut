@@ -47,7 +47,7 @@ class MissionManager {
                         this.sensorReadTxt = new SensorReadTxt();
                         let missionId = new MissionId();
                         missionId.writeMissionIdMarkerFile(this.filename);  // no need to await
-                        await this.sensorReadTxt.init(this.filename);
+                        await this.sensorReadTxt.init();
                         await this.sensorReadTxt.start(this.filename);
 
                         let name = `ring${this.modenum}`;
@@ -82,7 +82,7 @@ class MissionManager {
     async stopMission() {
             if (this.missionEngine) {
                 log.log('stopping current mission');
-                await this.missionEngine.stop()
+                await this.missionEngine.stop();
                 delete this.missionEngine;
             }
             if (this.sensorReadTxt) {

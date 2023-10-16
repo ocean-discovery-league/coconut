@@ -8,7 +8,6 @@ const { HEADERS } = require('./sensors.js');
 
 const SENSOR_ORDER = ['KELL', 'BATT', 'GNSS', 'IMUN'];
 
-
 const shunt = () => {};
 let log = {
     debug: shunt,
@@ -16,12 +15,15 @@ let log = {
     warn: shunt,
     error: console.error
 };
-log = console;
 
 
 class SensorWriteCSV extends Writable {
-    start(filename) {
-        this.outputstream = fs.createWriteStream(filename, 'utf8');
+    start(filename_or_stream) {
+        if (typeof filename_or_stream === 'object') {
+            this.outputstream = filename_or_stream;
+        } else {
+            this.outputstream = fs.createWriteStream(filename_or_stream, 'utf8');
+        }
         let header = ['Sensor', 'Date', 'Time'];  // header
         let header_final = ['Monoclock'];
         for (let id of SENSOR_ORDER) {
@@ -29,7 +31,6 @@ class SensorWriteCSV extends Writable {
         }
         header = header.concat(header_final);
         header = header.map((el) => el.toUpperCase());
-        log.debug('wtf', header);
         let csv = stringify([header]);
         this.outputstream.write(csv);
         this.sensorLog = new SensorLog();

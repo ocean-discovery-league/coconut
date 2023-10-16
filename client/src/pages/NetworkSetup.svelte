@@ -2,16 +2,18 @@
   export let devicetype;
   import WiFiSetup from '$lib/../pages/WiFiSetup.svelte';
   import BluetoothSetup from '$lib/../pages/BluetoothSetup.svelte';
+  import { TabList, TabButton, TabContent, TabbedBox } from '$lib/tabs.js';
 </script>
 
 
 <center>
-<!-- FIXME
-  <WiFiSetup {devicetype}/>
-  <br>
--->
-  <hr>
-  <br>
-  <br>
-  <BluetoothSetup {devicetype}/>
+  <TabbedBox>
+    <TabList><TabButton>WiFi</TabButton><TabButton>Bluetooth</TabButton></TabList>
+    <TabContent>
+      <WiFiSetup {devicetype}/>
+    </TabContent>
+    <TabContent>
+      <BluetoothSetup {devicetype}/>
+    </TabContent>
+  </TabbedBox>
 </center>

@@ -29,7 +29,7 @@ class RingInput extends EventEmitter {
 
     addRoutes(app) {
         app.get('/api/v1/ringinput/position', (req, res) => {
-	    let position = this.getModenum();
+            let position = this.getModenum();
             let data = { position };
             res.json(data);
         });
@@ -37,10 +37,10 @@ class RingInput extends EventEmitter {
 
 
     addSocketIOHandlers(io) {
-	this.on('change', () => {
-	    let position = this.getModenum();
-	    io.emit('ringinput/position', position);
-	});	    
+        this.on('change', () => {
+            let position = this.getModenum();
+            io.emit('ringinput/position', position);
+        });
     }
 
 

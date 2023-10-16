@@ -10,7 +10,7 @@ const serveStatic = require('serve-static');
 const socketio = require('socket.io');
 require('express-async-error');
 
-const { MediaWatcher } = require('./MediaWatcher.js');
+//const { MediaWatcher } = require('./MediaWatcher.js');
 const DownloadAll = require('./DownloadAll.js');
 const UploadAll = require('./UploadAll.js');
 const MissionID = require('./MissionID.js');
@@ -28,7 +28,7 @@ let log = console;
 
 
 class WebServer {
-    async init(bluetooth, missionPrograms, ringInput, port=PORT, previewManager=null) {
+    async init(bluetooth, missionPrograms, ringInput, mediaWatcher, port=PORT, previewManager=null) {
         let app = express();
         app.use((req, res, next) => {
             log.log(req.method, req.url);
@@ -71,7 +71,7 @@ class WebServer {
             previewManager.addWebAPI(app, io);
         }
 
-        let mediaWatcher = new MediaWatcher();
+        //let mediaWatcher = new MediaWatcher();
         mediaWatcher.init(app, io);
 
         let downloadAll = new DownloadAll();

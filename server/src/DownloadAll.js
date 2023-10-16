@@ -8,7 +8,7 @@ const { EventEmitter } = require('events');
 const asyncHandler = require('express-async-handler');
 const archiver = require('archiver');
 
-const { MediaWatcher, MEDIA_DIR } = require('./MediaWatcher.js');
+const { MEDIA_DIR } = require('./MediaWatcher.js');
 const TransferSession = require('./TransferSession.js');
 
 const shunt = () => {};
@@ -39,13 +39,15 @@ class DownloadAll extends EventEmitter {
                 asyncHandler(async (req, res) =>
         {
             if (!this.session) {
-                let selection = req.params.selection;
-                let format = req.params.format;
-                let validSelections = ['all','video','images','logs','other'];
+                let selection = req.params.selection || 'all';
+                let format = req.params.format || 'zip';
+                let validSelections = ['all', 'log', 'photo', 'video', 'other'];
                 let validFormats = ['zip', 'tar'];
 
+                selection = selection.toLowerCase();
+                format = format.toLowerCase();
                 if (!validSelections.includes(selection) ||
-                    (format && !validFormats.includes(format)))
+                    (!validFormats.includes(format)))
                 {
                     res.status(404).end();
                     return;
@@ -89,7 +91,7 @@ class DownloadAll extends EventEmitter {
         switch (format) {
         case 'zip':
             let compression = zlib.constants.Z_NO_COMPRESSION;
-            if (selection === 'logs') {
+            if (selection === 'log') {
                 compression = zlib.constants.Z_BEST_COMPRESSION;
             }
             ext = 'zip';

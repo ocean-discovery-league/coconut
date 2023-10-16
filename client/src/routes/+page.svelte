@@ -122,11 +122,11 @@
       <NetworkSetup {devicetype}/>
     </Page>
     -->
-    <Page title="Network Setup">
+    <Page title="Network<br>Setup" twolines>
       <WiFiSetup {devicetype}/>
     </Page>
   {:else}
-    <Page title="Media Manager">
+    <Page title="Media<br>Manager" twolines>
       <MediaManager/>
     </Page>
 
@@ -136,17 +136,14 @@
     </Page>
 
 
-    <!--
-    <Page title="Network Setup">
+    <Page title="Network<br>Setup" twolines>
       <NetworkSetup {devicetype}/>
     </Page>
-    -->
-    <Page title="Network Setup">
-      <WiFiSetup {devicetype}/>
-    </Page>
-    <Page title="Bluetooth Setup">
+    <!--
+    <Page title="Bluetooth<br>Setup" twolines>
       <BluetoothSetup {devicetype}/>
     </Page>
+    -->
 
 
     <Page title="Video Setup">
@@ -174,7 +171,6 @@
 
 <style>
   #sectionholder {
-    font-family: sans-serif;
     scroll-snap-type: x mandatory;      
     overscroll-behaviour: contain;
     /*scroll-behavior: smooth;*/

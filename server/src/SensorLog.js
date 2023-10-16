@@ -42,11 +42,21 @@ class SensorLog {
             throw new Error(`malformed sensor log line: ${line}`);
         }
 
-        // timestamp(s) and values split by tabs
-        let [monoclock, date, time, ...values] = info.split('\t');
-
-        if (!id || !monoclock || !date || !time) {
+        if (!id || !info) {
             throw new Error(`could not parse sensor log line: ${line}`);
+        }
+
+        let monoclock, date, time, values;
+        if (id === 'DEID' || id === 'MACA') {
+            monoclock = 0;
+            values = [info];
+        } else {
+            // timestamp(s) and values split by tabs
+            [monoclock, date, time, ...values] = info.split('\t');
+
+            if (!id || !monoclock || !date || !time) {
+                throw new Error(`could not parse sensor log line: ${line}`);
+            }
         }
 
         let reading = new sensors.Reading(monoclock, date, time, values);
