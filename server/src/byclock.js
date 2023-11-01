@@ -1,8 +1,8 @@
 'use strict';
 
 const stream = require('stream');
-const SensorLog = require('./sensor-log.js');
-const PulseClock = require('./pulse-clock.js');
+const SensorLog = require('./SensorLog.js');
+const PulseClock = require('./PulseClock.js');
 
 const shunt = () => {};
 let log = {
@@ -17,23 +17,23 @@ const NS_PER_MS = 1000000;
 
 class ClockStream extends stream.Transform {
     constructor(monoclockStart, speedFactor) {
-	super();
-	this.monoclock = monoclockStart;
-	this.speedFactor = speedFactor || 1.0;
-	this.sensorLog = new SensorLog();
+        super();
+        this.monoclock = monoclockStart;
+        this.speedFactor = speedFactor || 1.0;
+        this.sensorLog = new SensorLog();
     }
 
 
     _transform(line, encoding, callback) {
-	let next_monoclock = this.sensorLog.parseMonoclock(line);
-	let delay_ms = 0;
-	if (next_monoclock > this.monoclock) {
-	    delay_ms = Number(next_monoclock - this.monoclock) / NS_PER_MS / this.speedFactor;
-	}
-	this.push(line);
-	log.debug(`byclock stream waiting ${delay_ms}ms`);
-	setTimeout(callback, delay_ms);
-	this.monoclock = next_monoclock;
+        let next_monoclock = this.sensorLog.parseMonoclock(line);
+        let delay_ms = 0;
+        if (next_monoclock > this.monoclock) {
+            delay_ms = Number(next_monoclock - this.monoclock) / NS_PER_MS / this.speedFactor;
+        }
+        this.push(line);
+        log.debug(`byclock stream waiting ${delay_ms}ms`);
+        setTimeout(callback, delay_ms);
+        this.monoclock = next_monoclock;
     }
 }
 
@@ -43,7 +43,7 @@ async function tests() {
 
     const fs = require('fs');
     const byline = require('byline');
-    
+
     let filename = '../test/MKN0002_M1_2021_02_22_17_03_57.423.txt';
     let sensorLog = new SensorLog();
     let first_monoclock = await sensorLog.extractFirstMonoclock(filename);
@@ -61,6 +61,6 @@ async function tests() {
 if (require.main === module) {
     tests();
 }
-	
+
 
 module.exports = { ClockStream };

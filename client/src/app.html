@@ -4,15 +4,16 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="description" content="Maka Niu" />
     <link rel="icon" href="/favicon.png" />
+    <!-- <link href="https://fonts.cdnfonts.com/css/montserrat" rel="stylesheet"> -->
     <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    %svelte.head%
+    <script src="/socket.io/socket.io.js"></script>
+
+    %sveltekit.head%
   </head>
 
   <body>
-    <div id="svelte">%svelte.body%</div>
-
-    <script src="/socket.io/socket.io.js"></script>
+    <div id="svelte">%sveltekit.body%</div>
   </body>
 </html>

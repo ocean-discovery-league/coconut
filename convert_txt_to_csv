@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('fs');
+const csv = require('csv');
+const SensorReadTxt = require('./server/src/SensorReadTxt.js');
+const SensorWriteCSV = require('./server/src/SensorWriteCSV.js');
+
+let log = {};
+Object.assign(log, console);
+
+
+main();
+
+async function main() {
+    if (process.argv.length !== 4) {
+        log.error('error: txt_input_filename and csv_output_filname required');
+        log.error(`usage: ${process.argv[0]} <txt_input_filename> <csv_output_filname>`);
+        process.exit(1);
+    }
+
+    let txt_input_filename = process.argv[2];
+    let csv_output_filename = process.argv[3];
+
+    let sensorReadTxt = new SensorReadTxt();
+    await sensorReadTxt.init();
+    let sensorWriteCSV = new SensorWriteCSV();
+
+    log.error('parsing log file', txt_input_filename);
+    await sensorReadTxt.start(txt_input_filename, true, null, true);
+
+    log.error('generating csv file', csv_output_filename);
+    if (csv_output_filename === '-') {
+        // note: SensorReadTxt must be careful to not print anything to stdout for this to work
+        sensorWriteCSV.start(process.stdout);
+    } else {
+        sensorWriteCSV.start(csv_output_filename);
+    }
+    sensorReadTxt.on('line', (line) => sensorWriteCSV.write(line));
+    sensorReadTxt.on('close', () => sensorWriteCSV.end());
+}

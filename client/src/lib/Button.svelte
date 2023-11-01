@@ -1,4 +1,9 @@
 <script>
+  export let height = 54;
+  export let width = 200;
+  export let fontsize = '20px';
+  export let dangerous = false;
+
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
@@ -7,17 +12,14 @@
   import RippleButton from '$lib/RippleBtn/Button.svelte';
   import { materialBtn } from '$lib/RippleBtn/buttons.js';
 
-  export let height = 54;
-  export let width = 200;
-  export let fontsize = '20px';
-
   const ourBtn = {
     ...materialBtn,
     height: height,
     width: width,
     fontSize: fontsize,
-    bgColor: '68, 204, 204',
-    rippleColor: '#187D8B',
+    bgColor: '24, 125, 139',
+    //rippleColor: '#187D8B',
+    rippleColor: '24, 125, 139', //FIXME
     rippleBlur: 1,
     round: '.3rem',
     opacityIn: .5,
@@ -25,6 +27,11 @@
     shadowHover: 5,
     shadowActive: 2,
     speed: 900
+  }
+
+  if (dangerous) {
+      ourBtn.bgColor = '139, 0, 0'; //'darkred';
+      ourBtn.rippleColor = '122, 0, 0';
   }
 
   export let nofeedback = false;
@@ -66,13 +73,13 @@
   {#if !nofeedback}
     <div id="feedback">
       <center>
-	{#if feedback_clicked}
-	  • • •
-	{:else if feedback_error}
-	  <span class="error">{feedback_error}</span>
-	{:else}
-	  {feedback_text}
-	{/if}
+        {#if feedback_clicked}
+          • • •
+        {:else if feedback_error}
+          <span class="error">{feedback_error}</span>
+        {:else}
+          {feedback_text}
+        {/if}
       </center>
     </div>
   {/if}

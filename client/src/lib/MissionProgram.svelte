@@ -3,7 +3,7 @@
   import MissionDiagram from '$lib/MissionDiagram.svelte';
   import CloseButton from '$lib/CloseButton.svelte';
   import SteppedLogRangeSlider from '$lib/SteppedLogRangeSlider.svelte';
-  import { getSocketIO } from '$lib/utils';
+  import { getSocketIO } from '$lib/misc.js';
 
   export let programid;
   export let height = '790px';
@@ -32,7 +32,8 @@
     let diagram = currentSelection.diagram;
     let new_value = Math.round(editing.value * editing.scale);
     //sliders[0] = editing.value;
-    socket.emit('updateparam', { programid, name: currentSelection.data.param, value: new_value });
+    let update = { programid, name: currentSelection.data.param, value: new_value };
+    socket.emit('missionprograms/updateparam', update);
     if (node && node.param && diagram) {
       let label = node.label || '#';
       label = label.replace(/{s}/g, (editing.value === 1) ? '':'s');
@@ -55,7 +56,8 @@
     // save the chosen editing units
     node.edit_units = editing.edit_units;
     let param_name = currentSelection.data.param + '_EDIT_UNITS';
-    socket.emit('updateparam', { programid, name: param_name, value: node.edit_units });
+    let update = { programid, name: param_name, value: node.edit_units };
+    socket.emit('missionprograms/updateparam', update);
   }
 
   function inputChangedHandler(event) {
