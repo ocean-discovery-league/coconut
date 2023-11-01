@@ -37,15 +37,7 @@ class DevProxyServer {
         const { createProxyMiddleware } = require('http-proxy-middleware');
 
         let clientProxyAddress = process.env.CLIENT_PROXY_ADDRESS || 'http://localhost:5173';
-        let serverProxyAddress = process.env.MAKANIU_PROXY_ADDRESS;
-
-        if (!serverProxyAddress) {
-            throw new Error('MAKANIU_PROXY_ADDRESS environment variable required!');
-        }
-
-        if (serverProxyAddress === 'localhost') {
-            serverProxyAddress = 'http://localhost:6253';
-        }
+        let serverProxyAddress = process.env.MAKANIU_PROXY_ADDRESS || 'http://localhost:6253';
 
         console.warn(`running in dev proxy server mode!`);
         console.warn(`using MAKANIU_PROXY_ADDRESS ${serverProxyAddress} for server api calls`);

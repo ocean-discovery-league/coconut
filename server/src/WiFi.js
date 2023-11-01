@@ -16,7 +16,7 @@ if (!INTERFACE) {
 const USE_NM = false;  // dear god, i hope we are rid of NetworkManager -jon
 const SCAN_COOLING_OFF_PERIOD = 1 * 1000;  // scan fails sometimes, maybe this will help (nope on pi! nuc?)
 
-const log = console;
+const log = Object.assign({}, console);
 
 
 class WiFi {
@@ -29,7 +29,10 @@ class WiFi {
         //this.monitor.on('control', (control, args) => {
         //    log.log('control', control, args);
         //});
+    }
 
+
+    addWebAPI(app) {
         this.addRoutes(app);
     }
 

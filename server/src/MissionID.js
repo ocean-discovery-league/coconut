@@ -142,21 +142,25 @@ class MissionID {
 
 
     async determineMACAddress() {
-        let interfaces = os.networkInterfaces();
-        if (interfaces[INTERFACE]) {
-            for (let address of interfaces[INTERFACE]) {
-                if (address.family === 'IPv4') {
-                    return address.mac;
+        if (os.platform !== 'darwin') {
+            let interfaces = os.networkInterfaces();
+            if (interfaces[INTERFACE]) {
+                for (let address of interfaces[INTERFACE]) {
+                    if (address.family === 'IPv4') {
+                        return address.mac;
+                    }
+                }
+            } else if (interfaces[ALT_INTERFACE]) {
+                for (let address of interfaces[ALT_INTERFACE]) {
+                    if (address.family === 'IPv4') {
+                        return address.mac;
+                    }
                 }
             }
-        } else if (interfaces[ALT_INTERFACE]) {
-            for (let address of interfaces[ALT_INTERFACE]) {
-                if (address.family === 'IPv4') {
-                    return address.mac;
-                }
-            }
+            return undefined;
+        } else {
+            return '11:22:33:44:55:66';
         }
-        return undefined;
     }
 }
 

@@ -46,17 +46,17 @@ class Bluetooth extends EventEmitter {
         this.bluez.on('device', (...args) => this.handleDeviceEvent(...args));
         this.bluez.on('interface-removed', (...args) => log.error('we got an interface-removed event on a device??', ...args));
 
-	let devicetype = getDeviceType();
-	if (devicetype === 'LIT') {
-	    this.watchRingToEnablePairable(ringInput);
-	}
+        let devicetype = getDeviceType();
+        if (devicetype === 'LIT') {
+            this.watchRingToEnablePairable(ringInput);
+        }
     }
 
 
     addWebAPI(app, io) {
-	this.io = io;
-	this.addRoutes(app);
-	this.addSocketIOHandlers(io);
+        this.io = io;
+        this.addRoutes(app);
+        this.addSocketIOHandlers(io);
     }
 
 
@@ -97,14 +97,14 @@ class Bluetooth extends EventEmitter {
             this.emitDevices(socket);
 
             socket.on('bluetooth/requestdiscovery', () => {
-		this.requestDiscovery();
+                this.requestDiscovery();
             });
 
             // socket.on('bluetooth/stopdiscovery', () => {
             //     log.log('bluetooth/stopdiscovery');
             //     this.stopDiscovery();
             // });
-	});
+        });
     }
 
 
@@ -133,7 +133,7 @@ class Bluetooth extends EventEmitter {
 
 
     async requestDiscoveryExpired() {
-	log.log('request discovery expired');
+        log.log('request discovery expired');
         this.discovery_timeout = null;
         await this.stopDiscovery();
     }
@@ -159,44 +159,44 @@ class Bluetooth extends EventEmitter {
 
 
     watchRingToEnablePairable(ringInput) {
-	this.ringChanged(ringInput);
-	ringInput.on('change', () => this.ringChanged(ringInput));
+        this.ringChanged(ringInput);
+        ringInput.on('change', () => this.ringChanged(ringInput));
     }
 
 
     async ringChanged(ringInput) {
-	let ring_position = ringInput.getModenum();
-	if (ring_position === RING_POSITION_NETWORK) {
-	    await this.startPairable();
-	} else {
-	    await this.stopPairable();
-	}
+        let ring_position = ringInput.getModenum();
+        if (ring_position === RING_POSITION_NETWORK) {
+            await this.startPairable();
+        } else {
+            await this.stopPairable();
+        }
     }
 
 
     async startPairable() {
-	if (this.refresh_pairable_timeout) {
-	    clearTimeout(this.refresh_pairable_timeout);
-	    this.refresh_pairable_timeout = undefined;
-	}
+        if (this.refresh_pairable_timeout) {
+            clearTimeout(this.refresh_pairable_timeout);
+            this.refresh_pairable_timeout = undefined;
+        }
 
-	log.log('enabling discoverable and pairing');
-	await this.adapter.Discoverable(true);
-	await this.adapter.Pairable(true);
-	
+        log.log('enabling discoverable and pairing');
+        await this.adapter.Discoverable(true);
+        await this.adapter.Pairable(true);
+        
         this.refresh_pairable_timeout = setTimeout( () => this.startPairable(), REFRESH_PAIRABLE_TIMEOUT_MS);
     }
 
 
     async stopPairable() {
-	if (this.refresh_pairable_timeout) {
-	    clearTimeout(this.refresh_pairable_timeout);
-	    this.refresh_pairable_timeout = undefined;
-	}
+        if (this.refresh_pairable_timeout) {
+            clearTimeout(this.refresh_pairable_timeout);
+            this.refresh_pairable_timeout = undefined;
+        }
 
-	log.log('stopping discoverable and pairing');
-	await this.adapter.Discoverable(false);
-	await this.adapter.Pairable(false);
+        log.log('stopping discoverable and pairing');
+        await this.adapter.Discoverable(false);
+        await this.adapter.Pairable(false);
     }
 
 
@@ -374,12 +374,12 @@ class Bluetooth extends EventEmitter {
             let device = await this.getDevice(address);
             log.log('removeing', address, device.Name(), 'Paired: ', device.Paired(), 'Connected: ', device.Connected());
             let result;
-	    try {
-		result = await device.CancelPairing();
-		log.log('result:', result);
-	    } catch(err) {
-		log.error('warning: error while canceling pairing', err);
-	    }
+            try {
+                result = await device.CancelPairing();
+                log.log('result:', result);
+            } catch(err) {
+                log.error('warning: error while canceling pairing', err);
+            }
             result = await this.adapter.RemoveDevice(device);
             log.log('done. result:', result);
         });

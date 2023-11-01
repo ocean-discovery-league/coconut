@@ -9,8 +9,7 @@ if [[ `uname -s` == "Darwin" ]]; then
     # run the client dev environment on a mac
 
     if [[ -z $MAKANIU_PROXY_ADDRESS ]]; then
-        echo "MAKANIU_PROXY_ADDRESS env variable required!"
-        exit 1;
+        echo "MAKANIU_PROXY_ADDRESS not set, using local server"
     fi
 
     echo "running the client dev environment"

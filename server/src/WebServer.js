@@ -14,8 +14,6 @@ require('express-async-error');
 const DownloadAll = require('./DownloadAll.js');
 const UploadAll = require('./UploadAll.js');
 const MissionID = require('./MissionID.js');
-const WiFi = require('./WiFi.js');
-const Bluetooth = require('./Bluetooth.js');
 const Rover = require('./Rover.js');
 
 const PORT = 6252;
@@ -28,7 +26,7 @@ let log = console;
 
 
 class WebServer {
-    async init(bluetooth, missionPrograms, ringInput, mediaWatcher, port=PORT, previewManager=null) {
+    async init(wifi, bluetooth, missionPrograms, ringInput, mediaWatcher, port=PORT, previewManager=null) {
         let app = express();
         app.use((req, res, next) => {
             log.log(req.method, req.url);
@@ -57,9 +55,7 @@ class WebServer {
         });
         httpserver.setTimeout(99999 * 1000);
 
-        let wifi = new WiFi();
-        await wifi.init(app, io).catch(log.error);
-
+        wifi.addWebAPI(app);
         bluetooth.addWebAPI(app, io);
 
         ringInput.addRoutes(app);

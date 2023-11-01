@@ -2,6 +2,7 @@
 
 const os = require('os');
 const WebServer = require('./WebServer.js');
+const WiFi = require('./WiFi.js');
 const Bluetooth = require('./Bluetooth.js');
 const RingInput = require('./RingInput.js');
 const MissionManager = require('./MissionManager');
@@ -14,6 +15,9 @@ async function main() {
     if (os.platform() === 'linux') {
         let ringInput = new RingInput();
         await ringInput.init();
+
+        let wifi = new WiFi();
+        await wifi.init();
 
         let bluetooth = new Bluetooth();
         await bluetooth.init(ringInput);
@@ -28,15 +32,22 @@ async function main() {
         let mediaWatcher = new MediaWatcher();
         let sensorLogManager = new SensorLogManager();
         await sensorLogManager.init(ringInput, mediaWatcher);
-        await sensorLogManager.createMissingCSVs();
+
+        //await sensorLogManager.createMissingCSVs();
+        sensorLogManager.createMissingCSVs();  // do it in the background
+
         await sensorLogManager.start();
 
         let webServer = new WebServer();
-        await webServer.init(bluetooth, missionPrograms, ringInput, mediaWatcher);
+        await webServer.init(wifi, bluetooth, missionPrograms, ringInput, mediaWatcher);
     } else {
-        if (process.env.MAKANIU_PROXY_ADDRESS === 'localhost') {
+        if (!process.env.MAKANIU_PROXY_ADDRESS) {
             let ringInput = new RingInput();
             await ringInput.init();
+
+            const DevFakeWiFi = require('./DevFakeWiFi.js');
+            let wifi = new DevFakeWiFi();
+            await wifi.init();
 
             let bluetooth = new Bluetooth();
             await bluetooth.init(ringInput);
@@ -59,7 +70,7 @@ async function main() {
             await devFakePreview.init();
 
             let webServer = new WebServer();
-            await webServer.init(bluetooth, missionPrograms, ringInput, mediaWatcher, 6253, devFakePreview);
+            await webServer.init(wifi, bluetooth, missionPrograms, ringInput, mediaWatcher, 6253, devFakePreview);
         }
 
         const DevProxyServer = require('./DevProxyServer.js');
