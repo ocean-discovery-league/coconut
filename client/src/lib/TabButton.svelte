@@ -1,5 +1,6 @@
 <script>
   export let disabled = false;
+  export let width = '250px';
   import { getContext } from 'svelte';
   import { TABS } from '$panels/TabbedBox.svelte';
 
@@ -10,7 +11,7 @@
 </script>
 
 
-<button class="tab" class:selected="{$selectedTab === tab}" on:click="{() => {console.log('clickkkk!');selectTab(tab);}}" {disabled}>
+<button class="tab" style="width:{width}" class:selected="{$selectedTab === tab}" on:click="{() => {console.log('clickkkk!');selectTab(tab);}}" {disabled}>
   <slot></slot>
 </button>
 

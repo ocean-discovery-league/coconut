@@ -8,7 +8,7 @@
   export let speed = 500;
   export let color = '#fff';
   export let fontSize = '1rem';
-  export let bgColor = '93, 120, 255';
+  export let bgColor = '93, 120, 0';
   export let bgHover = bgColor;
   export let bgActive = bgColor;
   export let rippleColor = '#264169';

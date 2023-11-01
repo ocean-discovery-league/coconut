@@ -13,9 +13,9 @@
 	const rippleSize = tweened(sizeIn, {duration: speed}), rippleOpacity = tweened(opacityIn, {duration: speed + (speed * 2.5), easing: backOut})
 </script>
 <defs>
-	<filter id="f1" x="0" y="0">
-		<feGaussianBlur in="SourceGraphic" stdDeviation={rippleBlur} />
-	</filter>
+  <filter id="f1" x="0" y="0">
+    <feGaussianBlur in="SourceGraphic" stdDeviation={rippleBlur} />
+  </filter>
 </defs>
 <circle cx="{x}" cy="{y}" r={$rippleSize} opacity={$rippleOpacity} filter="url(#f1)"/>
 

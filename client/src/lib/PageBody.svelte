@@ -1,7 +1,7 @@
-<script>
-</script>
+<div class="page-body">
+  <center><slot/></center>
+</div>
 
 
-<center>
-  <slot/>
-</center>
+<style>
+</style>

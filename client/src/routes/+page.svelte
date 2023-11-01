@@ -5,7 +5,7 @@
   import Page from '$lib/Page.svelte';
   import EndPage from '$lib/EndPage.svelte';
   import MediaManager from '$pages/MediaManager.svelte';
-  import MissionID from '$lib/../pages/MissionID.svelte';
+  //import MissionID from '$lib/../pages/MissionID.svelte';
   import NetworkSetup from '$lib/../pages/NetworkSetup.svelte';
   import WiFiSetup from '$lib/../pages/WiFiSetup.svelte';
   import BluetoothSetup from '$lib/../pages/BluetoothSetup.svelte';
@@ -13,7 +13,11 @@
   import PhotoSetup from '$lib/../pages/PhotoSetup.svelte';
   import MissionISetup from '$lib/../pages/MissionISetup.svelte';
   import MissionIISetup from '$lib/../pages/MissionIISetup.svelte';
+  import { fetch200 } from '$lib/misc.js';
+  import { missionid_data } from '$lib/stores.js';
 
+  let title_prefix = 'Maka Niu';
+  let title = title_prefix;
   let devicetype = 'MKN';
   // let scrollX;
   // let scrollY;
@@ -46,6 +50,14 @@
 
       document.onkeydown = handle_key_press;
       console.log(document.onkeypress);
+
+      let request = new Request('/api/v1/missionid');
+      let response = await fetch200(request);
+      let data = await response.json();
+      $missionid_data = data;
+      if (missionid_data.hostname) {
+	  title = title_prefix + ' ' + missionid_data.hostname;
+      }
   });
 
   onDestroy(() => { 
@@ -108,7 +120,7 @@
 </script>
 
 <svelte:head>
-  <title>Maka Niu</title>
+  <title>{title}</title>
 </svelte:head>
 
 <!-- <svelte:window bind:scrollX={scrollX} bind:scrollY={scrollY}/> -->
@@ -131,9 +143,11 @@
     </Page>
 
 
+    <!--
     <Page title="Mission ID">
       <MissionID/>
     </Page>
+    -->
 
 
     <Page title="Network<br>Setup" twolines>
@@ -146,14 +160,17 @@
     -->
 
 
+    <!--
     <Page title="Video Setup">
       <VideoSetup/>
     </Page>
+    -->
 
-
+    <!--
     <Page title="Photo Setup">
       <PhotoSetup/>
     </Page>
+    -->
 
 
     <Page title="Mission &nbsp;I">

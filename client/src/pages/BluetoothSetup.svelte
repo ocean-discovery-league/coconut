@@ -277,7 +277,7 @@
           {/if}
           {#if paired_devices && paired_devices.length}
             <center>
-              <span style="color:darkgray">Paired LED Module</span>
+              Paired Light Module
               <br>
               <br>
             </center>
@@ -297,15 +297,15 @@
             <br>
             <Button nofeedback on:click={remove_device}>
               {#if !removing}
-                Remove LED
+                Remove Light Module
               {:else}
-                Removing LED...
+                Removing Light Module...
               {/if}
             </Button>
           {:else}
             <center>
-              <div class="sublabel"><br>LED Modules are only visible<br>when ring is on "network"<br><br></div>
-              <span style="color:darkgray">Visible LED Modules</span>
+              <div class="sublabel"><br>Light Modules are only visible when their ring is on "network"<br><br></div>
+              Visible Light Modules
               <br>
               <br>
             </center>
@@ -321,16 +321,13 @@
             <ul width=300 id="devices">
               <center>
                 {#if !visible_devices}
-                  <li><span style="color:darkgray">• • •</span></li>
+                  <li>• • •</li>
                 {:else if visible_devices.length === 0}
-                  <li><span style="color:darkgray">none</span></li>
+                  <li>none</li>
                 {:else}
                   {#each visible_devices as device}
                     <li class="selector" on:click={click_device} data-mac-address={device.Address} data-paired={device.Paired} data-connected={device.Connected}>
                       <div class="device {(selected_device && selected_device.Address === device.Address) ? 'selected' : ''}" style="position:relative">
-                        <!--
-                        <div style="position:absolute;color:#AAAAAA;left:-38px">{device.RSSI || ''}</div>
-                        -->
                         <span class="clickdevice">{device.Name || device.Address}</span>
                         <!--
                         {#if device.Connected}
@@ -350,9 +347,9 @@
             {#if selected_device}
               <Button nofeedback on:click={pair_device}>
                 {#if !pairing}
-                  Pair LED
+                  Pair Light Module
                 {:else}
-                  Pairing LED...
+                  Pairing Light Module...
                 {/if}
               </Button>
             {/if}
@@ -376,28 +373,10 @@
 
 
 <style>
-  #connection {
-    font-size: 22px;
-    font-weight: 700;
-    color: white;
-    margin-bottom: 20px;
-  }
-
   .connect-container {
     height: 325px;
-  }
-
-  table {
-    display: grid;
-    place-items: center;
-    background-color: rgba(0,0,0,0);
-  }
-
-  form {
-    max-width: 800px;
-    font-size: 20px;
-    line-height: 26px;
-    margin: 0 0 16px;
+    color: var(--odl-gray-4);
+    font-weight: var(--odl-font-normal);
   }
 
   label {
@@ -406,49 +385,26 @@
   }
 
   .sublabel {
-    font-size: 14px;
     margin-top: -8px;
     margin-left: 2px;
-    line-height: 14px;
-    color: darkgrey;
+    font-size: 16px;
+    line-height: 16px;
   }
 
-  input {
-    font-size: 24px;
-    margin-top: 5px;
-  }
-
-  #visibility-container {
-    position: relative;
-  }
-  #visibility-container label {
-    display: inline-block;
-  }   
-  button#visibility {
-    width: 30px;
-    height: 30px;
-    position: absolute;
-    top: 8px;
-    right: 3px;
-    border-radius: 2px;
-    border-width: 1px;
-    background-color: #BBEBFF;
-  }
-
-  #networklist-container {
+  #devicelist-container {
+    width: 600px;
     display: grid;
     place-items: center;
   }
 
-  #networklist {
-    width: 220px;
+  #devicelist {
     text-align: left;
   }
 
-  #networklist ul {
+  #devicelist ul {
     list-style: none;
     font-size: 20px;
-    font-weight: 900;
+    font-weight: var(--odl-font-bold);
     margin-left: 2px;
     margin-top: 4px;
     white-space: nowrap;
@@ -460,6 +416,6 @@
   }
   
   .selected {
-    background-color: #BBEBFF;
+    background-color: var(--odl-brand-1);
   }
 </style>

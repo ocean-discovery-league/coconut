@@ -51,7 +51,9 @@
   let password_is_visible = true;
   let password_visibility_icon;
   let password_input_type;
-  $: password_visibility_icon = password_is_visible ? '👁️' : '😆';
+  let visible_icon = '➕';  // https://emojipedia.org/plus
+  let not_visible_icon = '➖';  // https://emojipedia.org/minus
+  $: password_visibility_icon = password_is_visible ? visible_icon : not_visible_icon;  // eyes: '👁️' : '😆';
   $: password_input_type = password_is_visible ? 'text' : 'password';
   function toggle_password_visibility(event) {
       password_is_visible = !password_is_visible;
@@ -60,6 +62,7 @@
 
 
   async function monitorStatus() {
+      console.log('monitoring status');
       try {
           if (isOnScreen(wifiSetup)) {
               let response = await fetch200(status_request);
@@ -201,31 +204,28 @@
 </script>
 
 
-<div id="wifisetup-container" bind:this={wifiSetup}>
+<div class="wifisetup-container" bind:this={wifiSetup}>
   <center>
-    <div id="wifi-connection">
+    <div class="connect-container">
+    <div class="wifi-connection">
       {#if !connected_ssid}
-        <span style="color:darkgray">Not Connected</span>
-        <br>
-        &nbsp;
+        <span class="not-connected">Not Connected</span>
       {:else}
         <div style="position:relative">
-          <span style="color:darkgray">connected to </span>{connected_ssid}
+          Connected to<br><span class="connected-ssid">{connected_ssid}</span>
           {#if connected_rssi}
-            &nbsp;<span style="position:absolute;color:#AAAAAA">{connected_rssi}</span>
+            <span class="connected-rssi">{connected_rssi}</span>
           {/if}
         </div>
         {#if connected_ipaddress}
-          <span style="color:#AAAAAA">{connected_ipaddress}</span>
+          <span class="connected-ipaddress">{connected_ipaddress}</span>
         {:else}
           &nbsp;
         {/if}
       {/if}
     </div>
 
-    <div class="connect-container">
       {#if connected_ssid}
-        <br>
         <br>
         <Button nofeedback on:click={disconnect_wifi}>
           {#if !disconnecting}
@@ -240,7 +240,6 @@
         <form width="70%" on:submit={connect_wifi} enctype="multipart/form-data" method="post">
           <table width="400">
             <tr><td>
-                <br>
                 <div>
                   <label for="ssid">Network Name</label><br>
                   <input bind:value={form_ssid} autocorrect="off" autocapitalize="none" type="text" name="ssid" size="18" autocomplete="off" required/>
@@ -248,17 +247,17 @@
             </td></tr><tr><td height="25">
             </td></tr><tr><td>
                 <div>
-                  <div id="visibility-container">
                     <label for="password">WiFi Password<div class="sublabel">blank if no password</div></label>
+                  <input autocorrect="off" autocapitalize="none" autocomplete="off" type={password_input_type} name="password" size="18"/>
+                  <div class="visibility-container">
                     <button
-                      id="visibility"
+                      class="visibility"
                       type="button"
                       on:click={toggle_password_visibility}
                       >
                       {password_visibility_icon}
                     </button>
                   </div>
-                  <input autocorrect="off" autocapitalize="none" autocomplete="off" type={password_input_type} name="password" size="18"/>
                 </div>
             </td></tr><tr><td height="40">
             </td></tr><tr><td>
@@ -279,25 +278,23 @@
     </div>
 
     <br>
-    <br>
 
-    <div id="networklist-container">
-      <div id="networklist">
+    <div class="networklist-container">
+      <div class="networklist">
         <center>
-          <span style="color:darkgray">Visible Networks</span>
+          Visible Networks
         </center>
-        <br>
         <ul width=300 id="networks">
-          {#if visible_networks === false}
-            <li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color:darkgray">• • •</span></li>
-          {:else if visible_networks.length === 0}
-            <li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color:darkgray">none</span></li>
+          {#if !visible_networks}
+            <li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; • • •</li>
+          {:else if visible_networks && visible_networks.length === 0}
+            <li>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; none</li>
           {:else}
             {#each visible_networks as network}
               <li on:click={click_network}>
                 <div style="position:relative">
-                  <div style="position:absolute;color:#AAAAAA;left:-38px">{network.signal}</div>
-                  <div style="position:absolute;color:#AAAAAA;left:-62px;font-size:14px;opacity:0.6">{network.security ? '🔒' : ''}</div>
+                  <div style="position:absolute;left:-38px">{network.signal}</div>
+                  <div style="position:absolute;left:-62px;font-size:14px;opacity:0.6">{network.security ? '🔒' : ''}</div>
                   <span class="clickssid">{network.ssid}</span>
                 </div>
               </li>
@@ -310,10 +307,27 @@
 </div>
 
 <style>
-  #wifi-connection {
+  .wifisetup-container {
+    color: var(--odl-gray-4);
+    font-weight: var(--odl-font-normal);
+  }
+
+  .connected-ssid {
     font-size: 22px;
-    font-weight: 700;
+    font-weight: var(--odl-font-bold);
     color: white;
+  }
+
+  .connected-rssi, .connected-ipaddress {
+    font-weight: var(--odl-font-bold);
+  }
+
+  .not-connected {
+    font-weight: var(--odl-font-bold);
+  }
+
+  .wifi-connection {
+    font-size: 20px;
     margin-bottom: 20px;
   }
 
@@ -324,27 +338,28 @@
   table {
     display: grid;
     place-items: center;
-    background-color: rgba(0,0,0,0);
+    background-color: transparent;
   }
 
   form {
     max-width: 800px;
     font-size: 20px;
     line-height: 26px;
-    margin: 0 0 16px;
+    margin-top: -5px;
   }
 
   label {
     font-size: 20px;
-    font-weight: 900;
   }
 
   .sublabel {
-    font-size: 14px;
-    margin-top: -8px;
+    position: relative;
+    top: 5px;
+    font-size: 12px;
+    margin-top: -7px;
     margin-left: 2px;
+    margin-bottom: 2px;
     line-height: 14px;
-    color: darkgrey;
   }
 
   input {
@@ -352,39 +367,38 @@
     margin-top: 5px;
   }
 
-  #visibility-container {
+  .visibility-container {
     position: relative;
   }
-  #visibility-container label {
+  button.visibility {
     display: inline-block;
-  }   
-  button#visibility {
     width: 30px;
     height: 30px;
     position: absolute;
-    top: 8px;
-    right: 3px;
+    font-size: 20px;
+    top: -31px;
+    right: -38px;
     border-radius: 2px;
     border-width: 1px;
-    background-color: #BBEBFF;
+    background-color: var(--odl-brand-3);
   }
 
-  #networklist-container {
+  .networklist-container {
     display: grid;
     place-items: center;
   }
 
-  #networklist {
+  .networklist {
     width: 220px;
     text-align: left;
   }
 
-  #networklist ul {
+  .networklist ul {
     list-style: none;
     font-size: 20px;
-    font-weight: 900;
+    font-weight: var(--odl-font-bold);
     margin-left: 2px;
-    margin-top: 4px;
+    margin-top: 8px;
     white-space: nowrap;
   }
 
@@ -394,6 +408,6 @@
   }
   
   .selected {
-    background-color: #BBEBFF;
+    background-color: var(--odl-brand-1);
   }
 </style>
