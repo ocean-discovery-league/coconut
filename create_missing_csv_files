@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+'use strict';
+
+const os = require('os');
+const RingInput = require('./server/src/RingInput.js');
+const { MediaWatcher } = require('./server/src/MediaWatcher.js');
+const SensorLogManager = require('./server/src/SensorLogManager.js');
+
+let log = {};
+Object.assign(log, console);
+
+
+main();
+
+async function main() {
+    if (os.platform() !== 'linux') {
+        log.error('this utility is meant to be run on the maka-niu itself');
+	process.exit(1);
+    }
+    let ringInput = new RingInput();
+    await ringInput.init();
+    
+    let mediaWatcher = new MediaWatcher();
+
+    let sensorLogManager = new SensorLogManager();
+    await sensorLogManager.init(ringInput, mediaWatcher);
+    await sensorLogManager.createMissingCSVs();
+}

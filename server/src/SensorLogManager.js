@@ -56,14 +56,18 @@ class SensorLogManager {
                     await sensorReadTxt.start(`${MEDIA_DIR}/${txt_filename}`, true, null, true);
                     sensorWriteCSV.start(`${MEDIA_DIR}/${csv_filename}`);
                     sensorReadTxt.on('line', (line) => sensorWriteCSV.write(line));
-                    let waitForClose = new Promise( (resolve) => {
-                        sensorReadTxt.once('close', (line) => { sensorWriteCSV.end(); resolve(); });
+                    // let waitForClose = new Promise( (resolve) => {   // awaiting this causes node 10 to exit!
+                    //    sensorReadTxt.once('close', () => { sensorWriteCSV.end(); resolve(); });
+                    // });
+                    //await waitForClose;
+                    //log.log('finished writing', csv_filename);
+                    sensorReadTxt.on('end', () => {
+                        sensorWriteCSV.end();
+                        log.log('finished writing', csv_filename);
                     });
-                    await waitForClose;
-                    log.log('finished writing', csv_filename);
                 }
             } catch(err) {
-                log.error('error while generating csv file', err);
+                log.error('error while generating csv file', csv_filename, err);
             }
         }
     }
