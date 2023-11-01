@@ -60,9 +60,9 @@ class SensorLog {
         }
 
         let reading = new sensors.Reading(monoclock, date, time, values);
-        if (log.debug) {
-            log.debug(log.stringify(reading));
-        }
+        // if (log.debug) {
+        //     log.debug(JSON.stringify(reading));  // can't stringify BigInts
+        // }
         return [id, reading];
     }
 
@@ -75,7 +75,11 @@ class SensorLog {
 
     async extractFirstMonoclock(filename) {
         let firstline = await this.readFirstLine(filename);
-        return this.parseMonoclock(firstline);
+        if (firstline) {
+            return this.parseMonoclock(firstline);
+        } else {
+            return null;
+        }
     }
 
 
@@ -83,10 +87,12 @@ class SensorLog {
         let readstream = fs.createReadStream(filename, 'utf8');
         let readbyline = byline.createStream(readstream);
         let firstline;
-        while (!firstline || firstline.startsWith('DEID') || firstline.startsWith('MACA')) {
-            firstline = await new Promise((resolve) => {
-                readbyline.once('data', (line) => resolve(line));
-            });
+        await new Promise((resolve) => { readbyline.on('readable', resolve); });
+        while (!firstline && firstline !== null) {
+            firstline = readbyline.read();
+            if (firstline && (firstline.startsWith('DEID') || firstline.startsWith('MACA'))) {
+                firstline = undefined;
+            }
         }
         readstream.destroy();
         return firstline;

@@ -27,7 +27,7 @@ async function main() {
     let sensorWriteCSV = new SensorWriteCSV();
 
     log.error('parsing log file', txt_input_filename);
-    await sensorReadTxt.start(txt_input_filename, true, 1000000.0);
+    await sensorReadTxt.start(txt_input_filename, true, null, true);
 
     log.error('generating csv file', csv_output_filename);
     if (csv_output_filename === '-') {

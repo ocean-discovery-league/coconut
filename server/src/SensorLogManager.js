@@ -53,7 +53,7 @@ class SensorLogManager {
                     let sensorReadTxt = new SensorReadTxt();
                     await sensorReadTxt.init();
                     let sensorWriteCSV = new SensorWriteCSV();
-                    await sensorReadTxt.start(`${MEDIA_DIR}/${txt_filename}`, true, 1000000.0);
+                    await sensorReadTxt.start(`${MEDIA_DIR}/${txt_filename}`, true, null, true);
                     sensorWriteCSV.start(`${MEDIA_DIR}/${csv_filename}`);
                     sensorReadTxt.on('line', (line) => sensorWriteCSV.write(line));
                     let waitForClose = new Promise( (resolve) => {

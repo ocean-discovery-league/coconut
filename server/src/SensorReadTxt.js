@@ -35,7 +35,7 @@ class SensorReadTxt extends EventEmitter {
     }
 
 
-    async start(filename, simulated, speedFactor) {
+    async start(filename, simulated, speedFactor, asap) {
         if (!filename) {
             throw new Error('filename required');
         }
@@ -54,16 +54,20 @@ class SensorReadTxt extends EventEmitter {
             log.error('simulating using pre-recorded sensor data from', filename);
             let first_monoclock = await this.sensorLog.extractFirstMonoclock(filename);
             log.error('first monoclock in sensor data is', first_monoclock);
-            if (speedFactor && speedFactor !== 1.0) {
-                log.error('speed factor is', speedFactor);
-            }
             this.filestream = fs.createReadStream(filename, 'utf8');
             this.lineStream = byline.createStream(this.filestream);
-            this.clockStream = new byclock.ClockStream(first_monoclock, speedFactor);
-
-            this.readstream = this.lineStream.pipe(this.clockStream);
+            if (!asap) {
+                if (speedFactor && speedFactor !== 1.0) {
+                    log.error('speed factor is', speedFactor);
+                }
+                this.clockStream = new byclock.ClockStream(first_monoclock, speedFactor);
+                this.readstream = this.lineStream.pipe(this.clockStream);
+            } else {
+                this.readstream = this.lineStream;
+            }
             this.readstream.on('data', (line) => this.processLine(line));
             this.readstream.on('close', () => this.emit('close'));
+            this.readstream.on('end', () => this.emit('end'));
             this.readstream.on('error', (err) => log.error(`stream error on file ${filename}`, err));
         }
     }

@@ -2,7 +2,12 @@
 
 const fs = require('fs');
 const { Writable } = require('stream');
-const { stringify } = require('csv-stringify/sync');
+let stringify;
+if (process.version.startsWith('v10.')) {
+    stringify = require('/usr/local/coconut/node_modules/csv-stringify/dist/cjs/sync.cjs').stringify;
+} else {
+    stringify = require('csv-stringify/sync').stringify;
+}
 const SensorLog = require('./SensorLog.js');
 const { HEADERS } = require('./sensors.js');
 
