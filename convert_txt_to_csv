@@ -2,7 +2,6 @@
 'use strict';
 
 const fs = require('fs');
-const csv = require('csv');
 const SensorReadTxt = require('./server/src/SensorReadTxt.js');
 const SensorWriteCSV = require('./server/src/SensorWriteCSV.js');
 
