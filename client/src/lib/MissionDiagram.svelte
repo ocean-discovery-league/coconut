@@ -24,12 +24,16 @@
 
   export function clearSelection() {
     if (diagram) {
-      diagram.clearSelection();
+        diagram.clearSelection();
+        clearDiagramCanvasSelection();
+    }
+  }
+
+  function clearDiagramCanvasSelection() {
       let canvas = document.querySelector(`#${diagram_div_id} > canvas`);
       if (canvas) {
 	canvas.blur();
       }
-    }
   }
 
   onMount( async ()=> {
@@ -189,7 +193,7 @@
                       isInitial: false,  // don't even do initial layout
                       isOngoing: false,  // don't invalidate layout when nodes or links are added or removed
                       direction: 90,
-                      columnSpacing: 10,
+                      columnSpacing: 0.1,
                       layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
                     }),
           computesBoundsAfterDrag: true,  // needed to prevent recomputing Group.placeholder bounds too soon
@@ -317,11 +321,12 @@
 	new go.Binding("toSpot", "toSpot", go.Spot.parse),
 	new go.Binding("fromEndSegmentLength"),
 	new go.Binding("toEndSegmentLength"),
-        $(go.Shape, { stroke: "#69F4E4", strokeWidth: 4 }),
-        $(go.Shape, { toArrow: "Triangle", stroke: "#69F4E4", fill: "#69F4E4", strokeWidth: 4})
+        $(go.Shape, { stroke: "#CCCCCC", strokeWidth: 4 }),
+        $(go.Shape, { toArrow: "Triangle", stroke: "#CCCCCC", fill: "#CCCCCC", strokeWidth: 4})
        );
 
-    diagram.nodeTemplate =
+
+    const defaultNodeTemplate = 
       $(go.Node, "Auto",
         new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
         $(go.Shape,
@@ -329,28 +334,145 @@
             height: 90,
             width: 220,
             strokeWidth: 0,
-            fill: "#69F4E4",  // default Shape.fill value
+            fill: "#CCCCCC",  // default Shape.fill value
             portId: "", cursor: "pointer", fromLinkable: true, toLinkable: true,
           },
           new go.Binding("fill", "color")),  // binding to get fill from nodedata.color
         $(go.TextBlock,
-          { margin: new go.Margin(8, 0, 0, 0), font: "24px Helvetica,sans-serif" },
+          { margin: new go.Margin(8, 0, 0, 0), font: "20px Montserrat,OpenSans,sans-serif" },
           new go.Binding("text", "", formatNodeTextLabel)),  // binding to get TextBlock.text from node.value
         {
           //dragComputation: stayInGroup, // limit dragging of Nodes to stay within the containin
           dragComputation: (e) => { e.diagram.currentTool.doCancel(); },
-          selectionChanged: (part) => { console.log('partp', part);
+          selectionChanged: (part) => { console.log('part', part);
 					if (part.data.param) {
+                                            clearDiagramCanvasSelection();
 					  dispatch('selectionchanged', part);
 					} else {
 					  //part.diagram.currentTool.doCancel();
 					  //part.diagram.cancelSelection();
+                                            part.isSelected = false;
+                                            clearSelection();
 					}
 				      },
 
 
         }
        );
+
+      const labelNodeTemplate =
+            $(go.Node, "Auto",
+              new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+              $(go.Shape,
+                { figure: "Rectangle", //"RoundedRectangle"
+                  height: 90,
+                  width: 220,
+                  strokeWidth: 0,
+                  fill: "#7EB2B9",
+                  portId: "", cursor: "pointer", fromLinkable: true, toLinkable: true,
+                },
+                //new go.Binding("fill", "color"),  // binding to get fill from nodedata.color
+               ),
+              $(go.TextBlock,
+                { margin: new go.Margin(8, 0, 0, 0), font: "bold 22px Montserrat,OpenSans,sans-serif", stroke: "white" },
+                new go.Binding("text", "", formatNodeTextLabel)),  // binding to get TextBlock.text from node.value
+              {
+                  //dragComputation: stayInGroup, // limit dragging of Nodes to stay within the containin
+                  dragComputation: (e) => { e.diagram.currentTool.doCancel(); },
+                  selectionChanged: (part) => { console.log('part', part);
+					        if (part.data.param) {
+                                                    clearDiagramCanvasSelection();
+					            dispatch('selectionchanged', part);
+					        } else {
+					            //part.diagram.currentTool.doCancel();
+					            //part.diagram.cancelSelection();
+                                                    part.isSelected = false;
+                                                    clearSelection();
+					        }
+				              },
+
+
+              }
+             );
+
+      const paramNodeTemplate =
+      $(go.Node, "Auto",
+        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+        $(go.Shape,
+          { figure: "Rectangle", //"RoundedRectangle"
+            height: 90,
+            width: 220,
+            strokeWidth: 0,
+            fill: "white",
+            portId: "", cursor: "pointer", fromLinkable: true, toLinkable: true,
+          },
+          //new go.Binding("fill", "color"),  // binding to get fill from nodedata.color
+         ),
+        $(go.TextBlock,
+          { margin: new go.Margin(8, 0, 0, 0), font: "20px Montserrat,OpenSans,sans-serif" },
+          new go.Binding("text", "", formatNodeTextLabel)),  // binding to get TextBlock.text from node.value
+        {
+          //dragComputation: stayInGroup, // limit dragging of Nodes to stay within the containin
+          dragComputation: (e) => { e.diagram.currentTool.doCancel(); },
+          selectionChanged: (part) => { console.log('partp', part);
+					if (part.data.param) {
+                                            clearDiagramCanvasSelection();
+					  dispatch('selectionchanged', part);
+					} else {
+					  //part.diagram.currentTool.doCancel();
+					  //part.diagram.cancelSelection();
+                                            part.isSelected = false;
+                                            clearSelection();
+					}
+				      },
+
+
+        }
+       );
+
+      const terminalNodeTemplate =
+            $(go.Node, "Auto",
+              new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+              $(go.Shape,
+                { figure: "Rectangle", //"RoundedRectangle"
+                  height: 90,
+                  width: 220,
+                  strokeWidth: 0,
+                  fill: "#177D8B",
+                  portId: "", cursor: "pointer", fromLinkable: true, toLinkable: true,
+                },
+                //new go.Binding("fill", "color"),  // binding to get fill from nodedata.color
+               ),
+              $(go.TextBlock,
+                { margin: new go.Margin(8, 0, 0, 0), font: "bold 22px Montserrat,OpenSans,sans-serif", stroke: "white" },
+                new go.Binding("text", "", formatNodeTextLabel)),  // binding to get TextBlock.text from node.value
+              {
+                  //dragComputation: stayInGroup, // limit dragging of Nodes to stay within the containin
+                  dragComputation: (e) => { e.diagram.currentTool.doCancel(); },
+                  selectionChanged: (part) => { console.log('partp', part);
+					        if (part.data.param) {
+                                                    clearDiagramCanvasSelection();
+					            dispatch('selectionchanged', part);
+					        } else {
+					            //part.diagram.currentTool.doCancel();
+					            //part.diagram.cancelSelection();
+                                                    part.isSelected = false;
+                                                    clearSelection();
+					        }
+				              },
+
+
+              }
+             );
+
+      // https://gojs.net/latest/intro/templateMaps.html
+      //diagram.nodeTemplate = defaultNodeTemplate;
+      let nodeTemplateMap = new go.Map();
+      nodeTemplateMap.add("", defaultNodeTemplate);
+      nodeTemplateMap.add("label", labelNodeTemplate);
+      nodeTemplateMap.add("param", paramNodeTemplate);
+      nodeTemplateMap.add("terminal", terminalNodeTemplate);
+      diagram.nodeTemplateMap = nodeTemplateMap;
 
     diagram.isReadOnly = true;
     diagram.toolManager.panningTool.isEnabled = false;

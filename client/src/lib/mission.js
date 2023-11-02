@@ -54,9 +54,9 @@ export default class Mission {
     let label_div   = document.querySelector('#'+this.label_div_id);
     let toolbox_div = document.querySelector('#'+this.toolbox_div_id);
     if (part && part.isSelected) {
-      console.log(label_div.value)
+      console.log(label_div.value);
       console.log(part.data.key);
-      console.log(label_div.value)
+      console.log(label_div.value);
       this.currentSelection = part;
       console.log(!!part.data, !!part.data.param, !!part.data.param.name);
       if (part.data && part.data.param && part.data.param.name) {
@@ -74,7 +74,6 @@ export default class Mission {
       console.log('style', toolbox_div.style);
       toolbox_div.style.bottom ='-200px';
     }
-    
   }
 
 
@@ -264,7 +263,7 @@ export default class Mission {
             //  { width: 8, height: 8, fill: "white" },
             //  new go.Binding("fill", "color")),
             // $(go.TextBlock,  // the lane label
-            //   { font: "bold 13pt Helvetica,sans-serif", editable: true, margin: new go.Margin(8, 0, 0, 0) },
+            //   { font: "bold 13pt Montserrat,OpenSans,sans-serif", editable: true, margin: new go.Margin(8, 0, 0, 0) },
             //   new go.Binding("text", "text").makeTwoWay())
            ),
           //$("SubGraphExpanderButton", { margin: 5 })  // but this remains always visible!
@@ -279,7 +278,7 @@ export default class Mission {
           $(go.TextBlock,  // this TextBlock is only seen when the swimlane is collapsed
             {
               name: "LABEL",
-              font: "bold 13pt Helvetica,sans-serif", editable: true,
+              font: "bold 13pt Montserrat,OpenSans,sans-serif", editable: true,
               angle: 0, alignment: go.Spot.TopLeft, margin: new go.Margin(2, 0, 0, 4)
             },
             new go.Binding("visible", "isSubGraphExpanded", function(e) { return !e; }).ofObject(),
@@ -329,7 +328,7 @@ export default class Mission {
           $(go.Panel, "Horizontal",
             { column: 0, angle: 270 },
             $(go.TextBlock,
-              { font: "12pt Helvetica,sans-serif", editable: true, margin: new go.Margin(3, 0, 0, 0) },
+              { font: "12pt Montserrat,OpenSans,sans-serif", editable: true, margin: new go.Margin(3, 0, 0, 0) },
               new go.Binding("text").makeTwoWay())
            ),
           $(go.Placeholder,
@@ -358,7 +357,7 @@ export default class Mission {
           },
           new go.Binding("fill", "color")),  // binding to get fill from nodedata.color
         $(go.TextBlock,
-          { margin: new go.Margin(8, 12, 8, 12), font: "24px Helvetica,sans-serif" },
+          { margin: new go.Margin(8, 12, 8, 12), font: "24px Montserrat,OpenSans,sans-serif" },
           new go.Binding("text", "text")),  // binding to get TextBlock.text from nodedata.key
         {
           dragComputation: stayInGroup, // limit dragging of Nodes to stay within the containing Group, defined above
@@ -374,7 +373,7 @@ export default class Mission {
     let data = JSON.parse(json);
     json = JSON.stringify(data, 0, 4);
     //console.log(json);
-    
+
     // force all actions' layouts to be performed
     this.relayoutLanes();
   }  // end initDiagram

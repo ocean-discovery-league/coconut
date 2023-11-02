@@ -49,7 +49,7 @@
     <table width="400">
       <tr><td>
           <div>
-            <label for="username">User Name</label>
+            <label for="username">Mission Name</label>
             <br>
             <input bind:value={username} name="username" autocorrect="off" autocapitalize="none" type="text" size="18" autocomplete="off"/>
           </div>

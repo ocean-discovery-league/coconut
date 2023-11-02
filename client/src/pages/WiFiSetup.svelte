@@ -247,7 +247,7 @@
             </td></tr><tr><td height="25">
             </td></tr><tr><td>
                 <div>
-                    <label for="password">WiFi Password<div class="sublabel">blank if no password</div></label>
+                    <label for="password">WiFi Password<div class="sublabel">(blank if no password)</div></label>
                   <input autocorrect="off" autocapitalize="none" autocomplete="off" type={password_input_type} name="password" size="18"/>
                   <div class="visibility-container">
                     <button
@@ -359,7 +359,7 @@
     margin-top: -7px;
     margin-left: 2px;
     margin-bottom: 2px;
-    line-height: 14px;
+    line-height: 18px;
   }
 
   input {
