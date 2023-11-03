@@ -26,7 +26,8 @@ let log = console;
 
 
 class WebServer {
-    async init(wifi, bluetooth, missionPrograms, ringInput, mediaWatcher, port=PORT, previewManager=null) {
+    async init(wifi, bluetooth, missionPrograms, ringInput, mediaWatcher, sensorLogManager, port=PORT, previewManager=null) {
+        this.sensorLogManager = sensorLogManager;
         let app = express();
         app.use((req, res, next) => {
             log.log(req.method, req.url);
@@ -71,7 +72,7 @@ class WebServer {
         mediaWatcher.init(app, io);
 
         let downloadAll = new DownloadAll();
-        downloadAll.init(app, io, mediaWatcher);
+        downloadAll.init(app, io, mediaWatcher, this.sensorLogManager);
 
         let uploadAll = new UploadAll();
         uploadAll.init(app, io, mediaWatcher);

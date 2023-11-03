@@ -74,11 +74,13 @@ class SensorLogManager {
 
 
     async start() {
-        this.ringInput.on('change', () => this.ringChangeHandler());
-        let filename = this.ringInput.getSensorLogFilename();
-        if (filename) {
-            this.startWritingCSV();
-        }
+        //sensor log filename is only present in status.txt during missions
+        //doing it when downloading starts instead
+        // this.ringInput.on('change', () => this.ringChangeHandler());
+        // let filename = this.ringInput.getSensorLogFilename();
+        // if (filename) {
+        //     this.startWritingCSV();
+        // }
     }
 
 
@@ -117,7 +119,7 @@ class SensorLogManager {
             delete this.sensorReadTxt;
         }
         if (this.sensorWriteCSV) {
-            this.sensorWriteCSV.close();
+            this.sensorWriteCSV.end();
             delete this.sensorWriteCSV;
         }
         delete this.txt_input_filename;

@@ -22,8 +22,9 @@ let log = {
 
 
 class DownloadAll extends EventEmitter {
-    async init(app, io, mediaWatcher) {
+    async init(app, io, mediaWatcher, sensorLogManager) {
         this.mediaWatcher = mediaWatcher;
+        this.sensorLogManager = sensorLogManager;
         this.session = undefined;
         if (app) {
             this.addRoutes(app);
@@ -57,6 +58,12 @@ class DownloadAll extends EventEmitter {
                 this.session.on('end', () => {
                     this.session = undefined;
                 });
+
+                try {
+                    await this.sensorLogManager.createMissingCSVs();
+                } catch(err) {
+                    log.error('error creating missing csv files', err);
+                }
 
                 try {
                     await this.startDownload(this.session, res, selection, format);
