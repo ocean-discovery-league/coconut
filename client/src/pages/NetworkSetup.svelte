@@ -20,7 +20,7 @@
           if ($missionid_data.version) {
               version = 'v' + $missionid_data.version;
               if ($missionid_data.python_version) {
-                  python_version = ` (${missionid_data.python_version})`;
+                  python_version = ` (${$missionid_data.python_version})`;
               }
           } else {
               version = not_loaded;

@@ -364,6 +364,7 @@
 
   input {
     font-size: 24px;
+    font-family: sans-serif;
     margin-top: 5px;
   }
 

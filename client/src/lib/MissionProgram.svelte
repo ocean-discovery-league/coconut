@@ -222,6 +222,7 @@
     position: relative;
     top: -5px;
     font-size: 30px;
+    font-family: sans-serif;
     /* text-align: right; */
     /* text-align: center; */
     background-color: #7BA5AF;
