@@ -12,12 +12,14 @@ const SensorLog = require('./SensorLog.js');
 const { HEADERS } = require('./sensors.js');
 
 const SENSOR_ORDER = ['KELL', 'BATT', 'GNSS', 'IMUN'];
+// const QUOTED_FIELDS = ['Monoclock', 'Date', 'Time'];
+const QUOTED_FIELDS = ['1', '2', '3'];
 
 const shunt = () => {};
 let log = {
     debug: shunt,
-    log: shunt,
-    warn: shunt,
+    log: console.log,
+    warn: console.warn,
     error: console.error
 };
 
@@ -29,12 +31,13 @@ class SensorWriteCSV extends Writable {
         } else {
             this.outputstream = fs.createWriteStream(filename_or_stream, 'utf8');
         }
-        let header = ['Sensor', 'Date', 'Time'];  // header
-        let header_final = ['Monoclock'];
+        //let header = ['Sensor', 'Date', 'Time'];  // header
+        //let header_final = ['Monoclock'];
+        let header = ['Sensor', 'Monoclock', 'Date', 'Time'];  // header
         for (let id of SENSOR_ORDER) {
             header = header.concat(HEADERS[id]);
         }
-        header = header.concat(header_final);
+        //header = header.concat(header_final);
         header = header.map((el) => el.toUpperCase());
         let csv = stringify([header]);
         this.outputstream.write(csv);
@@ -48,7 +51,8 @@ class SensorWriteCSV extends Writable {
         this.lines++;
         try {
             let [id, reading] = this.sensorLog.parseLine(line);
-            let record = [id, reading.date, reading.time];
+            //let record = [id, reading.date, reading.time];
+            let record = [id, reading.monoclock, reading.date, reading.time];
             for (let header_id of SENSOR_ORDER) {
                 if (id === header_id) {
                     record = record.concat(reading.values);
@@ -56,7 +60,17 @@ class SensorWriteCSV extends Writable {
                     record = record.concat(new Array(HEADERS[header_id].length));
                 }
             }
-            record = record.concat([reading.monoclock]);
+            for (let [field, value] of Object.entries(record)) {
+                //log.log(field, QUOTED_FIELDS);
+                if (QUOTED_FIELDS.includes(field)) {
+                    //log.log('quoting', typeof value);
+                    //record[field] = `"${record[field]}"`;
+                    //record[field] = `${record[field]}`;
+                    //log.log(typeof record[field]);
+                    record[field] = `'${record[field]}`;  // prefix with a ' character so (some) sw will import as a literal instead of a number
+                }
+            }
+            //record = record.concat([reading.monoclock]);
             log.debug(record);
             let csv = stringify([record]);
             this.outputstream.write(csv);
