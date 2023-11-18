@@ -12,7 +12,7 @@ const SensorLog = require('./SensorLog.js');
 const { HEADERS } = require('./sensors.js');
 const SENSOR_ORDER = ['KELL', 'BATT', 'GNSS', 'IMUN'];
 // const QUOTED_FIELDS = ['Monoclock', 'Date', 'Time'];
-const QUOTED_FIELDS = ['1', '3'];  // 1 - monoclock, 2 - date, 3 - time
+// const QUOTED_FIELDS = ['1', '3'];  // 1 - monoclock, 2 - date, 3 - time
 const { convert_date_time_into_ms, convert_time_into_seconds } = require('./datetime.js');
 
 const shunt = () => {};
@@ -33,8 +33,8 @@ class SensorWriteCSV extends Writable {
         }
         //let header = ['Sensor', 'Date', 'Time'];  // header
         //let header_final = ['Monoclock'];
-        //let header = ['Sensor', 'Monoclock', 'Date', 'Time', 'Milliseconds'];  // header
-        let header = ['Sensor', 'Monoclock', 'Date', 'Time', 'Seconds'];  // header
+        let header = ['Sensor', 'Monoclock', 'Date', 'Time', 'MSeconds'];  // header
+        //let header = ['Sensor', 'Monoclock', 'Date', 'Time', 'Seconds'];  // header
         for (let id of SENSOR_ORDER) {
             header = header.concat(HEADERS[id]);
         }
@@ -53,9 +53,9 @@ class SensorWriteCSV extends Writable {
         try {
             let [id, reading] = this.sensorLog.parseLine(line);
             //let record = [id, reading.date, reading.time];
-            //let ms = convert_date_time_into_ms(reading.date, reading.time);
-            let seconds = convert_time_into_seconds(reading.time);
-            let record = [id, reading.monoclock, reading.date, reading.time, seconds];
+            let msecs = convert_date_time_into_ms(reading.date, reading.time);
+            //let seconds = convert_time_into_seconds(reading.time);
+            let record = [id, reading.monoclock, reading.date, reading.time, msecs];
             for (let header_id of SENSOR_ORDER) {
                 if (id === header_id) {
                     record = record.concat(reading.values);
@@ -64,14 +64,14 @@ class SensorWriteCSV extends Writable {
                 }
             }
             for (let [field, value] of Object.entries(record)) {
-                //log.log(field, QUOTED_FIELDS);
-                if (QUOTED_FIELDS.includes(field)) {
-                    //log.log('quoting', typeof value);
-                    //record[field] = `"${record[field]}"`;
-                    //record[field] = `${record[field]}`;
-                    //log.log(typeof record[field]);
-                    record[field] = `'${record[field]}`;  // prefix with a ' character so (some) sw will import as a literal instead of a number
-                }
+                // //log.log(field, QUOTED_FIELDS);
+                // if (QUOTED_FIELDS.includes(field)) {
+                //     //log.log('quoting', typeof value);
+                //     //record[field] = `"${record[field]}"`;
+                //     //record[field] = `${record[field]}`;
+                //     //log.log(typeof record[field]);
+                //     record[field] = `'${record[field]}`;  // prefix with a ' character so (some) sw will import as a literal instead of a number
+                // }
             }
             //record = record.concat([reading.monoclock]);
             log.debug(record);
